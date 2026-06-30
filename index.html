@@ -3,331 +3,94 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Fade In — Guess the Landmark</title>
+<title>Game Room — for the CNS team</title>
+<meta name="description" content="A little collection of browser games, made for the CNS team."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#160d2e;--bg-2:#1f1442;--bg-3:#2a1c57;
-    --gold:#ffc94d;--magenta:#ff4d7d;--cyan:#46d6e0;--cream:#f6f0e2;
-    --muted:rgba(246,240,226,.58);--line:rgba(246,240,226,.12);
+    --gold:#ffc94d;--magenta:#ff4d7d;--cyan:#46d6e0;--green:#46e08a;--cream:#f6f0e2;
+    --muted:rgba(246,240,226,.62);--line:rgba(246,240,226,.12);
     --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"Space Mono",ui-monospace,monospace;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;}
-  body{background:radial-gradient(1100px 540px at 50% -8%,#2c1a5e,transparent 60%),var(--bg);color:var(--cream);font-family:var(--body);min-height:100vh;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:760px;margin:0 auto;padding:22px 18px 60px;}
-  .top{text-align:center;margin-bottom:16px;}
-  .eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);}
-  h1{font-family:var(--display);font-weight:800;font-size:clamp(32px,8vw,58px);margin:6px 0 0;text-shadow:0 2px 0 var(--magenta);}
-  h1 .pop{color:var(--cyan);}
-  .sub{color:var(--muted);font-size:14px;margin-top:8px;}
-
-  /* stage */
-  .stage-wrap{position:relative;width:100%;max-width:480px;margin:8px auto 0;}
-  .stage{
-    position:relative;width:100%;aspect-ratio:1.18/1;border-radius:20px;overflow:hidden;
-    background:linear-gradient(180deg,#241655,#180e36);border:1px solid var(--line);
-    display:flex;align-items:center;justify-content:center;
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:
+      radial-gradient(120% 80% at 80% -10%,rgba(70,214,224,.18),transparent 60%),
+      radial-gradient(120% 90% at 0% 0%,rgba(255,77,125,.18),transparent 55%),
+      var(--bg);
+    color:var(--cream);font-family:var(--body);line-height:1.6;
+    display:flex;flex-direction:column;align-items:center;padding:48px 20px 64px;
   }
-  .art{width:100%;height:100%;display:flex;align-items:center;justify-content:center;will-change:filter,opacity;}
-  .art svg, .art img{width:100%;height:100%;object-fit:cover;display:block;}
-  .progress{position:absolute;left:0;bottom:0;height:5px;background:var(--gold);width:0%;}
-  .points{
-    position:absolute;top:12px;right:14px;font-family:var(--mono);font-weight:700;font-size:13px;
-    color:var(--gold);background:rgba(0,0,0,.35);border:1px solid rgba(255,201,77,.3);border-radius:30px;padding:5px 12px;
-  }
-  .timer{
-    position:absolute;top:12px;left:14px;font-family:var(--mono);font-weight:700;font-size:13px;
-    color:var(--cyan);background:rgba(0,0,0,.35);border:1px solid rgba(70,214,224,.3);border-radius:30px;padding:5px 12px;
-  }
-  .reveal-name{text-align:center;margin:16px 0 4px;min-height:64px;}
-  .reveal-name .nm{font-family:var(--display);font-weight:800;font-size:clamp(24px,5.5vw,38px);color:var(--gold);}
-  .reveal-name .pl{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:4px;}
+  .wrap{width:100%;max-width:880px}
 
-  button{font-family:inherit;}
-  .btn{border:1px solid var(--line);background:var(--bg-3);color:var(--cream);border-radius:10px;padding:11px 16px;font-size:14px;font-weight:500;cursor:pointer;transition:transform .08s,background .15s,border-color .15s;}
-  .btn:hover{background:#33216b;border-color:rgba(255,201,77,.4);}
-  .btn:active{transform:translateY(1px);}
-  .btn.gold{background:var(--gold);color:#2a1a05;border-color:var(--gold);font-weight:600;}
-  .btn.pink{background:var(--magenta);color:#3a0014;border-color:var(--magenta);font-weight:600;}
-  .btn.ghost{background:transparent;}
-  .btn.sm{padding:8px 12px;font-size:13px;}
-  .btn:disabled{opacity:.45;cursor:default;}
-  .btn:focus-visible,.pill:focus-visible{outline:3px solid var(--cyan);outline-offset:2px;}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;}
-  .controls{margin-top:14px;}
+  .badge{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+    border:1px solid var(--line);border-radius:999px;padding:7px 14px;display:inline-block;margin-bottom:22px}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,8vw,76px);line-height:1.02;margin:0 0 18px;
+    background:linear-gradient(120deg,var(--cyan),var(--gold) 60%,var(--magenta));-webkit-background-clip:text;background-clip:text;color:transparent}
 
-  .opts{margin-top:18px;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:16px;}
-  .opt-label{font-family:var(--mono);text-transform:uppercase;letter-spacing:.22em;font-size:10px;color:var(--cyan);margin:0 0 8px;}
-  .pill{border:1px solid var(--line);background:var(--bg-3);color:var(--cream);border-radius:30px;padding:7px 14px;font-size:13px;cursor:pointer;}
-  .pill[aria-pressed="true"]{background:var(--cyan);color:#06262a;border-color:var(--cyan);font-weight:600;}
-  .grp+.grp{margin-top:14px;}
-  .uploader{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-  .uploader input[type=file]{display:none;}
-  .uploader input[type=text]{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;color:var(--cream);padding:10px 12px;font-size:14px;font-family:var(--body);flex:1;min-width:150px;}
-  .uploader input[type=text]:focus{outline:none;border-color:var(--cyan);}
+  .note{background:rgba(13,9,28,.5);border:1px solid var(--line);border-left:3px solid var(--gold);
+    border-radius:14px;padding:20px 22px;max-width:680px;font-size:17px;margin:0 0 44px}
+  .note .sig{display:block;margin-top:12px;color:var(--muted);font-family:var(--mono);font-size:13px}
 
-  footer{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line-height:1.7;}
-  @media(prefers-reduced-motion:reduce){.art{transition:none!important;}}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+  .card{position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;
+    background:rgba(31,20,66,.55);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+    transition:transform .16s,border-color .16s,box-shadow .16s}
+  .card:hover{transform:translateY(-4px);border-color:rgba(246,240,226,.34);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  .thumb{height:150px;display:flex;align-items:center;justify-content:center;font-size:64px}
+  .thumb.fade{background:linear-gradient(140deg,#2a1c57,#ff4d7d33,#ffc94d33)}
+  .thumb.geo{background:linear-gradient(140deg,#102a3a,#46d6e033,#46e08a33)}
+  .body{padding:18px 20px 22px}
+  .body h2{font-family:var(--display);font-weight:800;font-size:23px;margin:0 0 6px}
+  .body p{margin:0 0 14px;color:var(--muted);font-size:15px}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan)}
+  .play{margin-top:auto;font-family:var(--display);font-weight:800;color:var(--gold)}
+
+  footer{margin-top:52px;color:var(--muted);font-size:13px;font-family:var(--mono);text-align:center}
+  footer a{color:var(--muted)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <p class="eyebrow">Guess as it sharpens</p>
-    <h1>Fade <span class="pop">In</span></h1>
-    <p class="sub">A landmark resolves over 30 seconds. Shout your guess — the earlier, the more points.</p>
-  </div>
+  <div class="wrap">
+    <span class="badge">★ A gift for the CNS team</span>
+    <h1>The Game Room</h1>
 
-  <div class="stage-wrap">
-    <div class="stage">
-      <div class="art" id="art"></div>
-      <div class="timer" id="timer">0:30</div>
-      <div class="points" id="points">1000</div>
-      <div class="progress" id="progress"></div>
+    <p class="note">
+      Hey CNS team — I heard the game rotation was running dry, so I built you a few to keep things fun.
+      Consider this my little gift to the crew. I don't say much in the meetings, but I'm always listening —
+      so here's something from me. Hope they earn a few laughs. More on the way.
+      <span class="sig">— with appreciation, your teammate 🎮</span>
+    </p>
+
+    <div class="grid">
+      <a class="card" href="geo/">
+        <div class="thumb geo">🌍</div>
+        <div class="body">
+          <span class="tag">Geography · Street View</span>
+          <h2>Where Am I?</h2>
+          <p>Dropped somewhere on Earth in Google Street View — look around, drop a pin, and see how close you got. 5 rounds.</p>
+          <span class="play">Play →</span>
+        </div>
+      </a>
+
+      <a class="card" href="fade/">
+        <div class="thumb fade">🏙️</div>
+        <div class="body">
+          <span class="tag">Trivia · Guessing</span>
+          <h2>Fade In</h2>
+          <p>A famous landmark slowly fades into view. Name it as fast as you can — the sooner you guess, the higher you score.</p>
+          <span class="play">Play →</span>
+        </div>
+      </a>
     </div>
+
+    <footer>
+      Made for fun · runs right in your browser · <a href="https://github.com/egertonk/fade-in">source on GitHub</a>
+    </footer>
   </div>
-
-  <div class="reveal-name" id="revealName"></div>
-
-  <div class="controls row">
-    <button class="btn gold" id="startBtn">▶ Start reveal</button>
-    <button class="btn pink" id="revealBtn">🏁 Reveal answer</button>
-    <button class="btn" id="nextBtn">Next →</button>
-  </div>
-
-  <div class="opts">
-    <div class="grp">
-      <p class="opt-label">Reveal speed</p>
-      <div class="row" style="justify-content:flex-start;" id="speedRow">
-        <button class="pill" data-secs="15">15s</button>
-        <button class="pill" data-secs="30" aria-pressed="true">30s</button>
-        <button class="pill" data-secs="45">45s</button>
-        <button class="pill" data-secs="60">60s</button>
-      </div>
-    </div>
-    <div class="grp">
-      <p class="opt-label">Region</p>
-      <div class="row" style="justify-content:flex-start;" id="regionRow"></div>
-    </div>
-    <div class="grp">
-      <p class="opt-label">Bring your own — stays on your device, never uploaded</p>
-      <div class="uploader">
-        <input type="text" id="ownLabel" placeholder="Answer label (e.g. “Sam’s desk”) — optional"/>
-        <label class="btn sm" for="ownFile">📷 Add image(s)</label>
-        <input type="file" id="ownFile" accept="image/*" multiple/>
-        <button class="btn sm ghost" id="shuffleBtn">🔀 Shuffle deck</button>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    <p>Host shares this screen. Players guess by voice in the call — nobody types, including you.<br>
-    No database, no uploads, drops straight onto GitHub Pages.</p>
-  </footer>
-</div>
-
-<script>
-const $=s=>document.querySelector(s);
-const MAXBLUR=26;
-
-/* ---------- built-in landmark art (stylized, copyright-free) ---------- */
-const A=(inner)=>`<svg viewBox="0 0 240 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="200" fill="#1b1142"/>${inner}</svg>`;
-const BUILTIN=[
- {name:"Mount Fuji",place:"Honshu, Japan",flag:"🇯🇵",region:"Asia",art:A(`
-   <rect y="150" width="240" height="50" fill="#2a1c57"/>
-   <path d="M18 168 Q90 158 120 52 Q150 158 222 168 Z" fill="#9db8d6"/>
-   <path d="M96 90 L108 76 L120 58 L132 76 L144 90 L131 86 L120 78 L109 86 Z" fill="#f6f0e2"/>
-   <line x1="40" y1="135" x2="98" y2="135" stroke="#cfe0f2" stroke-width="5" opacity=".5"/>
-   <line x1="150" y1="146" x2="206" y2="146" stroke="#cfe0f2" stroke-width="5" opacity=".5"/>
-   <circle cx="190" cy="48" r="16" fill="#ffc94d" opacity=".8"/>`)},
- {name:"Eiffel Tower",place:"Paris, France",flag:"🇫🇷",region:"Europe",art:A(`
-   <path d="M120 12 L126 58 L150 58 L186 184 L150 184 L131 124 L109 124 L90 184 L54 184 L90 58 L114 58 Z" fill="#caa15a"/>
-   <path d="M92 184 Q120 150 148 184" fill="none" stroke="#caa15a" stroke-width="4"/>
-   <rect x="96" y="90" width="48" height="6" fill="#caa15a"/>
-   <rect x="86" y="120" width="68" height="6" fill="#caa15a"/>
-   <rect x="118" y="2" width="4" height="14" fill="#caa15a"/>`)},
- {name:"Leaning Tower of Pisa",place:"Pisa, Italy",flag:"🇮🇹",region:"Europe",art:A(`
-   <g transform="rotate(9 120 110)">
-     <rect x="100" y="34" width="40" height="146" rx="4" fill="#ece3cf"/>
-     <rect x="98" y="30" width="44" height="10" rx="3" fill="#d8cfb6"/>
-     <g stroke="#c4b794" stroke-width="2.5">
-       <line x1="100" y1="58" x2="140" y2="58"/><line x1="100" y1="82" x2="140" y2="82"/>
-       <line x1="100" y1="106" x2="140" y2="106"/><line x1="100" y1="130" x2="140" y2="130"/>
-       <line x1="100" y1="154" x2="140" y2="154"/>
-     </g>
-     <g fill="#bfb18d"><circle cx="110" cy="70" r="2.4"/><circle cx="120" cy="70" r="2.4"/><circle cx="130" cy="70" r="2.4"/>
-       <circle cx="110" cy="118" r="2.4"/><circle cx="120" cy="118" r="2.4"/><circle cx="130" cy="118" r="2.4"/></g>
-   </g>`)},
- {name:"Big Ben",place:"London, England",flag:"🇬🇧",region:"Europe",art:A(`
-   <rect x="104" y="44" width="34" height="138" fill="#cdbb8e"/>
-   <rect x="99" y="66" width="44" height="36" fill="#b8a06b"/>
-   <circle cx="121" cy="84" r="12" fill="#f7f1df"/>
-   <line x1="121" y1="84" x2="121" y2="76" stroke="#3a2c12" stroke-width="2"/>
-   <line x1="121" y1="84" x2="128" y2="86" stroke="#3a2c12" stroke-width="2"/>
-   <polygon points="104,44 121,14 138,44" fill="#9c8a5e"/>
-   <rect x="118" y="4" width="6" height="12" fill="#9c8a5e"/>
-   <rect x="100" y="180" width="42" height="14" fill="#a8965f"/>`)},
- {name:"Colosseum",place:"Rome, Italy",flag:"🇮🇹",region:"Europe",art:A(`
-   <path d="M28 124 a92 50 0 0 1 184 0" fill="none" stroke="#d8c39a" stroke-width="20"/>
-   <path d="M44 124 a76 40 0 0 0 152 0" fill="none" stroke="#bfa97f" stroke-width="6" opacity=".6"/>
-   <g fill="#1b1142"><rect x="52" y="96" width="9" height="16" rx="4"/><rect x="74" y="90" width="9" height="16" rx="4"/>
-     <rect x="98" y="86" width="9" height="16" rx="4"/><rect x="122" y="86" width="9" height="16" rx="4"/>
-     <rect x="146" y="90" width="9" height="16" rx="4"/><rect x="168" y="96" width="9" height="16" rx="4"/></g>
-   <rect x="40" y="150" width="160" height="14" fill="#bfa97f"/>`)},
- {name:"Statue of Liberty",place:"New York, USA",flag:"🇺🇸",region:"USA",art:A(`
-   <g fill="#7fb7a3">
-     <path d="M108 96 L132 96 L140 178 L100 178 Z"/>
-     <circle cx="120" cy="80" r="13"/>
-     <g><polygon points="120,55 117,67 123,67"/><polygon points="108,60 110,70 114,67"/><polygon points="132,60 130,70 126,67"/>
-        <polygon points="100,70 105,76 108,72"/><polygon points="140,70 135,76 132,72"/></g>
-     <rect x="132" y="40" width="7" height="44" transform="rotate(12 135 62)"/>
-     <polygon points="150,30 156,16 162,30" fill="#ffc94d"/>
-     <rect x="98" y="96" width="18" height="26" transform="rotate(-10 107 109)"/>
-   </g>
-   <rect x="92" y="178" width="56" height="16" fill="#5e7d72"/>`)},
- {name:"Golden Gate Bridge",place:"San Francisco, USA",flag:"🇺🇸",region:"USA",art:A(`
-   <g stroke="#c1440e" stroke-width="6" fill="none">
-     <path d="M6 132 Q70 96 78 50"/><path d="M234 132 Q170 96 162 50"/>
-     <path d="M78 50 Q120 150 162 50"/>
-   </g>
-   <rect x="74" y="44" width="8" height="104" fill="#c1440e"/>
-   <rect x="158" y="44" width="8" height="104" fill="#c1440e"/>
-   <rect x="0" y="130" width="240" height="6" fill="#c1440e"/>
-   <g stroke="#c1440e" stroke-width="2"><line x1="40" y1="118" x2="40" y2="130"/><line x1="100" y1="112" x2="100" y2="130"/>
-     <line x1="120" y1="118" x2="120" y2="130"/><line x1="140" y1="112" x2="140" y2="130"/><line x1="200" y1="118" x2="200" y2="130"/></g>
-   <rect y="150" width="240" height="50" fill="#27406e" opacity=".5"/>`)},
- {name:"Sydney Opera House",place:"Sydney, Australia",flag:"🇦🇺",region:"World",art:A(`
-   <rect y="150" width="240" height="50" fill="#27406e" opacity=".5"/>
-   <g fill="#eef3f7">
-     <path d="M60 150 Q70 92 116 150 Z"/>
-     <path d="M92 150 Q104 78 150 150 Z"/>
-     <path d="M126 150 Q140 96 178 150 Z"/>
-     <path d="M158 150 Q168 112 192 150 Z"/>
-   </g>
-   <rect x="48" y="150" width="150" height="12" fill="#c9d4dc"/>`)},
- {name:"Taj Mahal",place:"Agra, India",flag:"🇮🇳",region:"Asia",art:A(`
-   <rect x="40" y="40" width="6" height="138" fill="#e7dcc2"/><rect x="194" y="40" width="6" height="138" fill="#e7dcc2"/>
-   <rect x="64" y="60" width="5" height="118" fill="#e7dcc2"/><rect x="171" y="60" width="5" height="118" fill="#e7dcc2"/>
-   <circle cx="43" cy="38" r="6" fill="#e7dcc2"/><circle cx="197" cy="38" r="6" fill="#e7dcc2"/>
-   <rect x="86" y="96" width="68" height="82" fill="#f2ead6"/>
-   <path d="M120 44 C150 44 150 96 120 96 C90 96 90 44 120 44 Z" fill="#f2ead6"/>
-   <rect x="116" y="30" width="8" height="16" fill="#f2ead6"/>
-   <path d="M108 178 L108 130 Q120 112 132 130 L132 178 Z" fill="#cdbf9c"/>
-   <rect x="60" y="178" width="120" height="14" fill="#d8ccab"/>`)},
- {name:"Pyramids of Giza",place:"Giza, Egypt",flag:"🇪🇬",region:"World",art:A(`
-   <circle cx="186" cy="52" r="18" fill="#ffc94d" opacity=".85"/>
-   <polygon points="120,52 196,168 44,168" fill="#cBae6f"/>
-   <polygon points="120,52 196,168 158,168" fill="#a98f53"/>
-   <polygon points="64,96 110,168 18,168" fill="#bda05f"/>
-   <rect y="166" width="240" height="34" fill="#e0c98a"/>`)},
- {name:"Great Wall of China",place:"Beijing, China",flag:"🇨🇳",region:"Asia",art:A(`
-   <path d="M0 150 Q60 110 120 130 Q180 150 240 110 L240 200 L0 200 Z" fill="#3a2c57"/>
-   <path d="M10 150 Q70 108 130 128 L130 150 Q70 130 10 168 Z" fill="#b8a887"/>
-   <path d="M120 130 Q180 150 238 108 L238 128 Q182 168 122 150 Z" fill="#a8987a"/>
-   <g fill="#8f8062"><rect x="26" y="138" width="8" height="8"/><rect x="50" y="128" width="8" height="8"/>
-     <rect x="150" y="138" width="8" height="8"/><rect x="186" y="128" width="8" height="8"/></g>
-   <rect x="108" y="104" width="26" height="30" fill="#9a8a6a"/><polygon points="106,104 121,90 136,104" fill="#7d7052"/>`)}
-];
-
-/* ---------- decks / filters ---------- */
-let custom=[];
-let filter="All";
-let items=[], order=[], pos=0;
-function buildRegionPills(){
-  const regions=["All",...new Set(BUILTIN.map(b=>b.region))];
-  if(custom.length) regions.push("Yours");
-  const row=$("#regionRow"); row.innerHTML="";
-  regions.forEach(r=>{
-    const b=document.createElement("button"); b.className="pill"; b.textContent=r;
-    b.setAttribute("aria-pressed", r===filter?"true":"false");
-    b.addEventListener("click",()=>{ filter=r; buildRegionPills(); rebuild(); });
-    row.appendChild(b);
-  });
-}
-function rebuild(){
-  const all=[...BUILTIN, ...custom];
-  items = filter==="All" ? all : (filter==="Yours" ? custom : all.filter(x=>x.region===filter));
-  order = shuffle([...items.keys()]); pos=0;
-  loadCurrent();
-}
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
-
-/* ---------- reveal engine ---------- */
-let dur=30, running=false, elapsed=0, lastTs=0, raf=null;
-function current(){ return items[order[pos]]; }
-function loadCurrent(){
-  stopLoop(); running=false; elapsed=0; lastTs=0;
-  const it=current();
-  const art=$("#art");
-  if(!it){ art.innerHTML=""; $("#revealName").innerHTML='<div class="pl">No images in this deck — add your own below.</div>'; return; }
-  art.innerHTML = it.art;
-  applyFrame(0);
-  $("#revealName").innerHTML="";
-  $("#startBtn").textContent="▶ Start reveal"; $("#startBtn").disabled=false;
-  $("#points").style.display=""; $("#timer").textContent=fmt(dur);
-}
-function applyFrame(frac){
-  const blur=MAXBLUR*(1-frac);
-  $("#art").style.filter=`blur(${blur.toFixed(1)}px)`;
-  $("#art").style.opacity=(0.30+0.70*frac).toFixed(2);
-  $("#progress").style.width=(frac*100)+"%";
-  $("#points").textContent=Math.max(100,Math.round(1000-900*frac));
-  $("#timer").textContent=fmt(Math.max(0,dur-frac*dur));
-}
-function fmt(s){s=Math.ceil(s);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
-function loop(ts){
-  if(!running) return;
-  if(!lastTs) lastTs=ts;
-  elapsed += (ts-lastTs)/1000; lastTs=ts;
-  const frac=Math.min(1, elapsed/dur);
-  applyFrame(frac);
-  if(frac>=1){ running=false; $("#startBtn").textContent="▶ Start reveal"; $("#points").style.display="none"; return; }
-  raf=requestAnimationFrame(loop);
-}
-function stopLoop(){ if(raf) cancelAnimationFrame(raf); raf=null; }
-function toggleStart(){
-  if(!current()) return;
-  if(running){ running=false; stopLoop(); $("#startBtn").textContent="▶ Resume"; lastTs=0; }
-  else{ running=true; lastTs=0; $("#startBtn").textContent="⏸ Pause"; raf=requestAnimationFrame(loop); }
-}
-function revealAnswer(){
-  running=false; stopLoop(); applyFrame(1); $("#points").style.display="none"; $("#startBtn").textContent="▶ Start reveal";
-  const it=current(); if(!it) return;
-  $("#revealName").innerHTML=`<div class="nm">${it.flag||""} ${it.name}</div>${it.place?`<div class="pl">📍 ${it.place}</div>`:""}`;
-}
-function next(){ if(!items.length) return; pos=(pos+1)%order.length; if(pos===0) order=shuffle([...items.keys()]); loadCurrent(); }
-
-/* ---------- controls ---------- */
-$("#startBtn").addEventListener("click",toggleStart);
-$("#revealBtn").addEventListener("click",revealAnswer);
-$("#nextBtn").addEventListener("click",next);
-$("#shuffleBtn").addEventListener("click",()=>{ order=shuffle([...items.keys()]); pos=0; loadCurrent(); });
-$("#speedRow").addEventListener("click",e=>{ const b=e.target.closest("[data-secs]"); if(!b)return;
-  [...$("#speedRow").children].forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true");
-  dur=Number(b.dataset.secs); loadCurrent(); });
-window.addEventListener("keydown",e=>{ if(e.code==="Space"){e.preventDefault();toggleStart();} if(e.key==="ArrowRight")next(); if(e.key==="Enter")revealAnswer(); });
-
-/* ---------- bring your own ---------- */
-$("#ownFile").addEventListener("change",e=>{
-  const files=[...e.target.files]; if(!files.length) return;
-  let pending=files.length;
-  files.forEach((f,i)=>{
-    const r=new FileReader();
-    r.onload=()=>{
-      const label=$("#ownLabel").value.trim();
-      custom.push({name: label || f.name.replace(/\.[^.]+$/,""), place:"", flag:"📷", region:"Yours",
-        art:`<img src="${r.result}" alt=""/>`});
-      if(--pending===0){ $("#ownLabel").value=""; e.target.value=""; filter="Yours"; buildRegionPills(); rebuild(); }
-    };
-    r.readAsDataURL(f);
-  });
-});
-
-/* init */
-buildRegionPills(); rebuild();
-</script>
 </body>
 </html>

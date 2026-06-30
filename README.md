@@ -4,7 +4,9 @@ A browser game where a famous landmark slowly fades into view and you try to gue
 
 ## Play online
 
-- **Fade In — Guess the Landmark** → https://egertonk.github.io/fade-in/
+**Game Room (landing page):** https://egertonk.github.io/fade-in/
+
+- **Fade In — Guess the Landmark** → https://egertonk.github.io/fade-in/fade/
 - **Where Am I? — Street View Guesser** → https://egertonk.github.io/fade-in/geo/
 
 > The Street View game uses the Google Maps JavaScript API. The key is stored as the
