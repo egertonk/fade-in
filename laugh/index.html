@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Don't Laugh, Don't Speak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#160d2e;--bg-2:#1f1442;--panel:#241650;
+    --gold:#ffc94d;--magenta:#ff4d7d;--cyan:#46d6e0;--green:#46e08a;--cream:#f6f0e2;
+    --muted:rgba(246,240,226,.62);--line:rgba(246,240,226,.14);
+    --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--body)}
+  body{display:flex;flex-direction:column}
+
+  /* top bar */
+  .top{position:fixed;top:0;left:0;right:0;height:5px;background:rgba(255,255,255,.08);z-index:8}
+  .top .bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .1s linear}
+  .brand{position:fixed;top:14px;left:16px;z-index:8;font-family:var(--display);font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px}
+  .brand a{color:var(--muted);font-family:var(--body);font-weight:500;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:10px}
+  .brand a:hover{color:var(--cream);border-color:var(--cream)}
+
+  /* card stage */
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:80px 24px 150px;text-align:center;position:relative}
+  .card{max-width:900px;width:100%;animation:pop .35s cubic-bezier(.2,1.3,.5,1)}
+  @keyframes pop{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}
+  .kind{font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;display:inline-block;border:1px solid var(--line);border-radius:999px;padding:7px 16px}
+  .kind.say{color:var(--magenta)} .kind.twist{color:var(--cyan)} .kind.fact{color:var(--green)}
+  .text{font-family:var(--display);font-weight:800;font-size:clamp(30px,5.4vw,62px);line-height:1.12;margin:0}
+  .imgwrap{max-width:620px;margin:0 auto}
+  .imgwrap img{width:100%;max-height:58vh;object-fit:contain;border-radius:18px;border:1px solid var(--line);box-shadow:0 24px 70px rgba(0,0,0,.5);background:#0d0820}
+  .imgcap{margin-top:14px;font-family:var(--display);font-weight:800;font-size:clamp(20px,3vw,30px)}
+
+  /* controls */
+  .ctrl{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:8}
+  .ctrl button{all:unset;cursor:pointer;width:54px;height:54px;display:flex;align-items:center;justify-content:center;
+    border-radius:14px;background:rgba(13,9,28,.6);border:1px solid var(--line);font-size:22px;backdrop-filter:blur(8px)}
+  .ctrl button:hover{border-color:var(--cream)}
+  .ctrl .big{width:auto;padding:0 22px;font-family:var(--display);font-weight:800;font-size:18px;background:var(--gold);color:#160d2e;border:none}
+  .hint{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);z-index:8;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.05em}
+
+  /* player rail */
+  .rail{position:fixed;bottom:0;left:0;right:0;z-index:8;background:rgba(13,9,28,.72);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+    padding:12px 16px;display:flex;align-items:center;gap:10px;overflow-x:auto}
+  .rail .lab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;flex:0 0 auto}
+  .chip{flex:0 0 auto;cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);
+    border:1px solid var(--line);border-radius:999px;padding:8px 15px;font-family:var(--display);font-weight:800;font-size:15px;transition:.15s}
+  .chip:hover{border-color:var(--cream)}
+  .chip .x{width:9px;height:9px;border-radius:50%;background:var(--green)}
+  .chip.out{opacity:.4;text-decoration:line-through}
+  .chip.out .x{background:var(--magenta)}
+
+  /* full-screen panels */
+  .center{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:28px;z-index:20;overflow:auto;
+    background:radial-gradient(120% 110% at 50% -10%,#311a66 0%,#160d2e 62%)}
+  .center.hide{display:none}
+  .center h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,9vw,80px);margin:0;line-height:1;
+    background:linear-gradient(120deg,var(--magenta),var(--gold) 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .center p{color:var(--muted);max-width:520px;margin:0;font-size:16px}
+  .btn{all:unset;cursor:pointer;text-align:center;padding:13px 26px;border-radius:13px;font-family:var(--display);font-weight:800;font-size:17px;background:var(--gold);color:#160d2e}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--cream)}
+
+  #setupNames{width:min(420px,92vw);display:flex;flex-direction:column;gap:8px}
+  .nameRow{display:flex;gap:8px}
+  .nameRow input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--cream);font-family:var(--body);font-size:15px}
+  .nameRow input:focus{outline:none;border-color:var(--gold)}
+  .nameRow .rm{all:unset;cursor:pointer;color:var(--muted);font-size:18px;padding:0 8px}
+  .addBtn{all:unset;cursor:pointer;color:var(--cyan);font-family:var(--display);font-weight:700;font-size:14px}
+  .rules{font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.7;max-width:480px}
+  .rules b{color:var(--cream)}
+</style>
+</head>
+<body>
+  <div class="top"><div class="bar" id="bar"></div></div>
+  <div class="brand">😂 Don't Laugh, Don't Speak <a href="../">← All games</a></div>
+
+  <div class="stage" id="stage"><div class="card" id="card"></div></div>
+
+  <div class="ctrl" id="ctrl" style="display:none">
+    <button id="prevBtn" title="Previous (←)">⏮</button>
+    <button id="pauseBtn" title="Pause (space)">⏸</button>
+    <button id="nextBtn" class="big" title="Next (→)">Next →</button>
+    <button id="endBtn" title="End game">⏹</button>
+  </div>
+  <div class="hint" id="hint" style="display:none">space = pause · ← → = skip · tap a name below when they laugh or talk</div>
+
+  <div class="rail" id="rail" style="display:none"><span class="lab">Still in:</span></div>
+
+  <!-- setup -->
+  <div class="center" id="setup">
+    <h1>Don't Laugh,<br>Don't Speak</h1>
+    <p>Share your screen on the call. A reel of jokes, dares and silly faces rolls by — first one to laugh, smirk, or make a sound is <b style="color:var(--magenta)">OUT</b>. Last one keeping a straight face wins.</p>
+    <div id="setupNames"></div>
+    <button class="addBtn" id="addPlayer">+ Add player</button>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <button class="btn" id="startBtn">Start the reel 🎬</button>
+      <button class="btn ghost" id="justPlay">Just play (no scoring)</button>
+    </div>
+    <p class="rules">When someone cracks, <b>tap their name</b> in the bar to knock them out. The cards keep rolling on a timer — pause anytime. The 🎤 <b>SAY IT</b> cards are traps: anyone who reads them aloud or refuses is out!</p>
+  </div>
+
+  <!-- winner -->
+  <div class="center hide" id="winner">
+    <h1 id="winTitle">🏆</h1>
+    <p id="winSub"></p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <button class="btn" id="againBtn">Play again</button>
+      <button class="btn ghost" id="homeBtn">← All games</button>
+    </div>
+  </div>
+
+<script>
+/* ---------------- Content (all embedded — no key, no fetch needed) ---------------- */
+const JOKES=[
+  "I told my wife she was drawing her eyebrows too high. She looked surprised.",
+  "I only know 25 letters of the alphabet. I don't know why.",
+  "Why don't skeletons fight each other? They don't have the guts.",
+  "I used to play piano by ear. Now I use my hands.",
+  "What do you call a fish wearing a bowtie? Sofishticated.",
+  "I'm reading a book about anti-gravity. It's impossible to put down.",
+  "My boss told me to have a good day. So I went home.",
+  "Parallel lines have so much in common. It's a shame they'll never meet.",
+  "I tried to catch fog yesterday. Mist.",
+  "Why did the scarecrow win an award? He was outstanding in his field.",
+  "I named my dog '5 miles' so I can tell people I walk 5 miles every day.",
+  "What's orange and sounds like a parrot? A carrot.",
+  "I have a joke about construction, but I'm still working on it.",
+  "Singing in the shower is fun until you get soap in your mouth. Then it's a soap opera.",
+  "Did you hear about the cheese factory that exploded? There was nothing left but de-brie.",
+  "I would tell you a chemistry joke but I know I wouldn't get a reaction.",
+  "Why don't eggs tell jokes? They'd crack each other up.",
+  "I'm on a seafood diet. I see food and I eat it.",
+  "What do you call a bear with no teeth? A gummy bear.",
+  "My therapist says I have a preoccupation with revenge. We'll see about that.",
+  "I couldn't figure out why the ball kept getting bigger. Then it hit me.",
+  "Why did the bicycle fall over? It was two-tired.",
+  "I ordered a chicken and an egg online. I'll let you know.",
+  "Don't trust atoms. They make up everything."
+];
+const DARES=[
+  "Everyone say the word “moist” out loud. Slowly.",
+  "Do your best evil villain laugh — right now.",
+  "Say “I am a strong, capable adult” in a baby voice.",
+  "Everyone make a horse noise. Go.",
+  "Compliment the person above you on the call — in an opera voice.",
+  "Say your full name like you're announcing a boxing champion.",
+  "Whisper “run” as menacingly as you can.",
+  "Read this in your most dramatic movie-trailer voice: “In a world… of meetings.”",
+  "Everyone say “beep beep” and pretend to reverse.",
+  "Do a 3-second impression of your manager. Now.",
+  "Say “I love spreadsheets” like it's the most romantic thing ever.",
+  "Make the sound a dial-up modem makes. We're waiting.",
+  "Say “potato” in five different accents.",
+  "Everyone gasp like you just heard the juiciest gossip."
+];
+const TWISTERS=[
+  "Red lorry, yellow lorry. Five times. Out loud. Go.",
+  "She sells seashells by the seashore.",
+  "How much wood would a woodchuck chuck if a woodchuck could chuck wood?",
+  "Six slippery snails slid slowly seaward.",
+  "Toy boat. Toy boat. Toy boat. Faster.",
+  "Unique New York. Unique New York. You know you need unique New York.",
+  "A proper copper coffee pot.",
+  "Irish wristwatch, Swiss wristwatch."
+];
+const FACTS=[
+  "A group of flamingos is called a “flamboyance.”",
+  "Bananas are berries, but strawberries aren't.",
+  "Wombat poop is cube-shaped.",
+  "A snail can sleep for three years.",
+  "Cows have best friends and get stressed when separated.",
+  "The inventor of the frisbee was turned into a frisbee after he died. True.",
+  "Scotland's national animal is the unicorn.",
+  "Sea otters hold hands when they sleep so they don't drift apart.",
+  "A shrimp's heart is in its head.",
+  "There are more possible chess games than atoms in the observable universe."
+];
+const CAT_CAPS=[
+  "I heard you laughing","Don't you dare smile","Blink and you're out",
+  "This is my serious face","Say the word. I dare you","Not even a giggle",
+  "I'm watching you","Keep a straight face","You smirked, didn't you",
+  "Maximum focus","No laughing allowed","I see that grin"];
+
+/* ---------------- Build a shuffled reel ---------------- */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let imgN=0;
+function catURL(cap){return `https://cataas.com/cat/says/${encodeURIComponent(cap)}?fontSize=46&fontColor=white&t=${imgN++}`;}
+
+function buildReel(){
+  const base=[
+    ...JOKES.map(t=>({kind:'joke',label:'Try not to laugh',cls:'',text:t})),
+    ...DARES.map(t=>({kind:'say',label:'🎤 Say it out loud',cls:'say',text:t})),
+    ...TWISTERS.map(t=>({kind:'twist',label:'🌀 Tongue twister',cls:'twist',text:t})),
+    ...FACTS.map(t=>({kind:'fact',label:'😼 Silly but true',cls:'fact',text:t}))
+  ];
+  shuffle(base);
+  const caps=shuffle([...CAT_CAPS]);
+  const reel=[]; let c=0;
+  base.forEach((card,i)=>{
+    reel.push(card);
+    if(i%3===2 && c<caps.length) reel.push({kind:'img',cap:caps[c++]}); // a cat every ~3 cards
+  });
+  return reel;
+}
+
+/* ---------------- Game state ---------------- */
+let reel=[], idx=0, elapsed=0, paused=false, scoring=true;
+let players=[], timer=null;
+const DUR=7000;
+const $=id=>document.getElementById(id);
+
+/* setup */
+function addNameRow(){
+  const wrap=$('setupNames');
+  if(wrap.children.length>=10) return;
+  const row=document.createElement('div'); row.className='nameRow';
+  row.innerHTML=`<input maxlength="14" placeholder="Player ${wrap.children.length+1}"><button class="rm" title="Remove">×</button>`;
+  row.querySelector('.rm').onclick=()=>{ if(wrap.children.length>1) row.remove(); };
+  wrap.appendChild(row);
+}
+$('addPlayer').onclick=addNameRow;
+addNameRow(); addNameRow(); addNameRow();
+$('startBtn').onclick=()=>start(true);
+$('justPlay').onclick=()=>start(false);
+$('againBtn').onclick=()=>location.reload();
+$('homeBtn').onclick=()=>location.href='../';
+
+function start(useScoring){
+  scoring=useScoring;
+  players=[...$('setupNames').children].map((r,i)=>({name:r.querySelector('input').value.trim()||`Player ${i+1}`,out:false}));
+  if(!scoring) players=[];
+  reel=buildReel(); idx=0; elapsed=0; paused=false;
+  $('setup').classList.add('hide');
+  $('ctrl').style.display='flex'; $('hint').style.display='block';
+  if(scoring && players.length){ buildRail(); $('rail').style.display='flex'; }
+  render(); startTimer();
+}
+
+function buildRail(){
+  const rail=$('rail');
+  [...rail.querySelectorAll('.chip')].forEach(c=>c.remove());
+  players.forEach((p,i)=>{
+    const chip=document.createElement('div'); chip.className='chip'; chip.dataset.i=i;
+    chip.innerHTML=`<span class="x"></span>${escapeHtml(p.name)}`;
+    chip.onclick=()=>toggleOut(i);
+    rail.appendChild(chip);
+  });
+}
+function toggleOut(i){
+  players[i].out=!players[i].out;
+  const chip=$('rail').querySelector(`.chip[data-i="${i}"]`);
+  chip.classList.toggle('out',players[i].out);
+  const alive=players.filter(p=>!p.out);
+  if(players.length>1 && alive.length===1) win(alive[0]);
+}
+
+/* timer + render */
+function startTimer(){ clearInterval(timer); timer=setInterval(()=>{
+  if(paused) return; elapsed+=100; $('bar').style.width=Math.min(100,elapsed/DUR*100)+'%';
+  if(elapsed>=DUR) next();
+},100); }
+function go(d){ idx=(idx+d+reel.length)%reel.length; elapsed=0; render(); }
+function next(){ go(1); } function prev(){ go(-1); }
+$('nextBtn').onclick=next; $('prevBtn').onclick=prev; $('endBtn').onclick=endGame;
+$('pauseBtn').onclick=togglePause;
+function togglePause(){ paused=!paused; $('pauseBtn').textContent=paused?'▶':'⏸'; }
+
+function render(){
+  const c=reel[idx], card=$('card');
+  if(c.kind==='img'){
+    card.innerHTML=`<div class="imgwrap"><img alt="cat" src="${catURL(c.cap)}"><div class="imgcap">“${escapeHtml(c.cap)}”</div></div>`;
+    const img=card.querySelector('img');
+    img.onerror=()=>{ // cataas unavailable → swap in a joke so the reel never stalls
+      const j=JOKES[Math.floor(Math.random()*JOKES.length)];
+      card.innerHTML=`<span class="kind">Try not to laugh</span><p class="text">${escapeHtml(j)}</p>`;
+    };
+  }else{
+    card.innerHTML=`<span class="kind ${c.cls}">${c.label}</span><p class="text">${escapeHtml(c.text)}</p>`;
+  }
+  // restart pop animation
+  card.style.animation='none'; void card.offsetWidth; card.style.animation='';
+}
+
+function win(p){
+  clearInterval(timer);
+  $('winTitle').textContent='🏆 '+p.name;
+  $('winSub').textContent='kept a straight face the longest. Ice cold. ❄️';
+  showEndScreen();
+}
+function endGame(){
+  clearInterval(timer);
+  const alive=players.filter(p=>!p.out);
+  if(scoring && players.length>1 && alive.length>=1){
+    $('winTitle').textContent= alive.length===1 ? '🏆 '+alive[0].name : '🤝 Still standing';
+    $('winSub').textContent= alive.length===1 ? 'is the last one laughing-free!' : alive.map(p=>p.name).join(', ')+' survived the reel.';
+  }else{
+    $('winTitle').textContent='That’s a wrap 🎬';
+    $('winSub').textContent='Good laughs. Run it back?';
+  }
+  showEndScreen();
+}
+function showEndScreen(){ $('ctrl').style.display='none'; $('hint').style.display='none'; $('rail').style.display='none'; $('winner').classList.remove('hide'); }
+
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+document.addEventListener('keydown',e=>{
+  if($('setup').classList.contains('hide')===false||$('winner').classList.contains('hide')===false) return;
+  if(e.code==='Space'){e.preventDefault();togglePause();}
+  else if(e.code==='ArrowRight') next();
+  else if(e.code==='ArrowLeft') prev();
+});
+</script>
+</body>
+</html>
