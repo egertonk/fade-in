@@ -27,35 +27,67 @@
   .brand a{color:var(--muted);font-family:var(--body);font-weight:500;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:10px}
   .brand a:hover{color:var(--cream);border-color:var(--cream)}
 
+  /* turn banner */
+  .turn{position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:5;
+    background:rgba(13,17,23,.85);border:1px solid var(--line);backdrop-filter:blur(8px);
+    border-radius:999px;padding:9px 18px;font-family:var(--display);font-weight:800;font-size:16px;
+    display:none;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .turn .dot{width:14px;height:14px;border-radius:50%;border:2px solid #0d1117}
+
   /* guess panel */
-  .guess{position:absolute;right:14px;bottom:14px;width:340px;max-width:calc(100vw - 28px);background:rgba(13,17,23,.82);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:16px;padding:12px;z-index:6;transition:width .18s,height .18s;box-shadow:0 18px 50px rgba(0,0,0,.5)}
-  .guess.collapsed{width:190px}
+  .guess{position:absolute;right:14px;bottom:14px;width:340px;max-width:calc(100vw - 28px);background:rgba(13,17,23,.82);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:16px;padding:12px;z-index:6;transition:width .18s;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .guess.collapsed{width:200px}
   .guess h3{margin:0 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
   .guess h3 button{all:unset;cursor:pointer;color:var(--muted);font-size:14px}
   #guessMap{width:100%;height:230px;border-radius:10px;background:#1b2230}
   .guess.collapsed #guessMap{height:120px}
-  .btn{display:block;width:100%;margin-top:10px;padding:11px;border:none;border-radius:11px;font-family:var(--display);font-weight:800;font-size:15px;cursor:pointer;background:var(--gold);color:#0d1117;transition:transform .1s,opacity .2s}
+  .btnrow{display:flex;gap:8px;margin-top:10px}
+  .btn{display:block;width:100%;padding:11px;border:none;border-radius:11px;font-family:var(--display);font-weight:800;font-size:15px;cursor:pointer;background:var(--gold);color:#0d1117;transition:transform .1s,opacity .2s}
   .btn:hover{transform:translateY(-1px)}
   .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
   .btn.green{background:var(--green)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);flex:0 0 48px;font-size:18px}
 
   /* result overlay */
-  .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,10,15,.72);backdrop-filter:blur(4px);z-index:10}
+  .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,10,15,.74);backdrop-filter:blur(4px);z-index:10;padding:18px}
   .overlay.show{display:flex}
-  .card{width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
-  .card .big{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1;color:var(--gold)}
-  .card .sub{color:var(--muted);margin:6px 0 18px;font-size:15px}
-  #resultMap{width:100%;height:240px;border-radius:14px;margin-bottom:18px;background:#1b2230}
+  .card{width:min(580px,94vw);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .card .big{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,48px);line-height:1;color:var(--gold)}
+  .card .sub{color:var(--muted);margin:6px 0 16px;font-size:15px}
+  #resultMap{width:100%;height:230px;border-radius:14px;margin-bottom:16px;background:#1b2230}
+
+  /* scoreboards */
+  .board{text-align:left;margin:0 0 18px;display:flex;flex-direction:column;gap:7px}
+  .board .r{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:11px;padding:9px 13px}
+  .board .r.win{border-color:var(--gold);background:rgba(255,201,77,.1)}
+  .board .rank{font-family:var(--mono);font-size:13px;color:var(--muted);width:22px}
+  .board .dot{width:15px;height:15px;border-radius:50%;border:2px solid #0d1117;flex:0 0 auto}
+  .board .nm{font-family:var(--display);font-weight:800;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .board .km{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .board .pts{font-family:var(--display);font-weight:800;color:var(--gold);min-width:64px;text-align:right}
   .row{display:flex;gap:12px}.row .btn{flex:1}
 
-  /* loading + intro */
-  .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px;z-index:20;background:radial-gradient(120% 120% at 50% 0%,#1f1442 0%,#0d1117 60%)}
+  /* full-screen panels (loading / setup / final) */
+  .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;z-index:20;background:radial-gradient(120% 120% at 50% 0%,#1f1442 0%,#0d1117 60%);overflow:auto}
   .center.hide{display:none}
   .center h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,9vw,72px);margin:0;background:linear-gradient(120deg,var(--cyan),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .center p{color:var(--muted);max-width:440px;margin:0}
+  .center p{color:var(--muted);max-width:460px;margin:0}
   .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite}
   @keyframes s{to{transform:rotate(360deg)}}
-  .err{color:var(--magenta);font-family:var(--mono);font-size:13px;max-width:520px;line-height:1.6}
+  .err{color:var(--magenta);font-family:var(--mono);font-size:13px;max-width:520px;line-height:1.6;white-space:pre-line}
+
+  /* mode segmented control + name inputs */
+  .seg{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:4px}
+  .segbtn{all:unset;cursor:pointer;padding:9px 22px;border-radius:9px;font-family:var(--display);font-weight:800;font-size:15px;color:var(--muted)}
+  .segbtn.active{background:var(--gold);color:#0d1117}
+  #partyBox{width:min(380px,90vw);display:flex;flex-direction:column;gap:8px}
+  .nameRow{display:flex;align-items:center;gap:8px}
+  .nameRow .swatch{width:16px;height:16px;border-radius:50%;border:2px solid #0d1117;flex:0 0 auto}
+  .nameRow input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--cream);font-family:var(--body);font-size:15px}
+  .nameRow input:focus{outline:none;border-color:var(--gold)}
+  .nameRow .rm{all:unset;cursor:pointer;color:var(--muted);font-size:18px;padding:0 6px}
+  .addBtn{all:unset;cursor:pointer;color:var(--cyan);font-family:var(--display);font-weight:700;font-size:14px;align-self:flex-start}
+  .addBtn.dim{opacity:.4;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -70,24 +102,30 @@
       <a href="../">← All games</a>
     </div>
     <div class="pill" style="text-align:right">
-      <div class="lab">Score</div>
+      <div class="lab" id="scoreLab">Score</div>
       <div class="val" id="score">0</div>
     </div>
   </div>
 
+  <div class="turn" id="turn"></div>
+
   <div class="guess collapsed" id="guessPanel" style="display:none">
-    <h3>Drop your guess on the map
+    <h3>Drop guesses on the map
       <button id="expandBtn" title="Expand / collapse">⤢</button>
     </h3>
     <div id="guessMap"></div>
-    <button class="btn" id="guessBtn" disabled>Make a guess</button>
+    <div class="btnrow">
+      <button class="btn ghost" id="undoBtn" title="Undo last pin" style="display:none">↶</button>
+      <button class="btn" id="guessBtn" disabled>Drop a pin first</button>
+    </div>
   </div>
 
   <div class="overlay" id="overlay">
     <div class="card">
-      <div class="big" id="rPoints">+0</div>
-      <div class="sub" id="rDist">—</div>
+      <div class="big" id="rTitle">Round</div>
+      <div class="sub" id="rSub">—</div>
       <div id="resultMap"></div>
+      <div class="board" id="roundBoard"></div>
       <div class="row">
         <button class="btn green" id="nextBtn">Next round →</button>
       </div>
@@ -96,13 +134,30 @@
 
   <div class="center" id="loader">
     <div class="spin"></div>
-    <p>Finding a spot somewhere on Earth…</p>
+    <p>Loading the map…</p>
   </div>
 
-  <div class="center hide" id="intro">
+  <!-- Setup / mode select -->
+  <div class="center hide" id="setup">
     <h1>Where Am I?</h1>
-    <p>You're dropped somewhere in the world in Street View. Look around, then drop a pin on the map where you think you are. The closer you are, the more points you score — 5 rounds, 25,000 points up for grabs.</p>
-    <button class="btn" style="max-width:240px" id="startBtn">Start exploring</button>
+    <p id="setupDesc">Get dropped somewhere on Earth in Street View, then drop a pin where you think you are. The closer you are, the more points — 5 rounds.</p>
+    <div class="seg">
+      <button class="segbtn active" data-mode="solo">Solo</button>
+      <button class="segbtn" data-mode="party">Party 🎉</button>
+    </div>
+    <div id="partyBox" style="display:none">
+      <div id="names"></div>
+      <button class="addBtn" id="addPlayer">+ Add player</button>
+    </div>
+    <button class="btn" style="max-width:260px" id="startBtn">Start exploring</button>
+  </div>
+
+  <!-- Final leaderboard -->
+  <div class="center hide" id="final">
+    <h1 id="finalTitle">Game over</h1>
+    <p id="finalSub"></p>
+    <div class="board" id="finalBoard" style="width:min(420px,92vw)"></div>
+    <button class="btn" style="max-width:260px" id="againBtn">Play again</button>
   </div>
 
   <div class="center hide" id="errBox">
@@ -126,11 +181,14 @@ const SPOTS = [
   [49.2827,-123.1207],[33.6844,73.0479],[31.2304,121.4737],[22.3193,114.1694],
   [-33.4489,-70.6693],[6.5244,3.3792],[36.7783,-119.4179],[46.2044,6.1432]
 ];
+const COLORS=['#ffc94d','#46d6e0','#ff4d7d','#46e08a','#b388ff','#ff9f46','#4d9dff','#ff6bd6'];
+const TOTAL=5, MAXP=8;
 
-let sv, panorama, guessMap, resultMap, guessMarker=null, guess=null, actual=null;
-let round=0, score=0, attemptGuard=0;
-const TOTAL=5;
+let sv, panorama, guessMap, resultMap;
+let players=[], totals=[], roundPins=[], resultObjs=[];
+let round=0, currentPlayer=0, phase='placing', actual=null, attemptGuard=0;
 const $=id=>document.getElementById(id);
+const initial=n=>{ n=(n||'').trim(); return n? n[0].toUpperCase() : '?'; };
 
 window.initGame = function(){
   sv = new google.maps.StreetViewService();
@@ -143,16 +201,18 @@ window.initGame = function(){
     center:{lat:20,lng:0}, zoom:1, disableDefaultUI:true, zoomControl:true,
     clickableIcons:false, gestureHandling:'greedy', minZoom:1
   });
-  guessMap.addListener('click', e=>placeGuess(e.latLng));
+  guessMap.addListener('click', e=>placePin(e.latLng));
 
   $('expandBtn').onclick=()=>{ $('guessPanel').classList.toggle('collapsed');
     google.maps.event.trigger(guessMap,'resize'); };
-  $('guessBtn').onclick=submitGuess;
+  $('guessBtn').onclick=primaryAction;
+  $('undoBtn').onclick=undo;
   $('nextBtn').onclick=()=>{ $('overlay').classList.remove('show'); nextRound(); };
-  $('startBtn').onclick=()=>{ $('intro').classList.add('hide'); nextRound(); };
+  $('againBtn').onclick=()=>location.reload();
 
-  // first spot loads behind the intro screen
-  loadSpot(()=>{ $('loader').classList.add('hide'); $('intro').classList.remove('hide'); });
+  setupUI();
+  $('loader').classList.add('hide');
+  $('setup').classList.remove('hide');
 };
 
 window.gm_authFailure = function(){ showError(
@@ -164,15 +224,76 @@ window.gm_authFailure = function(){ showError(
 );};
 
 function showError(msg){
-  $('loader').classList.add('hide'); $('intro').classList.add('hide');
+  ['loader','setup','final'].forEach(i=>$(i).classList.add('hide'));
   $('errMsg').textContent=msg; $('errBox').classList.remove('hide');
 }
 
-function placeGuess(latLng){
-  guess=latLng;
-  if(guessMarker) guessMarker.setMap(null);
-  guessMarker=new google.maps.Marker({position:latLng,map:guessMap});
-  $('guessBtn').disabled=false; $('guessBtn').textContent='Make a guess';
+/* ---------- Setup screen ---------- */
+let mode='solo';
+function setupUI(){
+  document.querySelectorAll('.segbtn').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.segbtn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); mode=b.dataset.mode;
+    const party=mode==='party';
+    $('partyBox').style.display=party?'flex':'none';
+    $('setupDesc').textContent=party
+      ? 'Add your players. Each round everyone drops a pin, then you reveal the spot and see who got closest. Lowest distance wins!'
+      : 'Get dropped somewhere on Earth in Street View, then drop a pin where you think you are. The closer you are, the more points — 5 rounds.';
+    $('startBtn').textContent=party?'Start party 🎉':'Start exploring';
+  });
+  $('addPlayer').onclick=()=>{ if($('names').children.length<MAXP) addNameRow(); };
+  addNameRow(); addNameRow();          // two players to begin
+  $('startBtn').onclick=startGame;
+}
+function addNameRow(){
+  const i=$('names').children.length;
+  const row=document.createElement('div'); row.className='nameRow';
+  row.innerHTML=`<span class="swatch" style="background:${COLORS[i%COLORS.length]}"></span>`+
+    `<input maxlength="14" placeholder="Player ${i+1}">`+
+    `<button class="rm" title="Remove">×</button>`;
+  row.querySelector('.rm').onclick=()=>{ if($('names').children.length>1){ row.remove(); renumber(); } };
+  $('names').appendChild(row);
+  refreshAddBtn();
+}
+function renumber(){
+  [...$('names').children].forEach((row,i)=>{
+    row.querySelector('.swatch').style.background=COLORS[i%COLORS.length];
+    row.querySelector('input').placeholder=`Player ${i+1}`;
+  });
+  refreshAddBtn();
+}
+function refreshAddBtn(){ $('addPlayer').classList.toggle('dim',$('names').children.length>=MAXP); }
+
+function startGame(){
+  if(mode==='solo'){
+    players=[{name:'You',color:COLORS[0],label:'Y'}];
+  }else{
+    players=[...$('names').children].map((row,i)=>{
+      const v=row.querySelector('input').value.trim()||`Player ${i+1}`;
+      return {name:v,color:COLORS[i%COLORS.length],label:initial(v)};
+    });
+  }
+  totals=players.map(()=>0);
+  $('setup').classList.add('hide');
+  $('guessPanel').style.display='block';
+  $('scoreLab').textContent = players.length>1 ? 'Leader' : 'Score';
+  round=0; updateHud();
+  nextRound();
+}
+
+/* ---------- Round flow ---------- */
+function clearPins(){ roundPins.forEach(p=>p&&p.marker.setMap(null)); roundPins=players.map(()=>null); }
+
+function nextRound(){
+  if(round>=TOTAL) return finish();
+  round++; $('round').textContent=round;
+  phase='placing'; currentPlayer=0; actual=null;
+  clearPins();
+  guessMap.setZoom(1); guessMap.setCenter({lat:20,lng:0});
+  refreshControls();
+  $('loader').querySelector('p').textContent='Finding a spot somewhere on Earth…';
+  $('loader').classList.remove('hide');
+  loadSpot(()=>$('loader').classList.add('hide'));
 }
 
 function loadSpot(done){
@@ -181,65 +302,142 @@ function loadSpot(done){
   sv.getPanorama({location:{lat,lng}, radius:80000, source:google.maps.StreetViewSource.OUTDOOR},
     (data,status)=>{
       if(status==='OK' && data && data.location){
-        attemptGuard=0;
-        actual=data.location.latLng;
+        attemptGuard=0; actual=data.location.latLng;
         panorama.setPano(data.location.pano);
         panorama.setPov({heading:Math.random()*360, pitch:0});
-        panorama.setZoom(0);
-        panorama.setVisible(true);
+        panorama.setZoom(0); panorama.setVisible(true);
         done && done();
-      } else { loadSpot(done); }   // try another spot
+      } else { loadSpot(done); }
     });
 }
 
-function nextRound(){
-  if(round>=TOTAL){ return finish(); }
-  round++;
-  $('round').textContent=round;
-  guess=null; if(guessMarker){guessMarker.setMap(null);guessMarker=null;}
-  $('guessBtn').disabled=true; $('guessBtn').textContent='Drop a pin first';
-  guessMap.setZoom(1); guessMap.setCenter({lat:20,lng:0});
-  $('guessPanel').style.display='block';
-  $('loader').classList.remove('hide');
-  loadSpot(()=>$('loader').classList.add('hide'));
+function makePin(latLng,player){
+  return new google.maps.Marker({position:latLng,map:guessMap,
+    label:{text:player.label,color:'#0d1117',fontWeight:'700',fontSize:'11px'},
+    icon:{path:google.maps.SymbolPath.CIRCLE,scale:13,fillColor:player.color,fillOpacity:1,strokeColor:'#0d1117',strokeWeight:2}});
 }
 
-function submitGuess(){
-  if(!guess||!actual) return;
-  const distM=google.maps.geometry.spherical.computeDistanceBetween(guess,actual);
-  const km=distM/1000;
-  const pts=Math.round(5000*Math.exp(-km/2000));
-  score+=pts; $('score').textContent=score.toLocaleString();
+function placePin(latLng){
+  if(phase!=='placing' || currentPlayer>=players.length) return;
+  const i=currentPlayer;
+  if(roundPins[i]){ roundPins[i].marker.setPosition(latLng); roundPins[i].latLng=latLng; }
+  else { roundPins[i]={latLng, marker:makePin(latLng,players[i])}; }
+  refreshControls();
+}
 
-  $('rPoints').textContent='+'+pts.toLocaleString();
-  $('rDist').textContent=km<1 ? `${Math.round(distM)} m away — incredible!`
-    : `${km<10?km.toFixed(1):Math.round(km).toLocaleString()} km away`;
-
-  $('overlay').classList.add('show');
-  if(!resultMap){
-    resultMap=new google.maps.Map($('resultMap'),{disableDefaultUI:true,clickableIcons:false});
+function primaryAction(){
+  if(phase==='ready'){ reveal(); return; }
+  if(!roundPins[currentPlayer]) return;
+  currentPlayer++;
+  if(currentPlayer>=players.length){
+    phase='ready';
+    if(players.length===1){ reveal(); return; }
   }
-  google.maps.event.trigger(resultMap,'resize');
-  new google.maps.Marker({position:actual,map:resultMap,label:{text:'A',color:'#0d1117',fontWeight:'700'},
-    icon:{path:google.maps.SymbolPath.CIRCLE,scale:11,fillColor:'#46e08a',fillOpacity:1,strokeColor:'#0d1117',strokeWeight:2}});
-  new google.maps.Marker({position:guess,map:resultMap,label:{text:'You',color:'#0d1117',fontWeight:'700',fontSize:'10px'},
-    icon:{path:google.maps.SymbolPath.CIRCLE,scale:14,fillColor:'#ffc94d',fillOpacity:1,strokeColor:'#0d1117',strokeWeight:2}});
-  new google.maps.Polyline({path:[guess,actual],map:resultMap,strokeColor:'#ff4d7d',strokeOpacity:.9,strokeWeight:3,
-    icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:1,scale:3},offset:'0',repeat:'14px'}]});
-  const b=new google.maps.LatLngBounds(); b.extend(guess); b.extend(actual);
-  resultMap.fitBounds(b,60);
+  refreshControls();
+}
 
-  $('nextBtn').textContent = round>=TOTAL ? 'See final score →' : 'Next round →';
+function undo(){
+  if(phase==='ready'){ phase='placing'; currentPlayer=players.length-1; refreshControls(); return; }
+  if(currentPlayer>0){ currentPlayer--; refreshControls(); }
+}
+
+function refreshControls(){
+  const solo=players.length===1, banner=$('turn'), btn=$('guessBtn'), undoB=$('undoBtn');
+  undoB.style.display = (!solo && (currentPlayer>0 || phase==='ready')) ? 'block' : 'none';
+
+  if(phase==='ready'){
+    banner.style.display = solo?'none':'flex';
+    banner.innerHTML='<span class="dot" style="background:var(--green)"></span>Everyone’s in — reveal when ready';
+    btn.disabled=false; btn.className='btn green'; btn.textContent='Reveal location 🎯';
+    return;
+  }
+  const p=players[currentPlayer], has=!!roundPins[currentPlayer];
+  if(solo){
+    banner.style.display='none';
+    btn.className='btn'; btn.disabled=!has; btn.textContent=has?'Reveal location 🎯':'Drop a pin first';
+  }else{
+    banner.style.display='flex';
+    banner.innerHTML=`<span class="dot" style="background:${p.color}"></span>${p.name}, drop your pin`;
+    btn.className='btn'; btn.disabled=!has;
+    btn.textContent = has ? `Lock in ${p.name} ▸` : `Waiting for ${p.name}…`;
+  }
+}
+
+/* ---------- Reveal + scoring ---------- */
+function reveal(){
+  phase='revealed';
+  $('turn').style.display='none';
+  resultObjs.forEach(o=>o.setMap(null)); resultObjs=[];
+  if(!resultMap) resultMap=new google.maps.Map($('resultMap'),{disableDefaultUI:true,clickableIcons:false});
+
+  const results=players.map((p,i)=>{
+    const g=roundPins[i].latLng;
+    const m=google.maps.geometry.spherical.computeDistanceBetween(g,actual);
+    const pts=Math.round(5000*Math.exp(-(m/1000)/2000));
+    totals[i]+=pts;
+    return {i,p,g,km:m/1000,pts};
+  }).sort((a,b)=>b.pts-a.pts);
+
+  // draw everything
+  const b=new google.maps.LatLngBounds(); b.extend(actual);
+  resultObjs.push(new google.maps.Marker({position:actual,map:resultMap,label:{text:'★',color:'#0d1117',fontWeight:'700'},
+    icon:{path:google.maps.SymbolPath.CIRCLE,scale:12,fillColor:'#fff',fillOpacity:1,strokeColor:'#0d1117',strokeWeight:2},zIndex:99}));
+  results.forEach(r=>{
+    resultObjs.push(new google.maps.Marker({position:r.g,map:resultMap,
+      label:{text:r.p.label,color:'#0d1117',fontWeight:'700',fontSize:'11px'},
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:12,fillColor:r.p.color,fillOpacity:1,strokeColor:'#0d1117',strokeWeight:2}}));
+    resultObjs.push(new google.maps.Polyline({path:[r.g,actual],map:resultMap,strokeColor:r.p.color,strokeOpacity:.5,strokeWeight:2}));
+    b.extend(r.g);
+  });
+  google.maps.event.trigger(resultMap,'resize');
+  resultMap.fitBounds(b,50);
+
+  // header + board
+  if(players.length===1){
+    const r=results[0];
+    $('rTitle').textContent='+'+r.pts.toLocaleString();
+    $('rSub').textContent = r.km<1 ? `${Math.round(r.km*1000)} m away — incredible!`
+      : `${r.km<10?r.km.toFixed(1):Math.round(r.km).toLocaleString()} km away`;
+    $('roundBoard').innerHTML='';
+  }else{
+    const best=results[0];
+    $('rTitle').textContent=`🏆 ${best.p.name} wins the round`;
+    $('rSub').textContent=`Closest guess: ${best.km<10?best.km.toFixed(1):Math.round(best.km).toLocaleString()} km away`;
+    $('roundBoard').innerHTML=results.map((r,n)=>rowHTML(n+1,r.p,
+      `${r.km<10?r.km.toFixed(1):Math.round(r.km).toLocaleString()} km`,'+'+r.pts.toLocaleString(),n===0)).join('');
+  }
+  $('nextBtn').textContent = round>=TOTAL ? 'See final results →' : 'Next round →';
+  $('overlay').classList.add('show');
+  updateHud();
+}
+
+function rowHTML(rank,player,km,pts,win){
+  return `<div class="r${win?' win':''}"><span class="rank">${rank}</span>`+
+    `<span class="dot" style="background:${player.color}"></span>`+
+    `<span class="nm">${win?'👑 ':''}${escapeHtml(player.name)}</span>`+
+    `<span class="km">${km}</span><span class="pts">${pts}</span></div>`;
+}
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function updateHud(){
+  if(players.length===1){ $('score').textContent=totals[0].toLocaleString(); return; }
+  let bi=0; totals.forEach((t,i)=>{ if(t>totals[bi]) bi=i; });
+  $('score').textContent = totals[bi]===0 ? '—' : `${players[bi].label} · ${totals[bi].toLocaleString()}`;
 }
 
 function finish(){
-  $('guessPanel').style.display='none';
-  $('intro').classList.remove('hide');
-  $('intro').querySelector('h1').textContent='Game over';
-  $('intro').querySelector('p').innerHTML=
-    `You scored <b style="color:var(--gold)">${score.toLocaleString()}</b> out of ${(TOTAL*5000).toLocaleString()} points.`;
-  $('startBtn').textContent='Play again';
-  $('startBtn').onclick=()=>location.reload();
+  $('guessPanel').style.display='none'; $('turn').style.display='none';
+  const ranked=players.map((p,i)=>({p,t:totals[i]})).sort((a,b)=>b.t-a.t);
+  if(players.length===1){
+    $('finalTitle').textContent='Game over';
+    $('finalSub').innerHTML=`You scored <b style="color:var(--gold)">${totals[0].toLocaleString()}</b> of ${(TOTAL*5000).toLocaleString()} points.`;
+    $('finalBoard').innerHTML='';
+  }else{
+    $('finalTitle').textContent='🏆 '+ranked[0].p.name+' wins!';
+    $('finalSub').textContent='Final standings after '+TOTAL+' rounds';
+    $('finalBoard').innerHTML=ranked.map((r,n)=>rowHTML(n+1,r.p,'',r.t.toLocaleString(),n===0)).join('');
+  }
+  $('final').classList.remove('hide');
 }
 </script>
 <!-- The placeholder below is replaced with your GOOGLE_MAPS_API_KEY secret at deploy time by GitHub Actions -->
