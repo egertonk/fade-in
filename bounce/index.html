@@ -29,10 +29,10 @@
   .counter .num.bump{animation:bump .18s ease}
   @keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.28);color:var(--cyan)}100%{transform:scale(1)}}
 
-  /* ball picker */
-  .picker{position:absolute;top:54px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:94vw}
+  /* ball picker — left column so it never covers the drop zone */
+  .picker{position:absolute;top:56px;left:14px;z-index:5;display:flex;flex-direction:column;gap:7px;max-height:calc(100% - 150px);overflow-y:auto;padding-right:4px}
   .chip{cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;background:rgba(11,18,32,.7);border:1px solid var(--line);
-    backdrop-filter:blur(8px);border-radius:999px;padding:7px 13px;font-family:var(--display);font-weight:700;font-size:14px;transition:.14s}
+    backdrop-filter:blur(8px);border-radius:999px;padding:7px 13px;font-family:var(--display);font-weight:700;font-size:14px;transition:.14s;white-space:nowrap}
   .chip:hover{border-color:var(--cream)}
   .chip.sel{background:var(--gold);color:#0b1220;border-color:var(--gold)}
   .chip .em{font-size:17px}
