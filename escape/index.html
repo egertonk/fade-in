@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Escape Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#14110f;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, rgba(255,201,77,.08), transparent 60%),
+    radial-gradient(900px 600px at 90% 110%, rgba(70,214,224,.06), transparent 60%),
+    #0c0a09;
+  position:relative; overflow-x:hidden;
+}
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:50;
+  background:radial-gradient(140% 100% at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+.wrap{max-width:760px; margin:0 auto; padding:80px 20px 60px; position:relative; z-index:2}
+.brand{
+  position:fixed; top:16px; left:18px; z-index:60; font-family:var(--display); font-weight:800;
+  font-size:18px; letter-spacing:.2px; display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  font-family:var(--body); font-weight:600; font-size:12px; color:var(--muted); text-decoration:none;
+  border:1px solid var(--line); border-radius:999px; padding:4px 10px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+.mute{
+  position:fixed; top:16px; right:18px; z-index:60; cursor:pointer;
+  border:1px solid var(--line); border-radius:999px; background:transparent; color:var(--cream);
+  width:38px; height:38px; font-size:16px; transition:.15s;
+}
+.mute:hover{border-color:rgba(246,240,226,.35)}
+
+.panel{
+  background:linear-gradient(180deg, rgba(20,17,15,.92), rgba(12,10,9,.92));
+  border:1px solid var(--line); border-radius:20px; padding:28px 26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(246,240,226,.04);
+}
+h1{font-family:var(--display); font-weight:800; font-size:clamp(30px,7vw,52px); line-height:1.02; margin:0 0 8px}
+h2{font-family:var(--display); font-weight:800; font-size:clamp(20px,4vw,28px); margin:0 0 6px}
+.tag{font-family:var(--mono); font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin:0 0 14px}
+p.lead{color:var(--muted); font-size:15px; line-height:1.55; margin:0 0 20px}
+
+.howto{border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:20px 0; background:rgba(0,0,0,.2)}
+.howto .lbl{font-family:var(--mono); font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:8px}
+.howto ol{margin:0; padding-left:18px; color:var(--muted); font-size:14px; line-height:1.6}
+
+.chips{display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 24px}
+.chip{
+  font-family:var(--display); font-weight:800; font-size:14px; cursor:pointer;
+  border:1px solid var(--line); border-radius:12px; background:transparent; color:var(--cream);
+  padding:10px 16px; transition:.15s;
+}
+.chip:hover{border-color:rgba(246,240,226,.4)}
+.chip.sel{background:var(--gold); color:#1a1206; border-color:var(--gold)}
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:16px; cursor:pointer;
+  border-radius:13px; padding:13px 22px; transition:.15s; border:1px solid transparent;
+}
+.btn.primary{background:var(--gold); color:#1a1206}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:rgba(246,240,226,.4)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+
+.hud{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px;
+}
+.timer{
+  font-family:var(--mono); font-weight:700; font-size:26px; letter-spacing:1px;
+  border:1px solid var(--line); border-radius:12px; padding:6px 14px; background:rgba(0,0,0,.3);
+}
+.timer.warn{color:var(--magenta); border-color:rgba(255,77,125,.5); animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.55}}
+.progress{font-family:var(--mono); font-size:12px; color:var(--muted); letter-spacing:1px}
+.dots{display:flex; gap:7px; margin-top:6px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--line)}
+.dot.done{background:var(--green)}
+.dot.cur{background:var(--gold); box-shadow:0 0 0 3px rgba(255,201,77,.18)}
+
+.station h2{margin-bottom:2px}
+.station .kicker{font-family:var(--mono); font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--magenta); margin-bottom:12px}
+.note{
+  border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:16px 0;
+  background:
+    repeating-linear-gradient(180deg, rgba(246,240,226,.02) 0 27px, transparent 27px 28px),
+    rgba(0,0,0,.25);
+  line-height:1.7; font-size:15px;
+}
+.cipher{font-family:var(--mono); font-size:clamp(16px,4.5vw,22px); letter-spacing:2px; color:var(--gold); word-break:break-word}
+.clue{font-family:var(--mono); font-size:14px; color:var(--cyan); line-height:1.9}
+.big{font-family:var(--display); font-weight:800; font-size:clamp(26px,7vw,40px); letter-spacing:3px; color:var(--cream)}
+.hintbox{border:1px dashed rgba(70,214,224,.4); border-radius:12px; padding:12px 14px; margin-top:14px; color:var(--cyan); font-size:14px; line-height:1.5; display:none}
+.hintbox.show{display:block}
+
+.entry{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap}
+.entry input{
+  flex:1; min-width:160px; font-family:var(--mono); font-size:18px; letter-spacing:2px; text-transform:uppercase;
+  background:rgba(0,0,0,.35); border:1px solid var(--line); border-radius:12px; padding:13px 15px; color:var(--cream);
+}
+.entry input:focus{outline:none; border-color:var(--gold)}
+.entry input.shake{animation:shake .4s; border-color:var(--magenta)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.msg{font-family:var(--mono); font-size:13px; margin-top:12px; min-height:18px}
+.msg.err{color:var(--magenta)}
+.msg.ok{color:var(--green)}
+
+.flash{position:fixed; inset:0; background:var(--green); opacity:0; pointer-events:none; z-index:40; transition:opacity .12s}
+.flash.on{opacity:.28}
+
+.center{text-align:center}
+.timeleft{font-family:var(--mono); font-size:34px; color:var(--gold); font-weight:700; margin:10px 0 22px}
+.confetti{position:fixed; inset:0; pointer-events:none; z-index:45; overflow:hidden}
+.confetti i{position:absolute; top:-12px; width:9px; height:14px; opacity:.9; animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+.hide{display:none !important}
+.footnote{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:16px; letter-spacing:1px}
+kbd{font-family:var(--mono); background:rgba(255,201,77,.12); border:1px solid rgba(255,201,77,.3); border-radius:6px; padding:1px 6px; color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="brand">🔐 Escape Room <a href="../">← All games</a></div>
+<button class="mute" id="muteBtn" title="Toggle sound">🔊</button>
+<div class="flash" id="flash"></div>
+<div class="confetti hide" id="confetti"></div>
+
+<div class="wrap">
+
+  <!-- SETUP -->
+  <section id="setup" class="panel">
+    <p class="tag">Cooperative • Timed • Remote-friendly</p>
+    <h1>Escape the Server Room</h1>
+    <p class="lead">The overnight deploy went sideways and the door maglocks slammed shut. Backup power is draining fast. Work through the terminal's failsafe puzzles as a team, feed each unlock code into the next station, and pop the door before the room goes dark.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <ol>
+        <li>You're locked in. Solve each puzzle together to find a code — enter it to unlock the next one.</li>
+        <li>Crack all of them before the timer runs out to escape.</li>
+        <li>Stuck? Hit Hint.</li>
+      </ol>
+    </div>
+
+    <p class="lead" style="margin-bottom:8px"><strong>Remote teams:</strong> share your screen, solve out loud together, and let one host type the answers.</p>
+
+    <div style="font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:10px">Choose your timer</div>
+    <div class="chips" id="timerChips">
+      <button class="chip" data-min="10">10 min</button>
+      <button class="chip sel" data-min="15">15 min</button>
+      <button class="chip" data-min="20">20 min</button>
+      <button class="chip" data-min="0">No timer</button>
+    </div>
+
+    <button class="btn primary" id="enterBtn">Enter the room ▶</button>
+    <div class="footnote">no external deps except Google Fonts • audio starts on first click</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="panel hide">
+    <div class="hud">
+      <div>
+        <div class="progress" id="progLabel">Puzzle 1 of 5</div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="timer" id="timer">15:00</div>
+    </div>
+    <div class="station" id="station"></div>
+  </section>
+
+  <!-- TIME UP -->
+  <section id="timeup" class="panel center hide">
+    <p class="tag" style="color:var(--magenta)">System offline</p>
+    <h1>Time's up! 🔒</h1>
+    <p class="lead">Backup power drained and the maglocks stayed shut. But the failsafe is still primed — you can keep working, or reboot the whole scenario.</p>
+    <div class="row" style="justify-content:center">
+      <button class="btn primary" id="keepBtn">Keep going</button>
+      <button class="btn ghost" id="restartBtn1">Restart</button>
+    </div>
+  </section>
+
+  <!-- SUCCESS -->
+  <section id="win" class="panel center hide">
+    <p class="tag" style="color:var(--green)">Maglocks disengaged</p>
+    <h1>🎉 You escaped!</h1>
+    <p class="lead">The door hisses open and cool hallway air rushes in. The deploy can wait — you got out.</p>
+    <div class="timeleft" id="timeLeftMsg">Time remaining: 00:00</div>
+    <button class="btn primary" id="againBtn">Play again</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Audio (Web Audio, generated, muted until first click) ----------
+  var muted=false, ac=null;
+  function ctx(){ if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ac=null;} } return ac; }
+  function tone(freq,dur,type,gain,when){
+    if(muted) return; var c=ctx(); if(!c) return;
+    var t=c.currentTime+(when||0);
+    var o=c.createOscillator(), g=c.createGain();
+    o.type=type||"sine"; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(gain||0.18,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+0.02);
+  }
+  function sndClick(){ tone(660,0.06,"square",0.12); }
+  function sndUnlock(){ tone(523,0.09,"square",0.14,0); tone(784,0.12,"square",0.14,0.09); tone(1047,0.18,"triangle",0.15,0.2); }
+  function sndErr(){ tone(180,0.18,"sawtooth",0.14); tone(120,0.22,"sawtooth",0.12,0.05); }
+  function sndWin(){ [523,659,784,1047,1319].forEach(function(f,i){ tone(f,0.28,"triangle",0.16,i*0.13); }); }
+
+  var muteBtn=document.getElementById("muteBtn");
+  muteBtn.addEventListener("click",function(){ muted=!muted; muteBtn.textContent=muted?"🔇":"🔊"; if(!muted){ctx(); sndClick();} });
+
+  // ---------- Helpers ----------
+  function $(id){ return document.getElementById(id); }
+  function norm(s){ return (s||"").trim().toLowerCase().replace(/\s+/g," "); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // ---------- Puzzles ----------
+  // Narrative chain. Each answer feeds the next; final combines earlier findings.
+  var puzzles=[
+    {
+      kicker:"Station 01 — Sticky note by the terminal",
+      title:"The Caesar patch",
+      render:function(){ return ''+
+        '<div class="note">A note is taped to the monitor in a sysadmin\'s handwriting:<br><br>'+
+        '<span class="cipher">"XMJ WJXHZJ BTWI NX RFLNH"</span><br><br>'+
+        'Scrawled underneath: <span class="clue">shift = 5 (each letter moved 5 forward)</span></div>'+
+        '<p class="lead">Decode the message. The <strong>last word</strong> is your unlock code.</p>';
+      },
+      hint:"Shift every letter BACK by 5. X→S, M→H, J→E … the phrase reads \"THE RESCUE WORD IS MAGIC\". Enter the final word.",
+      answers:["magic"],
+      okmsg:"Terminal accepts: MAGIC — rescue word confirmed."
+    },
+    {
+      kicker:"Station 02 — The blinking keypad",
+      title:"Sequence lock",
+      render:function(){ return ''+
+        '<div class="note">The keypad display flashes a broken sequence, one number burnt out (shown as ?):<br><br>'+
+        '<span class="big">2 · 4 · 8 · 16 · ?</span><br><br>'+
+        '<span class="clue">Panel label: "each rack doubles the last"</span></div>'+
+        '<p class="lead">Enter the missing number to complete the sequence.</p>';
+      },
+      hint:"Each term is double the previous: 2, 4, 8, 16 … so the next is 16 × 2.",
+      answers:["32"],
+      okmsg:"Keypad chirps: 32 — power rail sequence restored."
+    },
+    {
+      kicker:"Station 03 — Riddle etched on the server door",
+      title:"The 4-digit riddle",
+      render:function(){ return ''+
+        '<div class="note">An engraved brass plate poses a riddle guarding a 4-digit PIN:<br><br>'+
+        '<span class="clue">"I am a number.<br>'+
+        'My first digit is the number of legs on a spider.<br>'+
+        'My second is how many sides a triangle has.<br>'+
+        'My third is the number of days in a week.<br>'+
+        'My last is the number of fingers on one hand."</span></div>'+
+        '<p class="lead">Enter the 4-digit PIN.</p>';
+      },
+      hint:"Spider legs = 8, triangle sides = 3, days in a week = 7, fingers on one hand = 5. Read them in order.",
+      answers:["8375"],
+      okmsg:"Lock clicks: 8375 — server door PIN accepted."
+    },
+    {
+      kicker:"Station 04 — Scrambled root password",
+      title:"Anagram vault",
+      render:function(){ return ''+
+        '<div class="note">The backup vault won\'t open without the root password. A hint card reads:<br><br>'+
+        '"The password is an anagram of the letters below — it\'s a common word for a way in."<br><br>'+
+        '<span class="cipher">D · O · R · O · W · S · S · A · P</span><br><br>'+
+        '<span class="clue">9 letters. Ironically, it IS one.</span></div>'+
+        '<p class="lead">Unscramble the letters into the password.</p>';
+      },
+      hint:"Nine letters, a word for a secret way in that you type to log in… it spells PASSWORD.",
+      answers:["password"],
+      okmsg:"Vault unlocks: PASSWORD — root access granted."
+    },
+    {
+      kicker:"Station 05 — The door console",
+      title:"Final combination",
+      render:function(){ return ''+
+        '<div class="note">The exit console needs a master code built from everything you found:<br><br>'+
+        '<span class="clue">'+
+        '① Letters in the rescue word from Station 1 (MAGIC)<br>'+
+        '② The missing number from Station 2<br>'+
+        '③ The last two digits of the Station 3 PIN'+
+        '</span><br><br>'+
+        'Combine them in order, no spaces: <span class="cipher">①②③</span></div>'+
+        '<p class="lead">MAGIC has 5 letters → so ① = 5. Enter the full master code to open the door.</p>';
+      },
+      hint:"① = number of letters in MAGIC = 5. ② = 32. ③ = last two digits of 8375 = 75. Join them: 5, then 32, then 75.",
+      answers:["53275"],
+      okmsg:"MASTER CODE 53275 — maglocks disengaging…"
+    }
+  ];
+
+  // ---------- State ----------
+  var timerMin=15, remaining=0, tHandle=null, running=false, idx=0, keptGoing=false;
+
+  // timer chips
+  var chips=$("timerChips");
+  chips.addEventListener("click",function(e){
+    var b=e.target.closest(".chip"); if(!b) return;
+    ctx(); sndClick();
+    [].forEach.call(chips.children,function(c){c.classList.remove("sel");});
+    b.classList.add("sel"); timerMin=parseInt(b.getAttribute("data-min"),10);
+  });
+
+  function fmt(s){ if(s<0)s=0; var m=Math.floor(s/60), ss=s%60; return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss; }
+
+  function show(id){ ["setup","game","timeup","win"].forEach(function(x){ $(x).classList.add("hide"); }); $(id).classList.remove("hide"); }
+
+  function startTimer(){
+    if(tHandle){clearInterval(tHandle); tHandle=null;}
+    running = timerMin>0;
+    if(timerMin<=0){ $("timer").textContent="∞"; $("timer").classList.remove("warn"); return; }
+    remaining = timerMin*60;
+    $("timer").textContent=fmt(remaining);
+    $("timer").classList.remove("warn");
+    tHandle=setInterval(function(){
+      remaining--;
+      $("timer").textContent=fmt(remaining);
+      if(remaining<=60) $("timer").classList.add("warn");
+      if(remaining<=0){ clearInterval(tHandle); tHandle=null; running=false; onTimeUp(); }
+    },1000);
+  }
+
+  function onTimeUp(){ if(!muted){ sndErr(); } show("timeup"); }
+
+  function renderDots(){
+    var d=$("dots"); d.innerHTML="";
+    for(var i=0;i<puzzles.length;i++){
+      var el=document.createElement("div");
+      el.className="dot"+(i<idx?" done":(i===idx?" cur":""));
+      d.appendChild(el);
+    }
+  }
+
+  function renderStation(){
+    var p=puzzles[idx];
+    $("progLabel").textContent="Puzzle "+(idx+1)+" of "+puzzles.length;
+    renderDots();
+    var isNum = /^\d+$/.test(p.answers[0]);
+    var s=$("station");
+    s.innerHTML=''+
+      '<div class="kicker">'+esc(p.kicker)+'</div>'+
+      '<h2>'+esc(p.title)+'</h2>'+
+      p.render()+
+      '<div class="entry">'+
+        '<input id="ans" autocomplete="off" spellcheck="false" '+(isNum?'inputmode="numeric"':'')+' placeholder="Enter code…" aria-label="Answer">'+
+        '<button class="btn primary" id="checkBtn">Check</button>'+
+        '<button class="btn ghost" id="hintBtn">Hint</button>'+
+      '</div>'+
+      '<div class="msg" id="msg"></div>'+
+      '<div class="hintbox" id="hintbox"><strong>Hint:</strong> '+esc(p.hint)+'<div class="footnote" style="margin-top:6px">'+(timerMin>0?'(−60s from the clock)':'(no timer running)')+'</div></div>';
+
+    var inp=$("ans");
+    inp.focus();
+    $("checkBtn").addEventListener("click",check);
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter") check(); });
+    $("hintBtn").addEventListener("click",function(){
+      ctx();
+      var hb=$("hintbox");
+      if(!hb.classList.contains("show")){
+        hb.classList.add("show");
+        if(timerMin>0 && running){ remaining=Math.max(1,remaining-60); $("timer").textContent=fmt(remaining); }
+      }
+      sndClick();
+    });
+  }
+
+  function flash(){ var f=$("flash"); f.classList.add("on"); setTimeout(function(){ f.classList.remove("on"); },160); }
+
+  function check(){
+    ctx();
+    var p=puzzles[idx], inp=$("ans"), msg=$("msg");
+    var val=norm(inp.value);
+    var ok=p.answers.some(function(a){ return norm(a)===val; });
+    if(val==="") return;
+    if(ok){
+      sndUnlock(); flash();
+      msg.className="msg ok"; msg.textContent="✔ "+p.okmsg;
+      inp.disabled=true;
+      var cb=$("checkBtn"), hb=$("hintBtn");
+      if(cb)cb.disabled=true; if(hb)hb.disabled=true;
+      setTimeout(function(){
+        idx++;
+        if(idx>=puzzles.length){ winGame(); }
+        else { renderStation(); }
+      },820);
+    } else {
+      sndErr();
+      inp.classList.add("shake");
+      setTimeout(function(){ inp.classList.remove("shake"); },420);
+      msg.className="msg err"; msg.textContent="✖ Access denied — try again.";
+      inp.select();
+    }
+  }
+
+  function winGame(){
+    if(tHandle){clearInterval(tHandle); tHandle=null;}
+    running=false;
+    show("win");
+    var txt = timerMin>0 ? "Time remaining: "+fmt(remaining) : "No timer — pure teamwork.";
+    $("timeLeftMsg").textContent=txt;
+    sndWin();
+    confettiBurst();
+  }
+
+  function confettiBurst(){
+    var c=$("confetti"); c.classList.remove("hide"); c.innerHTML="";
+    var cols=["#ffc94d","#46e08a","#ff4d7d","#46d6e0","#f6f0e2"];
+    for(var i=0;i<120;i++){
+      var s=document.createElement("i");
+      s.style.left=Math.random()*100+"vw";
+      s.style.background=cols[i%cols.length];
+      s.style.animationDuration=(2.2+Math.random()*2.2)+"s";
+      s.style.animationDelay=(Math.random()*0.8)+"s";
+      s.style.transform="rotate("+(Math.random()*360)+"deg)";
+      c.appendChild(s);
+    }
+    setTimeout(function(){ c.classList.add("hide"); },6000);
+  }
+
+  // ---------- Flow buttons ----------
+  $("enterBtn").addEventListener("click",function(){
+    ctx(); sndClick();
+    idx=0; keptGoing=false;
+    show("game");
+    startTimer();
+    renderStation();
+  });
+
+  $("keepBtn").addEventListener("click",function(){
+    ctx(); sndClick();
+    keptGoing=true;
+    show("game");
+    // no timer once time is up; keep solving
+    $("timer").textContent="00:00"; $("timer").classList.add("warn");
+    renderStation();
+  });
+
+  function fullRestart(){
+    ctx(); sndClick();
+    if(tHandle){clearInterval(tHandle); tHandle=null;}
+    idx=0; running=false; keptGoing=false;
+    show("setup");
+  }
+  $("restartBtn1").addEventListener("click",fullRestart);
+  $("againBtn").addEventListener("click",fullRestart);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trivia Game Show</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#0b1f5a; --tile:#1030a0;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  color:var(--cream); font-family:var(--body); min-height:100vh; overflow-x:hidden;
+  background:
+    radial-gradient(1200px 700px at 80% -10%, rgba(70,214,224,.10), transparent 60%),
+    radial-gradient(1000px 800px at -10% 110%, rgba(255,77,125,.10), transparent 55%),
+    linear-gradient(160deg,#061236 0%, #0a1c52 45%, #071445 100%);
+  background-attachment:fixed;
+}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:78px 20px 60px}
+.brand{
+  position:fixed; top:14px; left:16px; z-index:50;
+  font-family:var(--display); font-weight:800; font-size:18px; letter-spacing:.3px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+  transition:.18s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+.mutebtn{
+  position:fixed; top:14px; right:16px; z-index:50; cursor:pointer;
+  font-family:var(--mono); font-size:13px; color:var(--cream);
+  background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:999px; padding:7px 13px;
+  transition:.18s;
+}
+.mutebtn:hover{border-color:rgba(246,240,226,.35)}
+.label{font-family:var(--mono);text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--muted)}
+
+/* ---------- Buttons ---------- */
+.btn{
+  font-family:var(--display); font-weight:800; font-size:16px; cursor:pointer;
+  border-radius:13px; padding:13px 22px; border:1px solid var(--line); background:transparent; color:var(--cream);
+  transition:transform .12s, box-shadow .2s, background .2s, border-color .2s;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:var(--gold); color:#241a02; border-color:transparent; box-shadow:0 10px 30px rgba(255,201,77,.28)}
+.btn.primary:hover{box-shadow:0 16px 40px rgba(255,201,77,.4)}
+.btn.small{font-size:14px;padding:9px 15px;border-radius:11px}
+.btn.green{background:var(--green);color:#062615;border-color:transparent}
+.btn.magenta{background:var(--magenta);color:#2a0713;border-color:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ---------- Setup ---------- */
+.hero-title{font-family:var(--display);font-weight:800;line-height:.98;letter-spacing:-1px;
+  font-size:clamp(44px,9vw,96px); margin:0 0 6px;
+  background:linear-gradient(120deg,var(--gold),#fff3d0 40%,var(--cyan));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 40px rgba(255,201,77,.12);
+}
+.hero-sub{font-size:18px;color:var(--muted);margin:0 0 30px;max-width:640px}
+.card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:20px;padding:24px}
+.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:start}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.howto{border:1px dashed rgba(255,201,77,.4);border-radius:18px;padding:20px 22px;background:rgba(255,201,77,.04)}
+.howto h3{font-family:var(--display);font-weight:800;margin:0 0 12px;font-size:20px;color:var(--gold)}
+.howto ol{margin:0;padding-left:20px;line-height:1.7;font-size:15px}
+.howto li{margin-bottom:7px}
+.teamrow{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.teamrow .dot{width:14px;height:14px;border-radius:4px;flex:0 0 auto}
+.teamrow input{
+  flex:1;font-family:var(--body);font-size:15px;color:var(--cream);
+  background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:11px;padding:11px 13px;
+}
+.teamrow input:focus{outline:none;border-color:rgba(255,201,77,.5)}
+.teamrow .rm{cursor:pointer;color:var(--muted);font-size:20px;padding:2px 8px;border-radius:8px}
+.teamrow .rm:hover{color:var(--magenta)}
+.note{font-size:13px;color:var(--muted);margin-top:14px;line-height:1.5}
+
+/* ---------- Board ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.roundtag{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,44px);line-height:1}
+.roundtag small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.board{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
+  border-radius:18px;padding:8px;background:rgba(0,0,0,.22);
+  box-shadow:0 0 0 1px var(--line),0 30px 80px rgba(0,0,0,.4),0 0 60px rgba(70,214,224,.06) inset;
+}
+.cat{
+  font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.3px;
+  font-size:clamp(11px,1.4vw,16px);text-align:center;line-height:1.05;
+  display:flex;align-items:center;justify-content:center;
+  padding:12px 6px;min-height:66px;border-radius:11px;
+  background:linear-gradient(180deg,#153ec0,#0e2a86);color:#fff;
+  box-shadow:0 6px 18px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.05) inset;
+}
+.tile{
+  position:relative;cursor:pointer;border:none;color:var(--gold);
+  font-family:var(--display);font-weight:800;font-size:clamp(16px,2.6vw,30px);
+  background:linear-gradient(180deg,var(--tile),#0a238a);
+  border-radius:11px;min-height:clamp(52px,10vh,86px);
+  display:flex;align-items:center;justify-content:center;
+  text-shadow:0 2px 0 rgba(0,0,0,.35);
+  box-shadow:0 6px 16px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.05) inset;
+  transition:transform .12s, box-shadow .2s, filter .2s;
+}
+.tile:hover:not(.used){transform:translateY(-3px) scale(1.02);filter:brightness(1.18);box-shadow:0 12px 28px rgba(0,0,0,.4),0 0 0 1px rgba(255,201,77,.35) inset}
+.tile.used{cursor:default;color:transparent;background:rgba(255,255,255,.02);box-shadow:0 0 0 1px var(--line) inset;text-shadow:none}
+.tile.flip{animation:flip .5s ease}
+@keyframes flip{0%{transform:rotateX(0)}45%{transform:rotateX(90deg);filter:brightness(1.5)}100%{transform:rotateX(0)}}
+
+/* ---------- Scoreboard ---------- */
+.scoreboard{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.scorecard{
+  flex:1;min-width:130px;border:1px solid var(--line);border-radius:14px;padding:13px 16px;
+  background:rgba(255,255,255,.03);transition:.2s;position:relative;overflow:hidden;
+}
+.scorecard.leader{border-color:var(--gold);box-shadow:0 0 30px rgba(255,201,77,.2)}
+.scorecard.leader::after{content:"👑";position:absolute;top:8px;right:10px;font-size:16px}
+.scorecard .nm{font-family:var(--display);font-weight:800;font-size:16px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scorecard .sc{font-family:var(--mono);font-size:24px;font-weight:700}
+.scorecard .bar{width:14px;height:14px;border-radius:4px;display:inline-block;margin-right:7px;vertical-align:-1px}
+
+/* ---------- Clue overlay ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:22px;
+  background:rgba(4,10,32,.86);backdrop-filter:blur(6px);
+}
+.overlay.show{display:flex}
+.cluepanel{
+  width:min(920px,96vw);border-radius:24px;padding:clamp(28px,5vw,56px);text-align:center;
+  background:linear-gradient(165deg,#123bb8,#0a2072);
+  box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08) inset,0 0 90px rgba(70,214,224,.1);
+  animation:scalein .38s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes scalein{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.cluecat{font-family:var(--mono);text-transform:uppercase;letter-spacing:3px;font-size:13px;color:var(--cyan);margin-bottom:6px}
+.clueval{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,54px);color:var(--gold);margin-bottom:20px}
+.cluetext{font-family:var(--display);font-weight:600;font-size:clamp(22px,4.4vw,40px);line-height:1.22;margin-bottom:22px}
+.answer{
+  font-family:var(--display);font-weight:800;font-size:clamp(22px,4.4vw,38px);color:var(--green);
+  margin:6px 0 24px;min-height:1.2em;
+}
+.answer .lab{display:block;font-family:var(--mono);font-weight:400;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.awardrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.hint{font-size:13px;color:var(--muted);margin-top:16px;font-family:var(--mono)}
+
+/* ---------- Final ---------- */
+.finalwrap{max-width:820px;margin:0 auto;text-align:center}
+.finalcat{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,52px);color:var(--gold);margin:6px 0 4px}
+.wagerlist{display:flex;flex-direction:column;gap:12px;margin:24px 0;text-align:left}
+.wagerlist .row{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:14px 16px;flex-wrap:wrap}
+.wagerlist .row .nm{font-family:var(--display);font-weight:800;font-size:17px;flex:1;min-width:120px}
+.wagerlist .row .avail{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.wagerlist input[type=number]{width:130px;font-family:var(--mono);font-size:16px;color:var(--cream);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.wagerlist input:focus{outline:none;border-color:rgba(255,201,77,.5)}
+.judgebtns{display:flex;gap:8px}
+
+/* ---------- Winner ---------- */
+.winwrap{text-align:center;position:relative;z-index:2}
+.trophy{font-size:clamp(70px,16vw,150px);animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.winname{font-family:var(--display);font-weight:800;font-size:clamp(40px,10vw,96px);line-height:1;
+  background:linear-gradient(120deg,var(--gold),#fff3d0,var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:1}
+.finalscores{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:26px 0}
+.finalscores .fs{border:1px solid var(--line);border-radius:14px;padding:14px 20px;min-width:120px}
+.finalscores .fs .nm{font-family:var(--display);font-weight:800}
+.finalscores .fs .sc{font-family:var(--mono);font-size:22px;font-weight:700;margin-top:4px}
+
+.hidden{display:none!important}
+.center{text-align:center}
+.mt{margin-top:24px}
+</style>
+</head>
+<body>
+<div class="brand">🎪 Trivia Game Show <a href="../">← All games</a></div>
+<div class="mutebtn" id="muteBtn" onclick="toggleMute()">🔊 Sound on</div>
+
+<div class="wrap">
+
+<!-- ============ SETUP ============ -->
+<section id="setup">
+  <h1 class="hero-title">Trivia Game Show</h1>
+  <p class="hero-sub">A Jeopardy-style trivia showdown for your team. Share your screen, pick tiles, read the clues aloud, and let the fastest brains win the points.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="label">Your teams</div>
+      <div id="teamList" class="mt"></div>
+      <button class="btn ghost small" id="addTeamBtn" onclick="addTeam()">＋ Add team</button>
+      <p class="note">Add 2–4 teams. Names default to “Team 1/2/3”. Use the 🔊 toggle (top-right) to mute all sound — audio only starts once you click something.</p>
+      <div class="mt">
+        <button class="btn primary" style="font-size:19px;padding:15px 30px" onclick="startShow()">Start the show ▶</button>
+      </div>
+    </div>
+
+    <div class="howto">
+      <h3>How to play</h3>
+      <ol>
+        <li>Pick a tile (e.g. <b>Movies for 400</b>) → read the clue aloud.</li>
+        <li>The team that shouts the right answer gets the points — you tap their name to award it.</li>
+        <li>Clear the board, then <b>Round 2</b> doubles the values.</li>
+        <li>Finish with a <b>Final round</b> where teams wager their points on one last clue.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOARD ============ -->
+<section id="boardScreen" class="hidden">
+  <div class="topbar">
+    <div class="roundtag"><small id="roundLabel">Round 1</small><span id="roundValues">200 – 1000</span></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn ghost small" id="nextRoundBtn" onclick="nextRound()">Next round →</button>
+    </div>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="scoreboard" id="scoreboard"></div>
+</section>
+
+<!-- ============ FINAL ============ -->
+<section id="finalScreen" class="hidden">
+  <div class="finalwrap">
+    <div class="label">Final Round</div>
+    <div class="finalcat" id="finalCat">Category</div>
+
+    <!-- wager step -->
+    <div id="finalWagerStep">
+      <p class="hero-sub center" style="margin:14px auto 0">Each team secretly decides a wager (0 up to their current score). Host, type each wager in — then reveal the clue.</p>
+      <div class="wagerlist" id="wagerList"></div>
+      <button class="btn primary" onclick="revealFinalClue()">Reveal the final clue ▶</button>
+    </div>
+
+    <!-- clue step -->
+    <div id="finalClueStep" class="hidden">
+      <div class="cluetext mt" id="finalClueText"></div>
+      <div id="finalAnswerBox" class="hidden">
+        <div class="answer"><span class="lab">Answer</span><span id="finalAnswerText"></span></div>
+        <p class="label">Mark each team correct (＋wager) or wrong (−wager)</p>
+        <div class="wagerlist" id="judgeList"></div>
+        <button class="btn primary" onclick="showWinner()">See the winner 🏆</button>
+      </div>
+      <button class="btn primary mt" id="finalRevealBtn" onclick="revealFinalAnswer()">Reveal answer</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WINNER ============ -->
+<section id="winScreen" class="hidden">
+  <div class="winwrap">
+    <div class="trophy">🏆</div>
+    <div class="label">The champion is</div>
+    <div class="winname" id="winName">—</div>
+    <div class="finalscores" id="finalScores"></div>
+    <button class="btn primary" style="font-size:19px;padding:15px 30px" onclick="playAgain()">Play again ↻</button>
+  </div>
+</section>
+
+</div>
+
+<!-- ============ CLUE OVERLAY ============ -->
+<div class="overlay" id="clueOverlay">
+  <div class="cluepanel" id="cluePanel">
+    <div class="cluecat" id="clueCat">Category</div>
+    <div class="clueval" id="clueVal">$400</div>
+    <div class="cluetext" id="clueText">Clue goes here.</div>
+    <div class="answer hidden" id="clueAnswerBox"><span class="lab">Answer</span><span id="clueAnswer"></span></div>
+    <div id="revealWrap"><button class="btn primary" onclick="revealAnswer()">Reveal answer</button></div>
+    <div class="awardrow hidden" id="awardRow"></div>
+    <div class="hint" id="clueHint"></div>
+  </div>
+</div>
+
+<canvas class="confetti hidden" id="confetti"></canvas>
+
+<script>
+"use strict";
+
+/* ===================== QUESTION BANK ===================== */
+/* Each category: {name, clues:[{clue,answer}]} — 5 clues, easy→hard order.
+   Values are assigned by row (200/400/600/800/1000, doubled in R2). */
+const CATEGORIES = [
+  { name:"Movies", clues:[
+    {clue:"This 1997 James Cameron blockbuster about a doomed ocean liner won 11 Oscars.", answer:"Titanic"},
+    {clue:"Woody and Buzz Lightyear headline this 1995 Pixar film — the first feature-length CGI movie.", answer:"Toy Story"},
+    {clue:"In this 1994 film, Forrest Gump says life is like this kind of confectionery box.", answer:"A box of chocolates"},
+    {clue:"Director of Jaws, E.T., and Jurassic Park.", answer:"Steven Spielberg"},
+    {clue:"This 1972 Coppola crime epic opens with the line, ‘I believe in America.’", answer:"The Godfather"},
+  ]},
+  { name:"Science", clues:[
+    {clue:"H2O is the chemical formula for this everyday substance.", answer:"Water"},
+    {clue:"This planet, the largest in our solar system, is famous for its Great Red Spot.", answer:"Jupiter"},
+    {clue:"This gas, making up about 21% of air, is essential for human respiration.", answer:"Oxygen"},
+    {clue:"The powerhouse of the cell is this organelle.", answer:"Mitochondrion"},
+    {clue:"This scientist published the theory of general relativity in 1915.", answer:"Albert Einstein"},
+  ]},
+  { name:"Geography", clues:[
+    {clue:"This river, the longest in the world, flows through northeastern Africa.", answer:"The Nile"},
+    {clue:"Tokyo is the capital of this island nation.", answer:"Japan"},
+    {clue:"This is the largest ocean on Earth by area.", answer:"The Pacific Ocean"},
+    {clue:"Mount Everest sits on the border of Nepal and this country.", answer:"China (Tibet)"},
+    {clue:"This South American mountain range is the longest continental range in the world.", answer:"The Andes"},
+  ]},
+  { name:"History", clues:[
+    {clue:"This ship carried the Pilgrims to America in 1620.", answer:"The Mayflower"},
+    {clue:"The Great Wall was built to protect this ancient empire.", answer:"China"},
+    {clue:"This Egyptian queen allied with Julius Caesar and Mark Antony.", answer:"Cleopatra"},
+    {clue:"The Berlin Wall fell in this year, symbolizing the end of the Cold War.", answer:"1989"},
+    {clue:"This 1215 English charter limited the power of the king.", answer:"The Magna Carta"},
+  ]},
+  { name:"Music", clues:[
+    {clue:"This ‘King of Pop’ released the best-selling album ‘Thriller.’", answer:"Michael Jackson"},
+    {clue:"This Liverpool quartet included John, Paul, George, and Ringo.", answer:"The Beatles"},
+    {clue:"A standard piano has this many keys.", answer:"88"},
+    {clue:"This Italian term on sheet music means to play very loudly.", answer:"Fortissimo"},
+    {clue:"This composer wrote his Ninth Symphony while completely deaf.", answer:"Ludwig van Beethoven"},
+  ]},
+  { name:"Sports", clues:[
+    {clue:"This sport is played at Wimbledon.", answer:"Tennis"},
+    {clue:"A soccer team fields this many players on the pitch at once.", answer:"11"},
+    {clue:"These Games are held every four years and feature a torch relay.", answer:"The Olympics"},
+    {clue:"This boxer called himself ‘The Greatest’ and floated like a butterfly.", answer:"Muhammad Ali"},
+    {clue:"In golf, completing a hole three strokes under par is called this bird name.", answer:"Albatross"},
+  ]},
+  { name:"Tech", clues:[
+    {clue:"This company makes the iPhone.", answer:"Apple"},
+    {clue:"‘www’ stands for the World Wide this.", answer:"Web"},
+    {clue:"This search engine’s name became a verb meaning ‘to look up online.’", answer:"Google"},
+    {clue:"This binary digit — a 0 or 1 — is the smallest unit of data.", answer:"A bit"},
+    {clue:"This computing pioneer is considered the first programmer for her work on the Analytical Engine.", answer:"Ada Lovelace"},
+  ]},
+  { name:"Food & Drink", clues:[
+    {clue:"This Italian dish is a flat round bread topped with sauce and cheese.", answer:"Pizza"},
+    {clue:"Guacamole is made primarily from this green fruit.", answer:"Avocado"},
+    {clue:"This spice, gram for gram, is the most expensive in the world.", answer:"Saffron"},
+    {clue:"Sushi is traditionally seasoned with this vinegared grain.", answer:"Rice"},
+    {clue:"This fermented Korean side dish is made from salted, spiced cabbage.", answer:"Kimchi"},
+  ]},
+  { name:"Animals", clues:[
+    {clue:"This is the largest land animal on Earth.", answer:"The (African) elephant"},
+    {clue:"A group of lions is called this.", answer:"A pride"},
+    {clue:"This is the only mammal capable of true flight.", answer:"The bat"},
+    {clue:"This black-and-white bear feeds almost entirely on bamboo.", answer:"The giant panda"},
+    {clue:"This fastest land animal can hit around 70 mph in short bursts.", answer:"The cheetah"},
+  ]},
+  { name:"Wordplay", clues:[
+    {clue:"This word for a boat is also a verb meaning to send goods.", answer:"Ship"},
+    {clue:"‘Listen’ and ‘silent’ are this kind of word — same letters rearranged.", answer:"Anagrams"},
+    {clue:"A word spelled the same forwards and backwards, like ‘racecar.’", answer:"A palindrome"},
+    {clue:"This figure of speech says one thing is another: ‘time is money.’", answer:"A metaphor"},
+    {clue:"‘Bark,’ ‘bat,’ and ‘spring’ are examples of words with these multiple meanings.", answer:"Homonyms"},
+  ]},
+  { name:"Space", clues:[
+    {clue:"This star is at the center of our solar system.", answer:"The Sun"},
+    {clue:"This is Earth’s only natural satellite.", answer:"The Moon"},
+    {clue:"Neil Armstrong was the first person to walk on this.", answer:"The Moon"},
+    {clue:"This red planet is named after the Roman god of war.", answer:"Mars"},
+    {clue:"This galaxy is the one that contains our solar system.", answer:"The Milky Way"},
+  ]},
+  { name:"Literature", clues:[
+    {clue:"This English playwright wrote Romeo and Juliet and Hamlet.", answer:"William Shakespeare"},
+    {clue:"Harry Potter attends this school of witchcraft and wizardry.", answer:"Hogwarts"},
+    {clue:"This ‘detective of Baker Street’ was created by Arthur Conan Doyle.", answer:"Sherlock Holmes"},
+    {clue:"This Greek poet is credited with the Iliad and the Odyssey.", answer:"Homer"},
+    {clue:"George Orwell’s dystopian novel about Big Brother is titled this year.", answer:"1984"},
+  ]},
+  { name:"Inventions", clues:[
+    {clue:"Alexander Graham Bell is credited with inventing this device.", answer:"The telephone"},
+    {clue:"Gutenberg’s printing press used movable type made of this.", answer:"Metal"},
+    {clue:"Thomas Edison developed a practical version of this glowing device.", answer:"The light bulb"},
+    {clue:"The Wright brothers achieved the first powered flight in this machine.", answer:"The airplane"},
+    {clue:"This adhesive ‘hook-and-loop’ fastener was inspired by burrs sticking to a dog.", answer:"Velcro"},
+  ]},
+  { name:"The Human Body", clues:[
+    {clue:"This organ pumps blood throughout the body.", answer:"The heart"},
+    {clue:"An adult human has this many bones.", answer:"206"},
+    {clue:"This is the largest organ of the human body.", answer:"The skin"},
+    {clue:"Red blood cells carry oxygen using this iron-rich protein.", answer:"Hemoglobin"},
+    {clue:"This part of the brain controls balance and coordination.", answer:"The cerebellum"},
+  ]},
+  { name:"World Capitals", clues:[
+    {clue:"This city on the Seine is the capital of France.", answer:"Paris"},
+    {clue:"This capital of Australia is neither Sydney nor Melbourne.", answer:"Canberra"},
+    {clue:"This capital of Canada shares its name with a First Nations people.", answer:"Ottawa"},
+    {clue:"This capital of Egypt sits near the Giza pyramids.", answer:"Cairo"},
+    {clue:"This is the capital of Brazil — a planned city built in the 1950s.", answer:"Brasília"},
+  ]},
+  { name:"Colors & Art", clues:[
+    {clue:"Mixing blue and yellow paint makes this color.", answer:"Green"},
+    {clue:"This Dutch painter created ‘The Starry Night.’", answer:"Vincent van Gogh"},
+    {clue:"The ‘Mona Lisa’ was painted by this Renaissance polymath.", answer:"Leonardo da Vinci"},
+    {clue:"These three colors — red, blue, and yellow — are called the ‘primary’ ones.", answer:"Primary colors"},
+    {clue:"This Spanish co-founder of Cubism painted ‘Guernica.’", answer:"Pablo Picasso"},
+  ]},
+];
+
+/* FINAL round pool */
+const FINALS = [
+  {category:"World Landmarks", clue:"This wrought-iron tower, completed in 1889 for a World’s Fair, stands about 330 metres tall.", answer:"The Eiffel Tower"},
+  {category:"Science", clue:"This element, symbol Au, has an atomic number of 79 and has long been prized for jewelry.", answer:"Gold"},
+  {category:"History", clue:"This document, adopted on July 4, 1776, announced the American colonies’ break from Britain.", answer:"The Declaration of Independence"},
+  {category:"Literature", clue:"This author created Middle-earth, hobbits, and the One Ring.", answer:"J.R.R. Tolkien"},
+  {category:"Geography", clue:"By land area, this is the largest country in the world.", answer:"Russia"},
+  {category:"Music", clue:"This Austrian child prodigy composed ‘The Magic Flute’ and died at 35 in 1791.", answer:"Wolfgang Amadeus Mozart"},
+  {category:"Movies", clue:"This 2009 James Cameron film about the moon Pandora became the highest-grossing film of its time.", answer:"Avatar"},
+  {category:"Nature", clue:"This is the largest living structure on Earth, visible from space, off the coast of Australia.", answer:"The Great Barrier Reef"},
+];
+
+/* ===================== STATE ===================== */
+const ROW_VALUES = [200,400,600,800,1000];
+let teams = [];       // {name, score, color}
+let round = 1;        // 1, 2, then "final"
+let boardCats = [];   // 6 category objects for current round
+let used = [];        // used[col][row] boolean
+let current = null;   // {col,row,value,tileEl}
+let muted = false;
+let usedCatNames = new Set(); // avoid repeats across rounds
+let finalItem = null;
+
+const TEAM_COLORS = ["var(--gold)","var(--cyan)","var(--magenta)","var(--green)"];
+
+/* ===================== AUDIO (Web Audio API) ===================== */
+let actx = null;
+function ac(){
+  if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } }
+  if(actx && actx.state==="suspended") actx.resume();
+  return actx;
+}
+function tone(freq, start, dur, type, vol){
+  const c = ac(); if(!c || muted) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = type||"sine"; o.frequency.value = freq;
+  const t0 = c.currentTime + (start||0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.25, t0+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+(dur||0.25));
+  o.connect(g); g.connect(c.destination);
+  o.start(t0); o.stop(t0+(dur||0.25)+0.05);
+}
+const sfx = {
+  ding(){ tone(880,0,0.18,"triangle",0.3); tone(1320,0.05,0.22,"sine",0.2); },
+  reveal(){ tone(523,0,0.16,"sine",0.25); tone(784,0.12,0.28,"sine",0.25); },
+  correct(){ tone(659,0,0.14,"triangle",0.3); tone(880,0.12,0.16,"triangle",0.3); tone(1319,0.26,0.3,"sine",0.25); },
+  wrong(){ tone(200,0,0.35,"sawtooth",0.28); tone(150,0.08,0.4,"square",0.2); },
+  fanfare(){
+    const seq=[[523,0],[659,.14],[784,.28],[1047,.44],[784,.62],[1047,.74]];
+    seq.forEach(([f,t])=>tone(f,t,0.3,"triangle",0.3));
+    tone(1319,0.9,0.6,"sine",0.25);
+  }
+};
+function toggleMute(){
+  muted = !muted;
+  document.getElementById("muteBtn").textContent = muted ? "🔇 Muted" : "🔊 Sound on";
+  if(!muted) ac();
+}
+
+/* ===================== HELPERS ===================== */
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function show(id){ document.getElementById(id).classList.remove("hidden"); }
+function hide(id){ document.getElementById(id).classList.add("hidden"); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function fmt(n){ return n.toLocaleString("en-US"); }
+
+/* ===================== SETUP ===================== */
+function renderTeams(){
+  const list = document.getElementById("teamList");
+  list.innerHTML = "";
+  teams.forEach((t,i)=>{
+    const row = document.createElement("div");
+    row.className = "teamrow";
+    row.innerHTML =
+      `<span class="dot" style="background:${TEAM_COLORS[i]}"></span>`+
+      `<input value="${esc(t.name)}" maxlength="24" oninput="teams[${i}].name=this.value" />`+
+      (teams.length>2 ? `<span class="rm" title="Remove" onclick="removeTeam(${i})">✕</span>` : "");
+    list.appendChild(row);
+  });
+  document.getElementById("addTeamBtn").disabled = teams.length>=4;
+}
+function addTeam(){
+  if(teams.length>=4) return;
+  teams.push({name:"Team "+(teams.length+1), score:0, color:TEAM_COLORS[teams.length]});
+  renderTeams();
+}
+function removeTeam(i){
+  if(teams.length<=2) return;
+  teams.splice(i,1);
+  teams.forEach((t,idx)=>t.color=TEAM_COLORS[idx]);
+  renderTeams();
+}
+
+function startShow(){
+  ac(); // unlock audio on user gesture
+  teams.forEach(t=>{ t.name = (t.name||"").trim() || ("Team "+(teams.indexOf(t)+1)); t.score = 0; });
+  usedCatNames = new Set();
+  round = 1;
+  hide("setup");
+  buildRound();
+}
+
+/* ===================== BOARD / ROUNDS ===================== */
+function pickCategories(){
+  const avail = CATEGORIES.filter(c=>!usedCatNames.has(c.name));
+  const pool = avail.length>=6 ? avail : CATEGORIES;
+  const chosen = shuffle(pool).slice(0,6);
+  chosen.forEach(c=>usedCatNames.add(c.name));
+  return chosen;
+}
+function multiplier(){ return round===2 ? 2 : 1; }
+
+function buildRound(){
+  boardCats = pickCategories();
+  used = boardCats.map(()=>ROW_VALUES.map(()=>false));
+  current = null;
+  const m = multiplier();
+  document.getElementById("roundLabel").textContent = "Round "+round;
+  document.getElementById("roundValues").textContent = fmt(200*m)+" – "+fmt(1000*m);
+  document.getElementById("nextRoundBtn").textContent = round===1 ? "Next round →" : "To the Final →";
+  renderBoard();
+  renderScoreboard();
+  hide("finalScreen"); hide("winScreen");
+  show("boardScreen");
+  window.scrollTo(0,0);
+}
+
+function renderBoard(){
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  const m = multiplier();
+  // header row
+  boardCats.forEach(c=>{
+    const h = document.createElement("div");
+    h.className="cat"; h.textContent = c.name;
+    board.appendChild(h);
+  });
+  // value rows
+  for(let r=0;r<5;r++){
+    for(let col=0;col<6;col++){
+      const val = ROW_VALUES[r]*m;
+      const btn = document.createElement("button");
+      btn.className = "tile" + (used[col][r] ? " used" : "");
+      btn.textContent = used[col][r] ? "" : fmt(val);
+      btn.setAttribute("aria-label", boardCats[col].name+" for "+val);
+      if(!used[col][r]) btn.onclick = ()=>openClue(col,r,val,btn);
+      board.appendChild(btn);
+    }
+  }
+}
+
+function renderScoreboard(){
+  const sb = document.getElementById("scoreboard");
+  sb.innerHTML = "";
+  const max = Math.max(...teams.map(t=>t.score));
+  teams.forEach(t=>{
+    const leader = t.score===max && max>0;
+    const c = document.createElement("div");
+    c.className = "scorecard"+(leader?" leader":"");
+    c.innerHTML = `<div class="nm"><span class="bar" style="background:${t.color}"></span>${esc(t.name)}</div>`+
+                  `<div class="sc" style="color:${t.score<0?'var(--magenta)':'var(--cream)'}">${fmt(t.score)}</div>`;
+    sb.appendChild(c);
+  });
+}
+
+/* ===================== CLUE FLOW ===================== */
+function openClue(col,row,value,tileEl){
+  ac();
+  tileEl.classList.add("flip");
+  sfx.ding();
+  current = {col,row,value,tileEl};
+  const cat = boardCats[col];
+  const clue = cat.clues[row];
+  document.getElementById("clueCat").textContent = cat.name;
+  document.getElementById("clueVal").textContent = "$"+fmt(value);
+  document.getElementById("clueText").textContent = clue.clue;
+  const ab = document.getElementById("clueAnswerBox");
+  ab.classList.add("hidden");
+  document.getElementById("clueAnswer").textContent = clue.answer;
+  document.getElementById("revealWrap").classList.remove("hidden");
+  document.getElementById("awardRow").classList.add("hidden");
+  document.getElementById("clueHint").textContent = "Read the clue aloud. First correct answer wins.";
+  document.getElementById("clueOverlay").classList.add("show");
+}
+
+function revealAnswer(){
+  sfx.reveal();
+  document.getElementById("clueAnswerBox").classList.remove("hidden");
+  document.getElementById("revealWrap").classList.add("hidden");
+  // build award row
+  const row = document.getElementById("awardRow");
+  row.innerHTML = "";
+  teams.forEach((t,i)=>{
+    const b = document.createElement("button");
+    b.className = "btn small";
+    b.style.background = t.color; b.style.color = "#0a1230"; b.style.borderColor="transparent";
+    b.textContent = "＋"+fmt(current.value)+" "+t.name;
+    b.onclick = ()=>award(i);
+    row.appendChild(b);
+  });
+  const none = document.createElement("button");
+  none.className = "btn ghost small";
+  none.textContent = "No one";
+  none.onclick = ()=>award(-1);
+  row.appendChild(none);
+  row.classList.remove("hidden");
+  document.getElementById("clueHint").textContent = "Tap the team that got it — or “No one”.";
+}
+
+function award(teamIdx){
+  if(teamIdx>=0){ teams[teamIdx].score += current.value; sfx.correct(); }
+  else { sfx.wrong(); }
+  // mark used
+  used[current.col][current.row] = true;
+  closeClue();
+  renderBoard();
+  renderScoreboard();
+  // auto-advance if board cleared
+  if(boardCleared()){
+    setTimeout(()=>{ if(round<2) nextRound(); else nextRound(); }, 500);
+  }
+}
+function closeClue(){ document.getElementById("clueOverlay").classList.remove("show"); current=null; }
+function boardCleared(){ return used.every(col=>col.every(v=>v)); }
+
+/* ===================== ROUNDS ===================== */
+function nextRound(){
+  if(round===1){ round=2; buildRound(); }
+  else { startFinal(); }
+}
+
+/* ===================== FINAL ===================== */
+function startFinal(){
+  finalItem = FINALS[Math.floor(Math.random()*FINALS.length)];
+  hide("boardScreen"); hide("winScreen");
+  document.getElementById("finalCat").textContent = finalItem.category;
+  document.getElementById("finalWagerStep").classList.remove("hidden");
+  document.getElementById("finalClueStep").classList.add("hidden");
+  document.getElementById("finalAnswerBox").classList.add("hidden");
+  document.getElementById("finalRevealBtn").classList.remove("hidden");
+  // wager inputs
+  const wl = document.getElementById("wagerList");
+  wl.innerHTML = "";
+  teams.forEach((t,i)=>{
+    const maxW = Math.max(0, t.score);
+    const row = document.createElement("div");
+    row.className="row";
+    row.innerHTML =
+      `<span class="nm"><span class="bar" style="background:${t.color};display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px"></span>${esc(t.name)}</span>`+
+      `<span class="avail">Score ${fmt(t.score)}</span>`+
+      `<input type="number" id="wager${i}" min="0" max="${maxW}" value="0" step="100" />`;
+    wl.appendChild(row);
+  });
+  show("finalScreen");
+  sfx.reveal();
+  window.scrollTo(0,0);
+}
+
+function clampWagers(){
+  teams.forEach((t,i)=>{
+    const el = document.getElementById("wager"+i);
+    let w = parseInt(el.value,10); if(isNaN(w)||w<0) w=0;
+    const maxW = Math.max(0, t.score);
+    if(w>maxW) w=maxW;
+    el.value = w;
+    t.wager = w;
+  });
+}
+
+function revealFinalClue(){
+  clampWagers();
+  ac();
+  document.getElementById("finalWagerStep").classList.add("hidden");
+  document.getElementById("finalClueText").textContent = finalItem.clue;
+  document.getElementById("finalClueStep").classList.remove("hidden");
+  sfx.ding();
+  window.scrollTo(0,0);
+}
+
+function revealFinalAnswer(){
+  sfx.reveal();
+  document.getElementById("finalAnswerText").textContent = finalItem.answer;
+  document.getElementById("finalAnswerBox").classList.remove("hidden");
+  document.getElementById("finalRevealBtn").classList.add("hidden");
+  // judge list
+  const jl = document.getElementById("judgeList");
+  jl.innerHTML = "";
+  teams.forEach((t,i)=>{
+    t.judged = null;
+    const row = document.createElement("div");
+    row.className="row";
+    row.innerHTML =
+      `<span class="nm"><span class="bar" style="background:${t.color};display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px"></span>${esc(t.name)}</span>`+
+      `<span class="avail">Wager ${fmt(t.wager||0)}</span>`;
+    const btns = document.createElement("div");
+    btns.className="judgebtns";
+    const yes = document.createElement("button");
+    yes.className="btn green small"; yes.textContent="✓ Correct";
+    yes.onclick = ()=>judge(i,true,yes,no);
+    const no = document.createElement("button");
+    no.className="btn magenta small"; no.textContent="✗ Wrong";
+    no.onclick = ()=>judge(i,false,yes,no);
+    btns.appendChild(yes); btns.appendChild(no);
+    row.appendChild(btns);
+    jl.appendChild(row);
+  });
+}
+
+function judge(i, correct, yesBtn, noBtn){
+  const t = teams[i];
+  // undo any previous judgement for this team
+  if(t.judged===true) t.score -= (t.wager||0);
+  else if(t.judged===false) t.score += (t.wager||0);
+  // apply
+  if(correct){ t.score += (t.wager||0); t.judged=true; sfx.correct(); }
+  else { t.score -= (t.wager||0); t.judged=false; sfx.wrong(); }
+  yesBtn.style.opacity = correct ? "1" : ".35";
+  noBtn.style.opacity  = correct ? ".35" : "1";
+}
+
+/* ===================== WINNER ===================== */
+function showWinner(){
+  hide("finalScreen");
+  const max = Math.max(...teams.map(t=>t.score));
+  const winners = teams.filter(t=>t.score===max);
+  document.getElementById("winName").textContent =
+    winners.length>1 ? "Tie: "+winners.map(t=>t.name).join(" & ") : winners[0].name;
+  const fs = document.getElementById("finalScores");
+  fs.innerHTML = "";
+  teams.slice().sort((a,b)=>b.score-a.score).forEach(t=>{
+    const d = document.createElement("div");
+    d.className="fs";
+    d.innerHTML = `<div class="nm" style="color:${t.color}">${esc(t.name)}</div><div class="sc">${fmt(t.score)}</div>`;
+    fs.appendChild(d);
+  });
+  show("winScreen");
+  sfx.fanfare();
+  launchConfetti();
+  window.scrollTo(0,0);
+}
+
+function playAgain(){
+  stopConfetti();
+  hide("winScreen"); hide("boardScreen"); hide("finalScreen");
+  teams.forEach((t,i)=>{ t.score=0; t.wager=0; t.judged=null; });
+  round=1; usedCatNames=new Set();
+  show("setup");
+  renderTeams();
+  window.scrollTo(0,0);
+}
+
+/* ===================== CONFETTI ===================== */
+let confettiRAF=null, confettiParts=[];
+function launchConfetti(){
+  const cv = document.getElementById("confetti");
+  cv.classList.remove("hidden");
+  const ctx = cv.getContext("2d");
+  function resize(){ cv.width=innerWidth; cv.height=innerHeight; }
+  resize(); window.addEventListener("resize",resize);
+  const colors=["#ffc94d","#46e08a","#ff4d7d","#46d6e0","#f6f0e2"];
+  confettiParts = Array.from({length:180},()=>({
+    x:Math.random()*cv.width, y:-20-Math.random()*cv.height,
+    r:4+Math.random()*7, c:colors[Math.floor(Math.random()*colors.length)],
+    vy:2+Math.random()*4, vx:-1.5+Math.random()*3, rot:Math.random()*6.28, vr:-.2+Math.random()*.4
+  }));
+  const start=Date.now();
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    confettiParts.forEach(p=>{
+      p.y+=p.vy; p.x+=p.vx; p.rot+=p.vr;
+      if(p.y>cv.height+20){ p.y=-20; p.x=Math.random()*cv.width; }
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6); ctx.restore();
+    });
+    if(Date.now()-start<9000) confettiRAF=requestAnimationFrame(draw);
+    else stopConfetti();
+  }
+  draw();
+}
+function stopConfetti(){
+  if(confettiRAF) cancelAnimationFrame(confettiRAF);
+  confettiRAF=null;
+  const cv=document.getElementById("confetti");
+  const ctx=cv.getContext("2d"); ctx.clearRect(0,0,cv.width,cv.height);
+  cv.classList.add("hidden");
+}
+
+/* ===================== INIT ===================== */
+teams = [
+  {name:"Team 1", score:0, color:TEAM_COLORS[0]},
+  {name:"Team 2", score:0, color:TEAM_COLORS[1]},
+];
+renderTeams();
+
+// allow closing the clue overlay with Escape (returns tile to board, unused)
+document.addEventListener("keydown", e=>{
+  if(e.key==="Escape" && document.getElementById("clueOverlay").classList.contains("show")){
+    // treat escape as "No one" only if answer already revealed; otherwise just close & keep tile
+    if(!document.getElementById("awardRow").classList.contains("hidden")){ award(-1); }
+    else { closeClue(); }
+  }
+});
+</script>
+</body>
+</html>
