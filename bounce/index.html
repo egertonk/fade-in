@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bounce Count — guess the bounces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1220;--panel:#111a2e;--line:rgba(255,255,255,.13);
+    --gold:#ffc94d;--green:#46e08a;--magenta:#ff4d7d;--cyan:#46d6e0;--cream:#f6f0e2;
+    --muted:rgba(246,240,226,.6);
+    --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--body)}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  .brand{position:absolute;top:14px;left:16px;z-index:5;font-family:var(--display);font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px}
+  .brand a{color:var(--muted);font-family:var(--body);font-weight:500;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:10px}
+  .brand a:hover{color:var(--cream);border-color:var(--cream)}
+
+  /* live counter */
+  .counter{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;text-align:center;display:none}
+  .counter .lab{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .counter .num{font-family:var(--display);font-weight:800;font-size:clamp(52px,10vw,92px);line-height:.95;color:var(--gold)}
+  .counter .num.bump{animation:bump .18s ease}
+  @keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.28);color:var(--cyan)}100%{transform:scale(1)}}
+
+  /* ball picker */
+  .picker{position:absolute;top:54px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:94vw}
+  .chip{cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;background:rgba(11,18,32,.7);border:1px solid var(--line);
+    backdrop-filter:blur(8px);border-radius:999px;padding:7px 13px;font-family:var(--display);font-weight:700;font-size:14px;transition:.14s}
+  .chip:hover{border-color:var(--cream)}
+  .chip.sel{background:var(--gold);color:#0b1220;border-color:var(--gold)}
+  .chip .em{font-size:17px}
+
+  /* bottom controls */
+  .foot{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .ready{font-family:var(--mono);font-size:13px;color:var(--muted)}.ready b{color:var(--cream)}
+  .btn{all:unset;cursor:pointer;text-align:center;padding:16px 40px;border-radius:15px;font-family:var(--display);font-weight:800;font-size:20px;background:var(--gold);color:#0b1220;box-shadow:0 14px 40px rgba(255,201,77,.25);transition:transform .1s,opacity .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.green{background:var(--green);box-shadow:0 14px 40px rgba(70,224,138,.22)}
+  .btn.ghost{background:rgba(11,18,32,.75);border:1px solid var(--line);color:var(--cream);box-shadow:none;font-size:16px;padding:13px 22px}
+
+  /* result modal */
+  .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(6,10,18,.72);backdrop-filter:blur(4px);z-index:10;padding:18px}
+  .overlay.show{display:flex}
+  .card{width:min(460px,94vw);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px 26px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .card .em{font-size:64px;line-height:1}
+  .card .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+  .card .big{font-family:var(--display);font-weight:800;font-size:clamp(40px,9vw,72px);line-height:1;color:var(--gold);margin:2px 0 4px}
+  .card .big span{font-size:.42em;color:var(--cream)}
+  .card .who{color:var(--muted);font-size:15px;margin-bottom:20px}
+  .rowbtns{display:flex;gap:12px}.rowbtns .btn{flex:1;font-size:17px;padding:13px}
+
+  /* intro */
+  .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:26px;z-index:20;overflow:auto;
+    background:radial-gradient(120% 110% at 50% -10%,#16233f 0%,#0b1220 62%)}
+  .center.hide{display:none}
+  .center h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,9vw,78px);margin:0;line-height:1;
+    background:linear-gradient(120deg,var(--cyan),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .center p{color:var(--muted);max-width:500px;margin:0}
+  .center .rules{font-family:var(--mono);font-size:12.5px;line-height:1.8;color:var(--muted);max-width:460px}
+  .center .rules b{color:var(--cream)}
+</style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <div class="brand">🏀 Bounce Count <a href="../">← All games</a></div>
+
+  <div class="counter" id="counter"><div class="lab">Bounces</div><div class="num" id="num">0</div></div>
+
+  <div class="picker" id="picker"></div>
+
+  <div class="foot" id="foot" style="display:none">
+    <div class="ready" id="ready">Ready: <b id="readyName">—</b> · shout your guess!</div>
+    <button class="btn" id="dropBtn">Drop it! ⬇️</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="card">
+      <div class="em" id="rEmoji">🏀</div>
+      <div class="kicker">It came to a stop after</div>
+      <div class="big"><span id="rCount">0</span> <span>bounces</span></div>
+      <div class="who" id="rWho">Who guessed closest?</div>
+      <div class="rowbtns">
+        <button class="btn ghost" id="againBtn">↻ Same ball</button>
+        <button class="btn green" id="nextBtn">Next ball →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="center" id="intro">
+    <h1>Bounce Count</h1>
+    <p>Pick a ball. It gets dropped from a two-storey building. How many times will it bounce before it comes to a <b style="color:var(--cyan)">complete stop</b>?</p>
+    <p class="rules"><b>Share your screen.</b> Everyone shouts a number, then you hit <b>Drop it!</b> The ball bounces for real and the counter tallies it up. Closest guess wins the round. Bowling ball barely bounces… a ping-pong ball goes forever!</p>
+    <button class="btn" id="startBtn">Let's bounce 🏀</button>
+  </div>
+
+<script>
+/* ---------------- Objects (emoji or drawn) with base bounciness ---------------- */
+const BALLS=[
+  {n:'Basketball',   em:'🏀', size:96, rest:0.82},
+  {n:'Soccer ball',  em:'⚽', size:86, rest:0.77},
+  {n:'Volleyball',   em:'🏐', size:86, rest:0.76},
+  {n:'Tennis ball',  em:'🎾', size:54, rest:0.74},
+  {n:'Ping-pong',    em:'🏓', size:40, rest:0.87},
+  {n:'Pickleball',   draw:'pickle', size:52, rest:0.70},
+  {n:'Baseball',     em:'⚾', size:52, rest:0.54},
+  {n:'Softball',     em:'🥎', size:60, rest:0.50},
+  {n:'Pool ball',    em:'🎱', size:56, rest:0.42},
+  {n:'Football',     em:'🏈', size:70, rest:0.48, irregular:true},
+  {n:'Water bottle', em:'🍾', size:60, rest:0.24, irregular:true},
+  {n:'Bowling ball', em:'🎳', size:78, rest:0.12}
+];
+const G=9.8, START_H=6.0, VMIN=0.9, TIME_SCALE=1.25;   // metres / seconds
+
+const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+let W=0,H=0,groundY=0,scale=0,DPR=Math.min(window.devicePixelRatio||1,2);
+
+function resize(){
+  W=cv.clientWidth; H=cv.clientHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+  groundY=H-70;
+  scale=(groundY-70)/(START_H*1.06);   // pixels per metre, 6 m fits with margin
+  draw();
+}
+window.addEventListener('resize',resize);
+
+/* ---------------- State ---------------- */
+let ball=BALLS[0], state='ready';
+let y=START_H, v=0, x=0, vx=0, angle=0, bounces=0, restThis=0, squashT=-1, squashK=0, lastImpactSpeed=0;
+
+function centerX(){ return W/2; }
+function selectBall(i){
+  ball=BALLS[i]; state='ready'; y=START_H; v=0; vx=0; angle=0; bounces=0; x=centerX();
+  $('overlay').classList.remove('show'); $('counter').style.display='none';
+  $('readyName').textContent=ball.n; $('dropBtn').disabled=false;
+  [...$('picker').children].forEach((c,k)=>c.classList.toggle('sel',k===i));
+  draw();
+}
+function randomBall(){ selectBall(Math.floor(Math.random()*BALLS.length)); }
+
+/* ---------------- Physics ---------------- */
+function drop(){
+  if(state!=='ready') return;
+  state='dropping'; bounces=0; restThis=ball.rest;
+  $('dropBtn').disabled=true;
+  $('num').textContent='0'; $('counter').style.display='block';
+  last=performance.now(); requestAnimationFrame(step);
+}
+let last=0;
+function step(t){
+  let dt=(t-last)/1000*TIME_SCALE; last=t; if(dt>0.033) dt=0.033;
+  sim(dt); draw();
+  if(state==='dropping') requestAnimationFrame(step); else finish();
+}
+function sim(dt){
+  v-=G*dt; y+=v*dt;
+  x+=vx*scale*dt; vx*=Math.pow(0.55,dt);
+  angle+=vx*dt*3;
+  // soft walls
+  const r=ball.size*0.42, minX=r+10, maxX=W-r-10;
+  if(x<minX){x=minX;vx=Math.abs(vx)*0.6;} if(x>maxX){x=maxX;vx=-Math.abs(vx)*0.6;}
+  if(y<=0){
+    y=0; const speed=-v;
+    if(speed>VMIN){
+      let e=restThis;
+      if(ball.irregular) e=Math.max(0.08,restThis+(Math.random()*0.3-0.15));
+      v=speed*e; bounces++; bump();
+      squashT=performance.now(); lastImpactSpeed=speed;
+      if(ball.irregular) vx+=(Math.random()*3-1.5);
+      else vx+=(Math.random()*0.5-0.25);
+    }else{ v=0; y=0; state='stopped'; }
+  }
+}
+function bump(){
+  const n=$('num'); n.textContent=bounces;
+  n.classList.remove('bump'); void n.offsetWidth; n.classList.add('bump');
+}
+
+/* ---------------- Drawing ---------------- */
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // sky
+  let sky=ctx.createLinearGradient(0,0,0,groundY);
+  sky.addColorStop(0,'#16233f'); sky.addColorStop(1,'#0e1830');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,groundY);
+  drawBuilding();
+  // ground
+  ctx.fillStyle='#1c2b16'; ctx.fillRect(0,groundY,W,H-groundY);
+  ctx.strokeStyle='rgba(255,255,255,.14)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,groundY+1); ctx.lineTo(W,groundY+1); ctx.stroke();
+
+  // drop-height guide
+  const topY=groundY-START_H*scale;
+  ctx.strokeStyle='rgba(70,214,224,.35)'; ctx.setLineDash([7,7]); ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,topY); ctx.lineTo(W,topY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='rgba(70,214,224,.7)'; ctx.font='600 12px "Space Mono",monospace';
+  ctx.textAlign='left'; ctx.fillText('≈ 2 storeys (6 m)  · drop line',12,topY-8);
+
+  drawBall();
+}
+function drawBuilding(){
+  const bw=Math.min(180,W*0.24), bx=W/2-bw/2, top=groundY-START_H*scale+6;
+  ctx.fillStyle='#0c1526'; ctx.fillRect(bx,top,bw,groundY-top);
+  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.strokeRect(bx,top,bw,groundY-top);
+  // roof lip
+  ctx.fillStyle='#0a1120'; ctx.fillRect(bx-8,top-8,bw+16,10);
+  // windows (2 storeys x 3)
+  const cols=3, rows=2, pad=bw*0.12, gapx=(bw-2*pad)/cols, gh=(groundY-top-3*pad)/rows;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    ctx.fillStyle=(Math.abs((r*3+c)%4)===0)?'rgba(255,201,77,.35)':'rgba(70,214,224,.14)';
+    ctx.fillRect(bx+pad+c*gapx+gapx*0.14, top+pad+r*(gh+pad)+8, gapx*0.72, gh*0.7);
+  }
+}
+function drawBall(){
+  const r=ball.size*0.42;
+  const py=groundY-y*scale-r;
+  // shadow
+  const closeness=1-Math.min(1,y/START_H);
+  ctx.save(); ctx.globalAlpha=0.22+0.28*closeness;
+  ctx.fillStyle='#000'; ctx.beginPath();
+  ctx.ellipse(x,groundY+3,r*(0.7+0.5*closeness),r*0.28,0,0,7); ctx.fill(); ctx.restore();
+  // squash
+  let sx=1,sy=1;
+  if(squashT>0){
+    const el=performance.now()-squashT;
+    if(el<130){ const p=(1-el/130)*Math.min(1,lastImpactSpeed/9)*0.5; sx=1+p; sy=1-p; }
+  }
+  ctx.save(); ctx.translate(x,py); ctx.rotate(angle); ctx.scale(sx,sy);
+  if(ball.draw==='pickle'){ drawPickle(r); }
+  else{ ctx.font=`${ball.size}px system-ui,"Apple Color Emoji","Segoe UI Emoji"`;
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ball.em,0,2); }
+  ctx.restore();
+}
+function drawPickle(r){
+  ctx.beginPath(); ctx.arc(0,0,r,0,7); ctx.fillStyle='#e9e34a';
+  ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='rgba(0,0,0,.32)';
+  for(let i=0;i<7;i++){ const a=i/7*7, rr=r*0.5; ctx.beginPath();
+    ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,r*0.13,0,7); ctx.fill(); }
+}
+
+/* ---------------- Round end ---------------- */
+function finish(){
+  $('counter').style.display='none';
+  $('rEmoji').textContent=ball.draw?'🟡':ball.em;
+  $('rCount').textContent=bounces;
+  $('rWho').textContent=`${ball.n} · closest guess wins the round!`;
+  $('overlay').classList.add('show');
+}
+
+/* ---------------- Wiring ---------------- */
+BALLS.forEach((b,i)=>{
+  const chip=document.createElement('div'); chip.className='chip';
+  chip.innerHTML=`<span class="em">${b.draw?'🟡':b.em}</span>${b.n}`;
+  chip.onclick=()=>selectBall(i); $('picker').appendChild(chip);
+});
+$('startBtn').onclick=()=>{ $('intro').classList.add('hide'); $('foot').style.display='flex'; selectBall(0); };
+$('dropBtn').onclick=drop;
+$('againBtn').onclick=()=>{ const i=BALLS.indexOf(ball); selectBall(i); };
+$('nextBtn').onclick=randomBall;
+document.addEventListener('keydown',e=>{
+  if($('intro').classList.contains('hide')&&e.code==='Space'){ e.preventDefault();
+    if(state==='ready') drop(); else if(state==='stopped') randomBall(); }
+});
+resize();
+</script>
+</body>
+</html>

@@ -9,6 +9,7 @@ A browser game where a famous landmark slowly fades into view and you try to gue
 - **Fade In — Guess the Landmark** → https://egertonk.github.io/fade-in/fade/
 - **Where Am I? — Street View Guesser** → https://egertonk.github.io/fade-in/geo/
 - **Don't Laugh, Don't Speak** → https://egertonk.github.io/fade-in/laugh/
+- **Bounce Count** → https://egertonk.github.io/fade-in/bounce/
 
 > The Street View game uses the Google Maps JavaScript API. The key is stored as the
 > `GOOGLE_MAPS_API_KEY` GitHub Actions secret and injected at deploy time — it is **not**
