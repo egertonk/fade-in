@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guess the Flag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c1424;--panel:#141d31;--line:rgba(246,240,226,.13);
+    --gold:#ffc94d;--green:#46e08a;--magenta:#ff4d7d;--cyan:#46d6e0;--cream:#f6f0e2;
+    --muted:rgba(246,240,226,.6);
+    --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100vh;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--body)}
+  .brand{position:fixed;top:14px;left:16px;z-index:8;font-family:var(--display);font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px}
+  .brand a{color:var(--muted);font-family:var(--body);font-weight:500;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:10px}
+  .brand a:hover{color:var(--cream);border-color:var(--cream)}
+
+  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:70px 20px 30px}
+  .screen{width:100%;max-width:680px;display:none;flex-direction:column;align-items:center;text-align:center}
+  .screen.active{display:flex}
+
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,9vw,72px);margin:6px 0 12px;line-height:1;
+    background:linear-gradient(120deg,var(--cyan),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rule{color:var(--muted);max-width:480px;margin:0 0 20px;font-size:15px}
+  .rule b{color:var(--cream)}
+  .howto{margin:0 0 22px;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.03);max-width:520px;text-align:left}
+  .howto .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .howto p{font-size:14px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+  .howto .ex{display:flex;align-items:center;gap:12px;font-size:15px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:22px}
+  .chip{font-family:var(--display);font-weight:800;font-size:15px;background:transparent;color:var(--cream);border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--cream)} .chip.sel{background:var(--gold);color:#0c1424;border-color:var(--gold)}
+
+  /* flag renderer */
+  .flag{position:relative;overflow:hidden;border-radius:8px;box-shadow:0 18px 50px rgba(0,0,0,.5);outline:1px solid rgba(255,255,255,.15);outline-offset:-1px}
+  .flag>div{position:absolute}
+  .flagbig{width:min(74vw,540px);aspect-ratio:3/2;margin:4px 0 18px;animation:pop .35s cubic-bezier(.2,1.3,.5,1)}
+  @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+  .flagmini{width:66px;aspect-ratio:3/2;flex:none}
+
+  .hud{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+  .pill{background:rgba(12,20,36,.7);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .pill b{color:var(--cream);font-family:var(--display);font-size:15px}
+  .answer{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,52px);color:var(--gold);min-height:1.1em;margin:2px 0 4px}
+  .hintline{font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.05em;min-height:1.2em;margin-bottom:14px}
+
+  .btn{font-family:var(--display);font-weight:800;font-size:17px;border-radius:13px;padding:13px 24px;cursor:pointer;border:1px solid transparent;transition:.12s}
+  .btn:hover{transform:translateY(-1px)} .btn.primary{background:var(--gold);color:#0c1424}
+  .btn.ghost{background:transparent;color:var(--cream);border-color:var(--line)} .btn.ghost:hover{border-color:var(--cream)}
+  .actions{display:flex;gap:10px;justify-content:center}
+</style>
+</head>
+<body>
+  <div class="brand">🏳️ Guess the Flag <a href="../">← All games</a></div>
+
+  <div class="wrap">
+    <!-- SETUP -->
+    <section class="screen active" id="setup">
+      <div class="kicker">Party game · Recognition</div>
+      <h1>Guess the Flag</h1>
+      <p class="rule"><b>Share your screen</b> — a flag appears, the team shouts the country, you hit Reveal.</p>
+      <div class="howto">
+        <div class="k">How to play</div>
+        <p>Every flag is drawn in pure code (no pictures). Show it, let the team call it out, then reveal the answer. Hit <b>Hint</b> for the continent if they're stuck.</p>
+        <div class="ex"><span class="flag flagmini" id="exFlag"></span> → <b>Germany</b></div>
+      </div>
+      <div class="kicker" style="margin-bottom:8px">Difficulty</div>
+      <div class="chips" id="diffChips">
+        <button class="chip sel" data-d="0">All</button>
+        <button class="chip" data-d="1">Easy</button>
+        <button class="chip" data-d="2">Medium</button>
+        <button class="chip" data-d="3">Tricky</button>
+      </div>
+      <button class="btn primary" id="startBtn">Start ▶</button>
+    </section>
+
+    <!-- GAME -->
+    <section class="screen" id="game">
+      <div class="hud">
+        <div class="pill">Flag <b id="count">1</b></div>
+      </div>
+      <div class="flag flagbig" id="flag"></div>
+      <div class="answer" id="answer"></div>
+      <div class="hintline" id="hint"></div>
+      <div class="actions">
+        <button class="btn ghost" id="hintBtn">Hint 🌍</button>
+        <button class="btn primary" id="mainBtn">Reveal 🎯</button>
+      </div>
+    </section>
+  </div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const STAR="polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)";
+
+/* ---------- flag renderer ---------- */
+function mk(parent,css){ const d=document.createElement('div'); Object.assign(d.style,css); parent.appendChild(d); return d; }
+function full(p,css){ return mk(p,Object.assign({inset:'0'},css)); }
+function stops(colors){ const n=colors.length,seg=100/n; return colors.map((c,i)=>`${c} ${i*seg}% ${(i+1)*seg}%`).join(','); }
+function stopsR(colors,r){ let a=0; return colors.map((c,i)=>{const s=a*100; a+=r[i]; return `${c} ${s}% ${a*100}%`;}).join(','); }
+function disc(p,{color,d,x=50,y=50}){ return mk(p,{background:color,height:d+'%',aspectRatio:'1',borderRadius:'50%',left:x+'%',top:y+'%',transform:'translate(-50%,-50%)'}); }
+function star(p,{color,d,x=50,y=50,rot=0}){ return mk(p,{background:color,height:d+'%',aspectRatio:'1',left:x+'%',top:y+'%',transform:`translate(-50%,-50%) rotate(${rot}deg)`,clipPath:STAR}); }
+function bars(p,{color,t,ox=50,ar}){ // cross (plus / nordic): horizontal + vertical
+  mk(p,{background:color,left:'0',right:'0',height:t+'%',top:'50%',transform:'translateY(-50%)'});
+  const vw=t*ar[1]/ar[0];
+  mk(p,{background:color,top:'0',bottom:'0',width:vw+'%',left:ox+'%',transform:'translateX(-50%)'});
+}
+function tri(p,{color,w}){ full(p,{background:color,clipPath:`polygon(0 0, ${w}% 50%, 0 100%)`}); }
+
+function renderFlag(box, f){
+  box.innerHTML=''; box.style.aspectRatio=(f.ar?f.ar.join('/'):'3/2');
+  const ar=f.ar||[3,2];
+  (f.layers||[]).forEach(L=>{
+    if(L.fill) full(box,{background:L.fill});
+    else if(L.h)  full(box,{background:`linear-gradient(to bottom,${stops(L.h)})`});
+    else if(L.v)  full(box,{background:`linear-gradient(to right,${stops(L.v)})`});
+    else if(L.hr) full(box,{background:`linear-gradient(to bottom,${stopsR(L.hr.c,L.hr.r)})`});
+    else if(L.vr) full(box,{background:`linear-gradient(to right,${stopsR(L.vr.c,L.vr.r)})`});
+    else if(L.disc) disc(box,L.disc);
+    else if(L.plus) bars(box,{color:L.plus.color,t:L.plus.t,ox:50,ar});
+    else if(L.nordic) bars(box,{color:L.nordic.color,t:L.nordic.t,ox:L.nordic.ox||36,ar});
+    else if(L.tri) tri(box,L.tri);
+    else if(L.star) star(box,L.star);
+    else if(L.stars) L.stars.forEach(s=>star(box,s));
+    else if(L.crescent){ const c=L.crescent; disc(box,{color:c.color,d:c.d,x:c.x,y:c.y}); disc(box,{color:c.field,d:c.d*0.82,x:c.x+c.d*0.2,y:c.y}); }
+    else if(L.hexagram){ const g=L.hexagram; const s={height:g.d+'%',aspectRatio:'1',left:g.x+'%',top:g.y+'%',position:'absolute'};
+      mk(box,Object.assign({},s,{background:g.color,transform:'translate(-50%,-50%)',clipPath:'polygon(50% 0,100% 100%,0 100%)'}));
+      mk(box,Object.assign({},s,{background:g.color,transform:'translate(-50%,-50%)',clipPath:'polygon(50% 100%,100% 0,0 0)'})); }
+    else if(L.diamond){ const d=L.diamond; mk(box,{background:d.color,height:d.d+'%',width:(d.d*ar[1]/ar[0]*1.5)+'%',left:'50%',top:'50%',transform:'translate(-50%,-50%) rotate(45deg)'}); }
+    else if(L.chakra){ const c=L.chakra, s=c.d;
+      mk(box,{height:s+'%',aspectRatio:'1',left:'50%',top:'50%',transform:'translate(-50%,-50%)',borderRadius:'50%',
+        border:'2px solid #123', background:`repeating-conic-gradient(#123a7a 0 4deg, transparent 4deg 15deg)`}); }
+    else if(L.canton){ const c=L.canton; const cv=mk(box,{left:'0',top:'0',width:c.w+'%',height:c.h+'%',background:c.color,overflow:'hidden'});
+      if(c.plus){ mk(cv,{position:'absolute',background:c.plus.color,left:'0',right:'0',height:c.plus.t+'%',top:'50%',transform:'translateY(-50%)'});
+        mk(cv,{position:'absolute',background:c.plus.color,top:'0',bottom:'0',width:c.plus.t+'%',left:'50%',transform:'translateX(-50%)'}); }
+      if(c.starGrid){ const g=c.starGrid; for(let r=0;r<g.rows;r++)for(let col=0;col<g.cols;col++){
+        const off=(r%2)?g.dx/2:0; star(cv,{color:'#fff',d:g.d,x:g.x0+col*g.dx+off,y:g.y0+r*g.dy}); } } }
+  });
+}
+
+/* ---------- flag data (curated to render crisply & correctly in CSS) ---------- */
+const B='#000',W='#fff';
+const FLAGS=[
+  // ---- easy: tricolours / bicolours ----
+  {n:'Germany',d:1,c:'Europe',layers:[{h:['#000000','#DD0000','#FFCE00']}]},
+  {n:'France',d:1,c:'Europe',layers:[{v:['#0055A4',W,'#EF4135']}]},
+  {n:'Italy',d:1,c:'Europe',layers:[{v:['#009246',W,'#CE2B37']}]},
+  {n:'Ireland',d:1,c:'Europe',layers:[{v:['#169B62',W,'#FF883E']}]},
+  {n:'Belgium',d:1,c:'Europe',layers:[{v:['#000000','#FDDA24','#EF3340']}]},
+  {n:'Netherlands',d:1,c:'Europe',layers:[{h:['#AE1C28',W,'#21468B']}]},
+  {n:'Russia',d:1,c:'Europe',layers:[{h:[W,'#0039A6','#D52B1E']}]},
+  {n:'Romania',d:2,c:'Europe',layers:[{v:['#002B7F','#FCD116','#CE1126']}]},
+  {n:'Austria',d:1,c:'Europe',layers:[{h:['#ED2939',W,'#ED2939']}]},
+  {n:'Ukraine',d:1,c:'Europe',layers:[{h:['#0057B7','#FFD700']}]},
+  {n:'Poland',d:1,c:'Europe',layers:[{h:[W,'#DC143C']}]},
+  {n:'Indonesia',d:2,c:'Asia',layers:[{h:['#FF0000',W]}]},
+  {n:'Hungary',d:2,c:'Europe',layers:[{h:['#CD2A3E',W,'#436F4D']}]},
+  {n:'Bulgaria',d:2,c:'Europe',layers:[{h:[W,'#00966E','#D62612']}]},
+  {n:'Nigeria',d:2,c:'Africa',layers:[{v:['#008751',W,'#008751']}]},
+  {n:'Peru',d:2,c:'Americas',layers:[{v:['#D91023',W,'#D91023']}]},
+  {n:'Lithuania',d:3,c:'Europe',layers:[{h:['#FDB913','#006A44','#C1272D']}]},
+  {n:'Colombia',d:2,c:'Americas',layers:[{hr:{c:['#FCD116','#003893','#CE1126'],r:[.5,.25,.25]}}]},
+  {n:'Gabon',d:3,c:'Africa',layers:[{h:['#009E60','#FCD116','#3A75C4']}]},
+  // ---- Nordic crosses ----
+  {n:'Denmark',d:1,c:'Europe',layers:[{fill:'#C8102E'},{nordic:{color:W,t:20,ox:36}}]},
+  {n:'Sweden',d:1,c:'Europe',layers:[{fill:'#006AA7'},{nordic:{color:'#FECC00',t:20,ox:36}}]},
+  {n:'Finland',d:1,c:'Europe',layers:[{fill:W},{nordic:{color:'#003580',t:20,ox:36}}]},
+  {n:'Norway',d:2,c:'Europe',layers:[{fill:'#EF2B2D'},{nordic:{color:W,t:34,ox:36}},{nordic:{color:'#00205B',t:16,ox:36}}]},
+  {n:'Iceland',d:2,c:'Europe',layers:[{fill:'#02529C'},{nordic:{color:W,t:34,ox:36}},{nordic:{color:'#DC1E35',t:16,ox:36}}]},
+  // ---- crosses ----
+  {n:'Switzerland',d:1,c:'Europe',ar:[1,1],layers:[{fill:'#D52B1E'},{plus:{color:W,t:20}}]},
+  {n:'England',d:2,c:'Europe',layers:[{fill:W},{plus:{color:'#CE1124',t:18}}]},
+  {n:'Greece',d:3,c:'Europe',layers:[{h:['#0D5EAF',W,'#0D5EAF',W,'#0D5EAF',W,'#0D5EAF',W,'#0D5EAF']},{canton:{w:37,h:55.5,color:'#0D5EAF',plus:{color:W,t:20}}}]},
+  // ---- discs ----
+  {n:'Japan',d:1,c:'Asia',layers:[{fill:W},{disc:{color:'#BC002D',d:60}}]},
+  {n:'Bangladesh',d:2,c:'Asia',layers:[{fill:'#006A4E'},{disc:{color:'#F42A41',d:50,x:45}}]},
+  {n:'Palau',d:3,c:'Oceania',layers:[{fill:'#4AADD6'},{disc:{color:'#FFDE00',d:52,x:45}}]},
+  // ---- triangles ----
+  {n:'Czechia',d:2,c:'Europe',layers:[{h:[W,'#D7141A']},{tri:{color:'#11457E',w:50}}]},
+  {n:'Sudan',d:3,c:'Africa',layers:[{h:['#D21034',W,'#000000']},{tri:{color:'#007229',w:38}}]},
+  {n:'Bahamas',d:3,c:'Americas',layers:[{h:['#00778B','#FFC72C','#00778B']},{tri:{color:'#000000',w:40}}]},
+  {n:'Cuba',d:3,c:'Americas',layers:[{h:['#002A8F',W,'#002A8F',W,'#002A8F']},{tri:{color:'#CF142B',w:42}},{star:{color:W,d:18,x:12,y:50}}]},
+  {n:'Jordan',d:3,c:'Asia',layers:[{h:['#000000',W,'#007A3D']},{tri:{color:'#CE1126',w:44}},{star:{color:W,d:14,x:14,y:50}}]},
+  // ---- stars & crescents ----
+  {n:'Vietnam',d:2,c:'Asia',layers:[{fill:'#DA251D'},{star:{color:'#FFFF00',d:44}}]},
+  {n:'Morocco',d:3,c:'Africa',layers:[{fill:'#C1272D'},{star:{color:'#006233',d:34}}]},
+  {n:'China',d:3,c:'Asia',layers:[{fill:'#DE2910'},{stars:[{color:'#FFDE00',d:26,x:16,y:22},{color:'#FFDE00',d:9,x:31,y:10,rot:20},{color:'#FFDE00',d:9,x:37,y:20,rot:45},{color:'#FFDE00',d:9,x:37,y:33,rot:70},{color:'#FFDE00',d:9,x:31,y:43,rot:20}]}]},
+  {n:'Turkey',d:3,c:'Europe',layers:[{fill:'#E30A17'},{crescent:{color:W,field:'#E30A17',d:42,x:36,y:50}},{star:{color:W,d:16,x:53,y:50,rot:-15}}]},
+  {n:'Tunisia',d:3,c:'Africa',layers:[{fill:'#E70013'},{disc:{color:W,d:58}},{crescent:{color:'#E70013',field:W,d:30,x:52,y:50}},{star:{color:'#E70013',d:14,x:57,y:50,rot:-15}}]},
+  {n:'Israel',d:3,c:'Asia',layers:[{fill:W},{hr:{c:[W,'#0038B8',W,'#0038B8',W],r:[.16,.13,.42,.13,.16]}},{hexagram:{color:'#0038B8',d:38,x:50,y:50}}]},
+  // ---- famous emblem flags (recognisable CSS takes) ----
+  {n:'India',d:2,c:'Asia',layers:[{h:['#FF9933',W,'#138808']},{chakra:{d:20}}]},
+  {n:'Brazil',d:2,c:'Americas',layers:[{fill:'#009C3B'},{diamond:{color:'#FFDF00',d:64}},{disc:{color:'#002776',d:34}}]},
+  {n:'United States',d:2,c:'Americas',layers:[{h:['#B22234',W,'#B22234',W,'#B22234',W,'#B22234',W,'#B22234',W,'#B22234',W,'#B22234']},{canton:{w:40,h:53.8,color:'#3C3B6E',starGrid:{rows:5,cols:5,d:9,x0:8,y0:9,dx:18,dy:18}}}]}
+];
+
+/* ---------- game ---------- */
+let pool=[], order=[], idx=0, count=0, revealed=false;
+let diff=0;
+
+$('diffChips').addEventListener('click',e=>{ const b=e.target.closest('.chip'); if(!b) return;
+  [...$('diffChips').children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); diff=+b.dataset.d; });
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+$('startBtn').onclick=()=>{
+  pool = diff? FLAGS.filter(f=>f.d===diff) : FLAGS.slice();
+  order = shuffle(pool.map((_,i)=>i)); idx=0; count=0;
+  $('setup').classList.remove('active'); $('game').classList.add('active');
+  nextFlag();
+};
+$('mainBtn').onclick=()=>{ if(!revealed) reveal(); else nextFlag(); };
+$('hintBtn').onclick=()=>{ const f=pool[order[idx]]; $('hint').textContent='🌍 '+f.c; };
+
+function nextFlag(){
+  if(idx>=order.length){ order=shuffle(order); idx=0; }
+  const f=pool[order[idx]]; count++;
+  $('count').textContent=count;
+  renderFlag($('flag'), f);
+  $('answer').textContent=''; $('hint').textContent='';
+  revealed=false; $('mainBtn').textContent='Reveal 🎯'; $('hintBtn').style.visibility='visible';
+}
+function reveal(){
+  const f=pool[order[idx]]; $('answer').textContent=f.n;
+  revealed=true; idx++; $('mainBtn').textContent='Next →'; $('hintBtn').style.visibility='hidden';
+}
+document.addEventListener('keydown',e=>{ if(!$('game').classList.contains('active')) return;
+  if(e.code==='Space'){ e.preventDefault(); $('mainBtn').click(); } });
+
+// render the how-to example flag (Germany)
+renderFlag($('exFlag'), FLAGS[0]);
+</script>
+</body>
+</html>
