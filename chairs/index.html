@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Musical Chairs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#160d2e;--panel:#211444;--line:rgba(246,240,226,.14);
+    --gold:#ffc94d;--green:#46e08a;--magenta:#ff4d7d;--cyan:#46d6e0;--cream:#f6f0e2;
+    --muted:rgba(246,240,226,.62);
+    --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--body)}
+  body{display:flex;flex-direction:column}
+
+  .brand{position:fixed;top:14px;left:16px;z-index:8;font-family:var(--display);font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px}
+  .brand a{color:var(--muted);font-family:var(--body);font-weight:500;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:10px}
+  .brand a:hover{color:var(--cream);border-color:var(--cream)}
+
+  /* HUD */
+  .hud{position:fixed;top:14px;right:16px;z-index:8;display:flex;gap:10px;align-items:center}
+  .pill{background:rgba(13,9,28,.7);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:12px;padding:8px 13px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .pill b{color:var(--cream);font-family:var(--display);font-size:15px}
+  .mute{cursor:pointer;user-select:none}
+
+  /* stage */
+  .stage{flex:1;position:relative;margin-top:8px}
+  .ringlabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+  .ringlabel .note{font-size:clamp(34px,6vw,60px);opacity:.5;animation:bob 1s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-8px)}}
+  .ringlabel .txt{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+  .chair{position:absolute;transform:translate(-50%,-50%);font-size:34px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4));transition:opacity .3s}
+  .avatar{position:absolute;width:58px;height:58px;border-radius:50%;transform:translate(-50%,-50%);
+    display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:24px;color:#160d2e;
+    border:3px solid rgba(0,0,0,.25);box-shadow:0 8px 20px rgba(0,0,0,.4);z-index:3}
+  .avatar.safe{outline:4px solid var(--green);outline-offset:2px}
+  .avatar.out{outline:4px solid var(--magenta);outline-offset:2px;animation:shake .4s ease}
+  @keyframes shake{0%,100%{}20%{transform:translate(-50%,-50%) rotate(-14deg)}60%{transform:translate(-50%,-50%) rotate(14deg)}}
+
+  /* bottom controls */
+  .foot{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .status{font-family:var(--display);font-weight:800;font-size:clamp(18px,3.4vw,26px);min-height:1.2em;text-align:center}
+  .status .m{color:var(--magenta)} .status .g{color:var(--green)}
+  .btn{all:unset;cursor:pointer;text-align:center;padding:15px 40px;border-radius:15px;font-family:var(--display);font-weight:800;font-size:19px;background:var(--gold);color:#160d2e;box-shadow:0 12px 34px rgba(255,201,77,.22);transition:transform .1s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.red{background:var(--magenta);color:#160d2e;box-shadow:0 12px 34px rgba(255,77,125,.22)}
+  .btn.green{background:var(--green);box-shadow:0 12px 34px rgba(70,224,138,.2)}
+
+  /* full-screen panels */
+  .center{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:26px;z-index:20;overflow:auto;
+    background:radial-gradient(120% 110% at 50% -10%,#331a66 0%,#160d2e 62%)}
+  .center.hide{display:none}
+  .center h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,9vw,80px);margin:0;line-height:1;
+    background:linear-gradient(120deg,var(--cyan),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .center p{color:var(--muted);max-width:520px;margin:0}
+  .howto{margin:4px 0;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.03);max-width:520px;text-align:left}
+  .howto .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .howto p{font-size:14px;color:var(--muted);margin:0;line-height:1.55}
+  .stepper{display:flex;align-items:center;gap:18px}
+  .stepper button{all:unset;cursor:pointer;width:52px;height:52px;border-radius:14px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:26px;font-family:var(--display);font-weight:800}
+  .stepper button:hover{border-color:var(--cream)}
+  .stepper .n{font-family:var(--display);font-weight:800;font-size:56px;min-width:90px}
+  .steplab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .winner-badge{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:56px;color:#160d2e;border:5px solid rgba(0,0,0,.25);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:19;overflow:hidden}
+  .confetti i{position:absolute;top:-14px;width:10px;height:14px;opacity:.9;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+  <div class="brand">🪑 Musical Chairs <a href="../">← All games</a></div>
+  <div class="hud">
+    <div class="pill">Players left <b id="alive">6</b></div>
+    <div class="pill mute" id="muteBtn" title="Mute / unmute music">🔊</div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="ringlabel" id="ringlabel"><div class="note">🎵</div><div class="txt" id="ringtxt">press start</div></div>
+  </div>
+
+  <div class="foot" id="foot" style="display:none">
+    <div class="status" id="status">Everyone grab a number!</div>
+    <button class="btn" id="mainBtn">Start music 🎵</button>
+  </div>
+
+  <!-- setup -->
+  <div class="center" id="setup">
+    <h1>Musical Chairs</h1>
+    <p>Everyone in the room claims a number. Start the music, the avatars circle the chairs — when you stop it, whoever misses a chair is out. Last one seated wins the contest!</p>
+    <div class="howto">
+      <div class="k">How to play</div>
+      <p>Share your screen. Each person calls a number (1, 2, 3…). Hit <b>Start music</b> → avatars run around the chairs → hit <b>Stop the music</b> and one avatar is knocked out at random. A chair disappears each round until one champion is left. 🏆</p>
+    </div>
+    <div class="steplab">How many players?</div>
+    <div class="stepper">
+      <button id="minus">–</button>
+      <div class="n" id="countN">6</div>
+      <button id="plus">+</button>
+    </div>
+    <button class="btn" id="startBtn">Line them up 🪑</button>
+  </div>
+
+  <!-- winner -->
+  <div class="center hide" id="winner">
+    <div class="steplab">The last one seated…</div>
+    <div class="winner-badge" id="winBadge">7</div>
+    <h1 id="winTitle">Number 7 wins!</h1>
+    <p>Musical-chairs champion. 🎉</p>
+    <button class="btn green" id="againBtn">Play again</button>
+  </div>
+  <div class="confetti" id="confetti"></div>
+
+<script>
+const COLORS=['#ffc94d','#46d6e0','#ff4d7d','#46e08a','#b388ff','#ff9f46','#4d9dff','#ff6bd6','#7dd87d','#e0d24a','#ff7a7a','#5ad1c0'];
+const $=id=>document.getElementById(id);
+const stage=$('stage');
+
+let count=6, active=[], chairsEls=[], avEls=new Map();
+let rotation=0, speed=0, phase='idle', rafId=0, lastT=0, victimNum=null, muted=false;
+
+/* ---------- setup ---------- */
+$('minus').onclick=()=>{ count=Math.max(2,count-1); $('countN').textContent=count; };
+$('plus').onclick =()=>{ count=Math.min(12,count+1); $('countN').textContent=count; };
+$('startBtn').onclick=()=>{
+  active=[]; for(let i=0;i<count;i++) active.push({n:i+1,color:COLORS[i%COLORS.length]});
+  $('setup').classList.add('hide'); $('winner').classList.add('hide'); $('foot').style.display='flex';
+  buildAvatars(); phase='idle'; rotation=0; setRound();
+  render(true);
+};
+$('againBtn').onclick=()=>location.reload();
+$('muteBtn').onclick=()=>{ muted=!muted; $('muteBtn').textContent=muted?'🔇':'🔊'; if(muted) stopMusic(); };
+
+/* ---------- geometry ---------- */
+function geo(){
+  const w=stage.clientWidth, h=stage.clientHeight, size=Math.min(w,h);
+  return {cx:w/2, cy:h/2, ar:size*0.36, chr:size*0.22};
+}
+
+/* ---------- build ---------- */
+function buildAvatars(){
+  avEls.forEach(el=>el.remove()); avEls.clear();
+  active.forEach(p=>{
+    const el=document.createElement('div'); el.className='avatar';
+    el.style.background=p.color; el.textContent=p.n;
+    stage.appendChild(el); avEls.set(p.n, el);
+  });
+}
+function buildChairs(nChairs){
+  chairsEls.forEach(c=>c.remove()); chairsEls=[];
+  const g=geo();
+  for(let i=0;i<nChairs;i++){
+    const a=i/nChairs*Math.PI*2 - Math.PI/2;
+    const c=document.createElement('div'); c.className='chair'; c.textContent='🪑';
+    c.style.left=(g.cx+g.chr*Math.cos(a))+'px'; c.style.top=(g.cy+g.chr*Math.sin(a))+'px';
+    stage.appendChild(c); chairsEls.push(c);
+  }
+}
+function setRound(){
+  buildChairs(active.length-1);
+  $('alive').textContent=active.length;
+  $('ringtxt').textContent = active.length+' players · '+(active.length-1)+' chairs';
+}
+
+/* ---------- render ---------- */
+function render(withTransition){
+  const g=geo();
+  active.forEach((p,i)=>{
+    const el=avEls.get(p.n);
+    el.style.transition = withTransition ? 'left .5s cubic-bezier(.2,1,.4,1),top .5s cubic-bezier(.2,1,.4,1)' : 'none';
+    const a=i/active.length*Math.PI*2 - Math.PI/2 + rotation;
+    el.style.left=(g.cx+g.ar*Math.cos(a))+'px';
+    el.style.top =(g.cy+g.ar*Math.sin(a))+'px';
+  });
+}
+
+/* ---------- music loop (visual rotation) ---------- */
+function loop(t){
+  if(!lastT) lastT=t; let dt=(t-lastT)/1000; lastT=t; if(dt>0.05) dt=0.05;
+  if(phase==='music'){ if(speed<3.2) speed+=dt*2.2; rotation+=speed*dt; render(false); rafId=requestAnimationFrame(loop); }
+  else if(phase==='stopping'){
+    speed*=Math.pow(0.06,dt); rotation+=speed*dt; render(false);
+    if(speed<0.25){ phase='seated'; eliminate(); } else rafId=requestAnimationFrame(loop);
+  }
+}
+
+/* ---------- controls ---------- */
+function startMusic(){
+  phase='music'; speed=0.8; lastT=0; $('ringtxt').textContent='🎶 running…';
+  $('status').textContent='Grab a chair when it stops!';
+  const b=$('mainBtn'); b.className='btn red'; b.textContent='Stop the music ⏹'; b.onclick=stopMusicRound;
+  startTune(); rafId=requestAnimationFrame(loop);
+}
+function stopMusicRound(){
+  if(phase!=='music') return;
+  phase='stopping'; stopMusic();
+  const b=$('mainBtn'); b.textContent='…'; b.onclick=null;
+}
+function eliminate(){
+  const g=geo();
+  const vi=Math.floor(Math.random()*active.length);
+  const victim=active[vi]; victimNum=victim.n;
+  const safe=active.filter((_,i)=>i!==vi);
+  // seat the safe avatars in the chairs
+  const nChairs=active.length-1;
+  safe.forEach((p,k)=>{
+    const el=avEls.get(p.n); const a=k/nChairs*Math.PI*2 - Math.PI/2;
+    el.style.transition='left .5s cubic-bezier(.2,1,.4,1),top .5s cubic-bezier(.2,1,.4,1)';
+    el.style.left=(g.cx+g.chr*Math.cos(a))+'px'; el.style.top=(g.cy+g.chr*Math.sin(a))+'px';
+    el.classList.add('safe');
+  });
+  // victim stays on the outer ring, flagged out
+  const vel=avEls.get(victim.n); vel.classList.add('out');
+  $('status').innerHTML='🪑 No chair for <span class="m">Number '+victim.n+'</span> — you\'re out!';
+  const b=$('mainBtn'); b.className='btn green';
+  b.textContent = (active.length-1<=1) ? 'Crown the winner 🏆' : 'Next round →'; b.onclick=nextRound;
+}
+function nextRound(){
+  const vel=avEls.get(victimNum); if(vel){ vel.remove(); avEls.delete(victimNum); }
+  active=active.filter(p=>p.n!==victimNum); victimNum=null;
+  avEls.forEach(el=>el.classList.remove('safe','out'));
+  if(active.length===1){ return win(active[0]); }
+  rotation=0; setRound(); render(true);
+  $('status').textContent='Everyone back up — grab a number!';
+  const b=$('mainBtn'); b.className='btn'; b.textContent='Start music 🎵'; b.onclick=startMusic;
+}
+$('mainBtn').onclick=startMusic;
+
+function win(p){
+  stopMusic();
+  $('winBadge').textContent=p.n; $('winBadge').style.background=p.color;
+  $('winTitle').textContent='Number '+p.n+' wins!';
+  $('foot').style.display='none';
+  $('winner').classList.remove('hide');
+  burst();
+}
+
+/* ---------- confetti ---------- */
+function burst(){
+  const c=$('confetti'); c.innerHTML='';
+  const cols=[ '#ffc94d','#46d6e0','#ff4d7d','#46e08a','#b388ff' ];
+  for(let i=0;i<120;i++){
+    const s=document.createElement('i');
+    s.style.left=Math.random()*100+'vw';
+    s.style.background=cols[i%cols.length];
+    s.style.animationDuration=(2.4+Math.random()*2.2)+'s';
+    s.style.animationDelay=(Math.random()*0.6)+'s';
+    s.style.transform='rotate('+(Math.random()*360)+'deg)';
+    c.appendChild(s);
+  }
+  setTimeout(()=>{ c.innerHTML=''; }, 5200);
+}
+
+/* ---------- generated music (Web Audio, no assets) ---------- */
+let actx=null, tuneTimer=0, step=0;
+// upbeat major riff (two bars) + bouncing bass line
+const MELODY=[659.25,659.25,783.99,880.0,  880.0,783.99,659.25,587.33,
+              523.25,587.33,659.25,659.25, 587.33,587.33,659.25,783.99];
+const BASS  =[130.81,0,196.00,0, 174.61,0,196.00,0,
+              130.81,0,196.00,0, 146.83,0,196.00,0]; // C-G-F-G roots
+function note(freq,type,peak,dur){
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(peak, actx.currentTime+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur);
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+dur+0.02);
+}
+function startTune(){
+  if(muted) return;
+  try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+  }catch(e){ return; }
+  step=0; clearInterval(tuneTimer);
+  const tick=()=>{
+    const i=step%MELODY.length;
+    note(MELODY[i],'triangle',0.15,0.13);          // melody
+    if(BASS[i]) note(BASS[i],'square',0.11,0.16);   // bouncy bass on the beat
+    step++;
+  };
+  tick(); tuneTimer=setInterval(tick,140);          // faster = more upbeat
+}
+function stopMusic(){ clearInterval(tuneTimer); tuneTimer=0; }
+
+window.addEventListener('resize',()=>{ if(!$('setup').classList.contains('hide')) return;
+  if(active.length){ buildChairs(Math.max(1,active.length-1)); render(false);} });
+</script>
+</body>
+</html>
