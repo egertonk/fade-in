@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Connections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#171226;
+  --bg:#0f0b1a;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%,rgba(255,201,77,.10),transparent 60%),
+             radial-gradient(1000px 700px at -10% 110%,rgba(70,214,224,.10),transparent 55%),
+             var(--bg);
+}
+.brand{
+  position:fixed; top:16px; left:18px; z-index:50;
+  font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+  transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+.wrap{
+  min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center;
+  padding:74px 18px 24px; overflow-y:auto;
+}
+.screen{display:none; width:100%; max-width:640px; margin:0 auto}
+.screen.active{display:block}
+
+/* START */
+.hero{text-align:center}
+.eyebrow{font-family:var(--mono); text-transform:uppercase; letter-spacing:.16em; font-size:11px; color:var(--muted); margin-bottom:14px}
+h1{font-family:var(--display); font-weight:800; font-size:clamp(46px,11vw,84px); line-height:.95; margin:0 0 16px}
+.lead{font-size:15px; color:var(--muted); max-width:460px; margin:0 auto 24px; line-height:1.5}
+.howto{
+  text-align:left; border:1px solid var(--line); border-radius:16px; padding:18px 20px;
+  max-width:460px; margin:0 auto 26px; background:rgba(255,255,255,.02);
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; letter-spacing:.14em; font-size:11px; color:var(--gold); margin-bottom:9px}
+.howto p{margin:0 0 10px; font-size:14px; line-height:1.5; color:var(--cream)}
+.howto .ex{
+  font-family:var(--mono); font-size:12px; color:var(--muted); line-height:1.6;
+  border-top:1px solid var(--line); padding-top:10px;
+}
+.howto .ex b{color:var(--cyan); font-weight:700}
+
+/* BUTTONS */
+.btn{
+  font-family:var(--display); font-weight:800; font-size:15px; cursor:pointer;
+  border-radius:13px; padding:13px 22px; border:1px solid transparent; transition:.15s; color:var(--cream);
+  background:transparent;
+}
+.btn.primary{background:var(--gold); color:#20160a; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06); transform:translateY(-1px)}
+.btn.ghost{background:transparent; border-color:var(--line); color:var(--cream)}
+.btn.ghost:hover{border-color:rgba(246,240,226,.4)}
+.btn:disabled{opacity:.4; cursor:not-allowed; transform:none; filter:none}
+
+/* GAME */
+.gamehead{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px}
+.gamehead .title{font-family:var(--display); font-weight:800; font-size:22px}
+.stats{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); text-align:right}
+.stats b{color:var(--cream)}
+
+.solved{display:flex; flex-direction:column; gap:8px; margin-bottom:10px}
+.bar{
+  border-radius:13px; padding:11px 16px; text-align:center; color:#160f04;
+  animation:pop .3s ease;
+}
+.bar .bname{font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.02em; text-transform:uppercase}
+.bar .bwords{font-family:var(--mono); font-size:12px; font-weight:700; margin-top:2px; opacity:.82}
+.bar.d0{background:var(--gold)} .bar.d1{background:var(--green)}
+.bar.d2{background:var(--cyan)} .bar.d3{background:var(--magenta); color:#fff}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+
+.grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px}
+.tile{
+  aspect-ratio:1.28/1; border-radius:12px; border:1px solid var(--line);
+  background:rgba(255,255,255,.04); color:var(--cream);
+  font-family:var(--display); font-weight:800; font-size:clamp(11px,2.6vw,16px);
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  padding:4px 6px; cursor:pointer; transition:transform .1s, background .12s, border-color .12s;
+  user-select:none; line-height:1.05; word-break:break-word; hyphens:auto;
+}
+.tile:hover{border-color:rgba(246,240,226,.35)}
+.tile.sel{background:var(--cream); color:#1a1330; border-color:var(--cream); transform:translateY(-2px)}
+.tile.shake{animation:shake .42s}
+@keyframes shake{
+  0%,100%{transform:translateX(0)} 15%{transform:translateX(-6px)}
+  30%{transform:translateX(6px)} 45%{transform:translateX(-5px)}
+  60%{transform:translateX(5px)} 75%{transform:translateX(-3px)} 90%{transform:translateX(3px)}
+}
+
+.controls{display:flex; flex-wrap:wrap; gap:8px; justify-content:center}
+.controls .btn{flex:1 1 auto; min-width:120px; padding:12px 16px; font-size:14px}
+.toast{
+  text-align:center; font-family:var(--mono); text-transform:uppercase; letter-spacing:.1em;
+  font-size:12px; color:var(--magenta); min-height:16px; margin:10px 0 4px; font-weight:700;
+}
+.toast.ok{color:var(--green)}
+
+.solvedstate{text-align:center; padding:14px 0}
+.solvedstate h2{font-family:var(--display); font-weight:800; font-size:clamp(34px,8vw,54px); margin:0 0 8px}
+.solvedstate p{color:var(--muted); font-size:14px; margin:0 0 18px}
+
+@media(max-width:420px){
+  .controls .btn{min-width:calc(50% - 4px)}
+}
+</style>
+</head>
+<body>
+<div class="brand">🔲 Connections <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section id="start" class="screen active">
+    <div class="hero">
+      <div class="eyebrow">Remote team · Screen-share</div>
+      <h1>Connections</h1>
+      <p class="lead">Share your screen — 16 words, find the 4 groups of 4; the team calls a group, you select and check.</p>
+      <div class="howto">
+        <div class="lbl">How to play</div>
+        <p>Find 4 groups of 4 among the 16 words. The team shouts out a group, the host selects those tiles and hits Check — correct groups lock and reveal their category.</p>
+        <div class="ex">e.g. <b>RED · BLUE · GREEN · PINK</b> → all Colours.</div>
+      </div>
+      <button class="btn primary" id="startBtn">Start ▶</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <div class="gamehead">
+      <div class="title">Find the groups</div>
+      <div class="stats">Mistakes: <b id="mistakes">0</b><br>Puzzle <b id="pnum">1</b></div>
+    </div>
+
+    <div class="solved" id="solved"></div>
+    <div class="grid" id="grid"></div>
+    <div class="toast" id="toast"></div>
+
+    <div class="controls" id="playControls">
+      <button class="btn primary" id="checkBtn" disabled>Check group</button>
+      <button class="btn ghost" id="revealBtn">Reveal a group</button>
+      <button class="btn ghost" id="shuffleBtn">Shuffle</button>
+      <button class="btn ghost" id="newBtn">New puzzle →</button>
+    </div>
+
+    <div class="solvedstate" id="solvedState" style="display:none">
+      <h2>Solved! 🎉</h2>
+      <p id="solvedSub">All four groups found.</p>
+      <button class="btn primary" id="newBtn2">New puzzle →</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ---- PUZZLES: 8+ work-appropriate puzzles, each 4 groups of 4, ranks 0..3 ---- */
+var PUZZLES = [
+  [
+    {name:"Primary colours", rank:0, words:["Red","Blue","Yellow","Green"]},
+    {name:"___ meeting", rank:1, words:["Stand","Kick","Town","Board"]},
+    {name:"Spreadsheet features", rank:2, words:["Cell","Filter","Pivot","Macro"]},
+    {name:"Types of coffee", rank:3, words:["Flat","Cold","Drip","Press"]}
+  ],
+  [
+    {name:"Office supplies", rank:0, words:["Stapler","Marker","Folder","Tape"]},
+    {name:"Email actions", rank:1, words:["Reply","Forward","Archive","Flag"]},
+    {name:"Slack ___", rank:2, words:["Channel","Thread","Huddle","Status"]},
+    {name:"Loop the ___ in", rank:3, words:["Team","Ball","Bank","Snoop"]}
+  ],
+  [
+    {name:"Cloud providers", rank:0, words:["Azure","Amazon","Google","Oracle"]},
+    {name:"Keyboard keys", rank:1, words:["Shift","Enter","Escape","Control"]},
+    {name:"Version control", rank:2, words:["Branch","Merge","Commit","Fork"]},
+    {name:"___ light", rank:3, words:["Spot","Green","Head","Star"]}
+  ],
+  [
+    {name:"Fruits", rank:0, words:["Apple","Mango","Cherry","Peach"]},
+    {name:"Tech companies", rank:1, words:["Apple","Meta","Amazon","Intel"]},
+    {name:"Meeting outcomes", rank:2, words:["Action","Decision","Follow","Recap"]},
+    {name:"Board ___", rank:3, words:["Room","Game","Walk","Member"]}
+  ],
+  [
+    {name:"Weather", rank:0, words:["Sunny","Cloudy","Windy","Rainy"]},
+    {name:"Presentation parts", rank:1, words:["Slide","Agenda","Title","Notes"]},
+    {name:"Project phases", rank:2, words:["Scope","Build","Launch","Review"]},
+    {name:"Deck the ___", rank:3, words:["Halls","Cards","Chair","Hands"]}
+  ],
+  [
+    {name:"Currencies", rank:0, words:["Dollar","Euro","Pound","Yen"]},
+    {name:"Budget terms", rank:1, words:["Cost","Margin","Revenue","Forecast"]},
+    {name:"Approve the ___", rank:2, words:["Invoice","Request","Expense","Order"]},
+    {name:"Bottom ___", rank:3, words:["Line","Feeder","Dollar","Left"]}
+  ],
+  [
+    {name:"Shapes", rank:0, words:["Circle","Square","Triangle","Oval"]},
+    {name:"Feedback flavours", rank:1, words:["Praise","Note","Nudge","Critique"]},
+    {name:"Design tools", rank:2, words:["Figma","Sketch","Canva","Frame"]},
+    {name:"Round the ___", rank:3, words:["Table","Clock","Corner","Bend"]}
+  ],
+  [
+    {name:"Seasons", rank:0, words:["Spring","Summer","Autumn","Winter"]},
+    {name:"Agile ceremonies", rank:1, words:["Sprint","Retro","Grooming","Demo"]},
+    {name:"Metrics", rank:2, words:["Reach","Churn","Uptime","Traffic"]},
+    {name:"Water ___", rank:3, words:["Cooler","Fall","Mark","Shed"]}
+  ],
+  [
+    {name:"Planets", rank:0, words:["Mars","Venus","Saturn","Neptune"]},
+    {name:"HR topics", rank:1, words:["Payroll","Leave","Benefits","Review"]},
+    {name:"Onboarding steps", rank:2, words:["Setup","Intro","Buddy","Access"]},
+    {name:"Take a ___", rank:3, words:["Break","Note","Seat","Stand"]}
+  ]
+];
+
+/* ---- STATE ---- */
+var pIndex = -1;
+var puzzle = null;      // array of 4 groups
+var tiles = [];         // {word, gi} for currently-on-grid words
+var selected = [];      // indices into tiles
+var foundGroups = [];   // group indices found
+var mistakes = 0;
+
+/* ---- HELPERS ---- */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+
+/* ---- SCREENS ---- */
+function show(id){
+  var s=document.querySelectorAll('.screen');
+  for(var i=0;i<s.length;i++) s[i].classList.remove('active');
+  $(id).classList.add('active');
+}
+
+/* ---- GAME FLOW ---- */
+function newPuzzle(){
+  pIndex = (pIndex + 1) % PUZZLES.length;
+  puzzle = PUZZLES[pIndex];
+  foundGroups = [];
+  selected = [];
+  mistakes = 0;
+  buildTiles();
+  $('mistakes').textContent = '0';
+  $('pnum').textContent = String(pIndex + 1);
+  $('solved').innerHTML = '';
+  $('toast').textContent = '';
+  $('toast').className = 'toast';
+  $('playControls').style.display = 'flex';
+  $('solvedState').style.display = 'none';
+  renderGrid();
+  updateCheck();
+}
+
+function buildTiles(){
+  tiles = [];
+  for(var gi=0; gi<puzzle.length; gi++){
+    if(foundGroups.indexOf(gi) !== -1) continue;
+    var g = puzzle[gi];
+    for(var w=0; w<g.words.length; w++){
+      tiles.push({word:g.words[w], gi:gi});
+    }
+  }
+  shuffle(tiles);
+}
+
+function renderGrid(){
+  var grid = $('grid');
+  grid.innerHTML = '';
+  for(var i=0;i<tiles.length;i++){
+    (function(i){
+      var t = tiles[i];
+      var el = document.createElement('div');
+      el.className = 'tile' + (selected.indexOf(i) !== -1 ? ' sel' : '');
+      el.textContent = t.word;
+      el.setAttribute('data-i', i);
+      el.onclick = function(){ toggleTile(i); };
+      grid.appendChild(el);
+    })(i);
+  }
+}
+
+function toggleTile(i){
+  var pos = selected.indexOf(i);
+  if(pos !== -1){ selected.splice(pos,1); }
+  else{
+    if(selected.length >= 4) return;
+    selected.push(i);
+  }
+  clearToast();
+  renderGrid();
+  updateCheck();
+}
+
+function updateCheck(){
+  $('checkBtn').disabled = (selected.length !== 4);
+}
+
+function clearToast(){
+  $('toast').textContent = '';
+  $('toast').className = 'toast';
+}
+
+function checkGroup(){
+  if(selected.length !== 4) return;
+  var gis = selected.map(function(i){ return tiles[i].gi; });
+  var g0 = gis[0];
+  var allSame = gis.every(function(g){ return g === g0; });
+  // must all belong to same group AND be all 4 of it (a group only ever has 4 tiles on grid)
+  if(allSame){
+    lockGroup(g0);
+    selected = [];
+    buildTiles();
+    renderGrid();
+    updateCheck();
+    var t = $('toast'); t.textContent = 'Group found ✓'; t.className = 'toast ok';
+    if(foundGroups.length === puzzle.length) finish();
+  } else {
+    mistakes++;
+    $('mistakes').textContent = String(mistakes);
+    var t2 = $('toast'); t2.textContent = 'Not a group'; t2.className = 'toast';
+    // shake selected tiles
+    var sel = selected.slice();
+    var nodes = document.querySelectorAll('.tile.sel');
+    for(var k=0;k<nodes.length;k++){ nodes[k].classList.add('shake'); }
+    setTimeout(function(){
+      selected = [];
+      renderGrid();
+      updateCheck();
+    }, 430);
+  }
+}
+
+function lockGroup(gi){
+  if(foundGroups.indexOf(gi) !== -1) return;
+  foundGroups.push(gi);
+  var g = puzzle[gi];
+  var bar = document.createElement('div');
+  bar.className = 'bar d' + g.rank;
+  bar.innerHTML = '<div class="bname">'+esc(g.name)+'</div>' +
+                  '<div class="bwords">'+esc(g.words.join(' · '))+'</div>';
+  $('solved').appendChild(bar);
+}
+
+function revealGroup(){
+  // find first unfound group
+  for(var gi=0; gi<puzzle.length; gi++){
+    if(foundGroups.indexOf(gi) === -1){
+      lockGroup(gi);
+      selected = [];
+      buildTiles();
+      renderGrid();
+      updateCheck();
+      clearToast();
+      if(foundGroups.length === puzzle.length) finish();
+      return;
+    }
+  }
+}
+
+function finish(){
+  $('playControls').style.display = 'none';
+  $('solvedState').style.display = 'block';
+  $('solvedSub').textContent = 'All four groups found — ' + mistakes + ' mistake' + (mistakes===1?'':'s') + '.';
+}
+
+/* ---- WIRING ---- */
+$('startBtn').onclick = function(){ show('game'); newPuzzle(); };
+$('checkBtn').onclick = checkGroup;
+$('revealBtn').onclick = revealGroup;
+$('shuffleBtn').onclick = function(){ shuffle(tiles); selected = []; renderGrid(); updateCheck(); clearToast(); };
+$('newBtn').onclick = newPuzzle;
+$('newBtn2').onclick = newPuzzle;
+</script>
+</body>
+</html>

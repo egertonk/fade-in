@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fact or Cap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#141c2e;
+  --bg:#0c1220;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%,#1a2540,transparent),radial-gradient(1000px 700px at -10% 110%,#1c1430,transparent),var(--bg);
+}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:50;
+  font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+}
+.brand a:hover{ color:var(--cream); border-color:rgba(246,240,226,.3); }
+
+.wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:70px 22px 40px; }
+.screen{ display:none; width:100%; max-width:760px; }
+.screen.active{ display:block; }
+
+.label{ font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--muted); }
+
+h1.title{
+  font-family:var(--display); font-weight:800; font-size:clamp(48px,10vw,92px); line-height:.95;
+  margin:0 0 14px; letter-spacing:-1px;
+}
+.title .em{ color:var(--gold); }
+.rule{ font-size:17px; color:var(--muted); max-width:560px; margin:0 auto 26px; line-height:1.5; }
+
+.center{ text-align:center; }
+
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.02);
+  max-width:520px; margin:0 auto 30px; text-align:left;
+}
+.howto .label{ display:block; margin-bottom:10px; }
+.howto p{ margin:0 0 14px; font-size:15px; color:var(--cream); line-height:1.45; }
+.example{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:15px; padding:7px 0; }
+.example .stmt{ color:var(--cream); }
+.example .arrow{ color:var(--muted); font-family:var(--mono); }
+.verdict-fact{ font-family:var(--display); font-weight:800; color:var(--green); }
+.verdict-cap{ font-family:var(--display); font-weight:800; color:var(--magenta); }
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:18px; cursor:pointer;
+  border-radius:13px; padding:15px 30px; border:1px solid var(--line); background:transparent; color:var(--cream);
+  transition:transform .06s ease, background .15s ease, border-color .15s ease;
+}
+.btn:hover{ transform:translateY(-2px); }
+.btn:active{ transform:translateY(0); }
+.btn-primary{ background:var(--gold); color:#1a1200; border-color:var(--gold); }
+.btn-ghost{ background:transparent; }
+
+/* HUD */
+.hud{
+  display:flex; align-items:center; justify-content:center; gap:26px; margin-bottom:34px; flex-wrap:wrap;
+}
+.stat{ text-align:center; }
+.stat .k{ font-family:var(--mono); text-transform:uppercase; font-size:10px; letter-spacing:1.5px; color:var(--muted); display:block; margin-bottom:4px; }
+.stat .v{ font-family:var(--display); font-weight:800; font-size:30px; line-height:1; }
+.stat .v.gold{ color:var(--gold); }
+.stat .v.cyan{ color:var(--cyan); }
+.hud .sep{ width:1px; height:34px; background:var(--line); }
+
+.statement{
+  font-family:var(--display); font-weight:800; font-size:clamp(30px,5.6vw,52px); line-height:1.08;
+  text-align:center; margin:0 auto 38px; max-width:680px; letter-spacing:-.5px; min-height:1.1em;
+}
+
+.calls{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.call-btn{
+  font-family:var(--display); font-weight:800; font-size:24px; cursor:pointer; min-width:190px;
+  border-radius:15px; padding:20px 24px; border:2px solid var(--line); background:rgba(246,240,226,.03); color:var(--cream);
+  transition:transform .06s ease, border-color .15s ease, background .15s ease;
+}
+.call-btn:hover{ transform:translateY(-2px); }
+.call-fact:hover{ border-color:var(--green); background:rgba(70,224,138,.08); }
+.call-cap:hover{ border-color:var(--magenta); background:rgba(255,77,125,.08); }
+
+/* reveal */
+.reveal{ text-align:center; }
+.big-verdict{
+  font-family:var(--display); font-weight:800; font-size:clamp(56px,12vw,110px); line-height:1; margin:0 0 8px; letter-spacing:-1px;
+}
+.big-verdict.fact{ color:var(--green); }
+.big-verdict.cap{ color:var(--magenta); }
+.roomcall{ font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:1.5px; margin:0 0 18px; }
+.roomcall.hit{ color:var(--green); }
+.roomcall.miss{ color:var(--magenta); }
+.why{ font-size:18px; color:var(--cream); max-width:560px; margin:0 auto 30px; line-height:1.5; }
+.restated{ font-family:var(--display); font-weight:800; font-size:clamp(22px,4vw,32px); margin:0 auto 6px; max-width:600px; line-height:1.15; color:var(--muted); }
+
+.hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="brand">✅ Fact or Cap <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active center" id="startScreen">
+    <div class="label">Remote party trivia · Screen-share</div>
+    <h1 class="title">Fact <span class="em">or</span> Cap</h1>
+    <p class="rule">Share your screen — read it out; the team yells FACT or CAP; you lock their answer and reveal.</p>
+
+    <div class="howto">
+      <span class="label">How to play</span>
+      <p>A wild statement appears — the room shouts whether it's true or a lie, you record their call, then reveal the truth and keep the streak alive.</p>
+      <div class="example">
+        <span class="stmt">“Octopuses have three hearts.”</span>
+        <span class="arrow">→</span>
+        <span class="verdict-fact">FACT ✅</span>
+      </div>
+      <div class="example">
+        <span class="stmt">“Goldfish have a 3-second memory.”</span>
+        <span class="arrow">→</span>
+        <span class="verdict-cap">CAP ❌</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn">Start ▶</button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen center" id="gameScreen">
+    <div class="hud">
+      <div class="stat"><span class="k">Card</span><span class="v" id="cardNum">#1</span></div>
+      <div class="sep"></div>
+      <div class="stat"><span class="k">Streak</span><span class="v gold" id="streakVal">0</span></div>
+      <div class="sep"></div>
+      <div class="stat"><span class="k">Best</span><span class="v cyan" id="bestVal">0</span></div>
+    </div>
+
+    <!-- ASK -->
+    <div id="askBlock">
+      <div class="statement" id="statementText">—</div>
+      <div class="label" style="margin-bottom:16px;">Room's call?</div>
+      <div class="calls">
+        <button class="call-btn call-fact" data-call="true">FACT ✅</button>
+        <button class="call-btn call-cap" data-call="false">CAP ❌</button>
+      </div>
+    </div>
+
+    <!-- REVEAL -->
+    <div id="revealBlock" class="reveal hidden">
+      <div class="big-verdict" id="bigVerdict">FACT</div>
+      <div class="roomcall" id="roomCall">Room said —</div>
+      <div class="restated" id="restated">—</div>
+      <div class="why" id="whyText">—</div>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const DATA = [
+  {s:"Octopuses have three hearts.",t:true,why:"Two branchial hearts pump blood to the gills, plus one systemic heart for the body."},
+  {s:"The Eiffel Tower can be up to 15 cm taller in summer.",t:true,why:"Heat expands the iron, so the tower grows in warm weather."},
+  {s:"Goldfish have a 3-second memory.",t:false,why:"Goldfish can actually remember things for months."},
+  {s:"Honey never spoils if stored properly.",t:true,why:"Its low moisture and acidity mean edible honey has been found in ancient tombs."},
+  {s:"Bananas are botanically classified as berries.",t:true,why:"By botanical definition bananas qualify as berries, while strawberries do not."},
+  {s:"Humans only use 10% of their brains.",t:false,why:"Brain imaging shows virtually all of the brain is active over a day."},
+  {s:"A group of flamingos is called a flamboyance.",t:true,why:"That really is the collective noun for flamingos."},
+  {s:"The Great Wall of China is visible from space with the naked eye.",t:false,why:"It's too narrow to see unaided from orbit."},
+  {s:"Sharks existed before trees did.",t:true,why:"Sharks appeared roughly 400 million years ago, before the first trees."},
+  {s:"Lightning never strikes the same place twice.",t:false,why:"Tall structures like the Empire State Building are hit many times a year."},
+  {s:"A day on Venus is longer than a year on Venus.",t:true,why:"Venus rotates so slowly that one spin takes longer than its orbit of the Sun."},
+  {s:"Wombats produce cube-shaped poop.",t:true,why:"Their intestines shape the droppings into distinctive cubes."},
+  {s:"Mount Everest is the closest point on Earth to the Moon.",t:false,why:"Because Earth bulges at the equator, Chimborazo's summit is actually closer to space."},
+  {s:"Bubble wrap was originally invented as wallpaper.",t:true,why:"Its inventors first pitched it as textured wallpaper before it became packaging."},
+  {s:"Carrots were originally purple, not orange.",t:true,why:"Early cultivated carrots were purple and yellow; orange came later."},
+  {s:"Sound travels faster in water than in air.",t:true,why:"Water is denser, so sound moves through it several times faster."},
+  {s:"The average cloud weighs about the same as 100 elephants.",t:true,why:"A typical cumulus cloud holds hundreds of tonnes of water droplets."},
+  {s:"Napoleon Bonaparte was extremely short for his time.",t:false,why:"He was around average height; the 'short' myth came from unit conversions and propaganda."},
+  {s:"Hot water can freeze faster than cold water under some conditions.",t:true,why:"This is the Mpemba effect, observed in certain setups."},
+  {s:"A jiffy is an actual unit of time.",t:true,why:"In physics a jiffy can be defined as a specific tiny fraction of a second."},
+  {s:"Bats are blind.",t:false,why:"All bats can see; many also use echolocation to navigate."},
+  {s:"Vending machines cause more deaths per year than sharks, on average.",t:true,why:"Tipping-machine accidents historically outnumber fatal shark attacks."},
+  {s:"The dot over a lowercase 'i' is called a tittle.",t:true,why:"That small mark genuinely has the name 'tittle'."},
+  {s:"Cracking your knuckles causes arthritis.",t:false,why:"Studies have found no link between knuckle-cracking and arthritis."},
+  {s:"Some turtles can breathe through their rear ends.",t:true,why:"Certain turtles absorb oxygen through their cloaca while underwater."},
+  {s:"The unicorn is the national animal of Scotland.",t:true,why:"Scotland officially adopted the mythical unicorn as its national animal."},
+  {s:"Goldfish can see more colors than humans.",t:true,why:"Goldfish can detect ultraviolet light that humans cannot."},
+  {s:"Chewing gum takes seven years to digest if swallowed.",t:false,why:"Gum passes through your system in a normal timeframe like other indigestible items."},
+  {s:"Honeybees can recognize individual human faces.",t:true,why:"Trained bees can distinguish between different human face patterns."},
+  {s:"There are more possible chess games than atoms in the observable universe.",t:true,why:"The number of legal chess games vastly exceeds the estimated atom count."},
+  {s:"A shrimp's heart is located in its head.",t:true,why:"The shrimp's heart sits in the thorax region within the head area."},
+  {s:"The Sahara Desert is the largest desert on Earth.",t:false,why:"Antarctica is the largest desert; deserts are defined by low precipitation, not heat."},
+  {s:"Cows have best friends and get stressed when separated.",t:true,why:"Studies show cattle form close bonds and show stress apart from their preferred partners."},
+  {s:"Water is the only substance on Earth found naturally in three states.",t:false,why:"Other substances can also exist as solid, liquid and gas under natural conditions."},
+  {s:"The inventor of the frisbee was turned into a frisbee after death.",t:true,why:"His ashes were molded into memorial flying discs at his request."},
+  {s:"A bolt of lightning is hotter than the surface of the Sun.",t:true,why:"Lightning can reach around 30,000 K, far hotter than the Sun's surface."},
+  {s:"Owls can rotate their heads a full 360 degrees.",t:false,why:"Owls can turn about 270 degrees, not a full circle."},
+  {s:"Scotland has more than 400 words for snow.",t:true,why:"Research catalogued hundreds of Scots terms relating to snow."},
+  {s:"Sea otters hold hands while sleeping so they don't drift apart.",t:true,why:"They link paws, and sometimes wrap in kelp, to stay together while resting."},
+  {s:"Humans have more than five senses.",t:true,why:"We also sense balance, temperature, pain, and body position among others."},
+  {s:"The heart of a blue whale is the size of a small car.",t:true,why:"A blue whale's heart weighs a couple hundred kilograms."},
+  {s:"You swallow eight spiders a year in your sleep.",t:false,why:"This is a well-known myth with no credible evidence behind it."},
+  {s:"Peanuts are not actually nuts.",t:true,why:"Peanuts are legumes, related to beans and lentils."},
+  {s:"The shortest war in history lasted under an hour.",t:true,why:"The Anglo-Zanzibar War of 1896 ended in roughly 38 minutes."},
+  {s:"Antarctica is the driest continent on Earth.",t:true,why:"Parts of it get almost no precipitation, making it a polar desert."},
+  {s:"Sunflowers can be used to clean radioactive soil.",t:true,why:"They absorb certain contaminants and have been used near disaster sites."},
+  {s:"Tomatoes have more genes than humans.",t:true,why:"The tomato genome contains more genes than the human genome."},
+  {s:"A crocodile cannot stick its tongue out.",t:true,why:"Its tongue is held in place by a membrane on the floor of its mouth."},
+  {s:"Glass is a slow-moving liquid, which is why old windows are thicker at the bottom.",t:false,why:"Glass is an amorphous solid; old panes vary in thickness due to how they were made."},
+  {s:"Some metals are so reactive they burst into flame in water.",t:true,why:"Alkali metals like potassium ignite on contact with water."},
+  {s:"The longest recorded flight of a chicken lasted about 13 seconds.",t:true,why:"Chickens can fly briefly, and this is a documented record."},
+  {s:"An ostrich's eye is bigger than its brain.",t:true,why:"The ostrich has notably large eyes relative to its small brain."},
+  {s:"Venus is the hottest planet in the solar system.",t:true,why:"Its thick CO2 atmosphere traps heat, making it hotter than Mercury."},
+  {s:"Bananas grow on trees.",t:false,why:"Banana plants are giant herbs, not trees; the 'trunk' is a stack of leaves."},
+  {s:"A snail can sleep for up to three years.",t:true,why:"Some snails enter long dormancy periods when conditions are harsh."},
+  {s:"The human nose can detect over a trillion different scents.",t:true,why:"Research suggests our sense of smell can distinguish an enormous range of odors."},
+  {s:"Coffee is made from berries.",t:true,why:"Coffee beans are the seeds inside the fruit known as coffee cherries."},
+  {s:"There is enough gold in the Earth's core to coat the whole planet.",t:true,why:"Estimates suggest the core holds enough gold to cover Earth's surface in a thin layer."},
+  {s:"Dolphins have names for each other.",t:true,why:"Dolphins use signature whistles that function like individual names."},
+  {s:"The Statue of Liberty was originally intended for Egypt.",t:true,why:"Its sculptor first proposed a similar figure for the Suez Canal in Egypt."},
+  {s:"Lobsters urinate out of their faces.",t:true,why:"Lobsters release urine from openings near the base of their antennae."},
+  {s:"A single strand of spaghetti is called a spaghetto.",t:true,why:"'Spaghetti' is plural in Italian; one piece is a spaghetto."},
+  {s:"Polar bears have white fur.",t:false,why:"Their fur is actually transparent and hollow; it only looks white."},
+  {s:"The wood frog can survive being frozen solid and thaw back to life.",t:true,why:"It produces natural antifreeze and revives after thawing in spring."},
+  {s:"Astronauts grow taller in space.",t:true,why:"Without gravity compressing the spine, astronauts temporarily gain a few centimeters."}
+];
+
+const $ = id => document.getElementById(id);
+const escapeHTML = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let deck = [];
+let cardNum = 0;
+let streak = 0;
+let best = 0;
+let current = null;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function nextCard(){
+  if(deck.length === 0) deck = shuffle(DATA);
+  current = deck.pop();
+  cardNum++;
+  $('cardNum').textContent = '#' + cardNum;
+  $('statementText').textContent = current.s;
+  $('askBlock').classList.remove('hidden');
+  $('revealBlock').classList.add('hidden');
+}
+
+function reveal(roomCall){
+  const truth = current.t;
+  const hit = (roomCall === truth);
+
+  if(hit){
+    streak++;
+    if(streak > best){ best = streak; }
+  } else {
+    streak = 0;
+  }
+  $('streakVal').textContent = streak;
+  $('bestVal').textContent = best;
+
+  const bv = $('bigVerdict');
+  bv.textContent = truth ? 'FACT ✅' : 'CAP ❌';
+  bv.className = 'big-verdict ' + (truth ? 'fact' : 'cap');
+
+  const rc = $('roomCall');
+  const roomWord = roomCall ? 'FACT' : 'CAP';
+  rc.textContent = hit ? ('Room said ' + roomWord + ' — nailed it! Streak +1') : ('Room said ' + roomWord + ' — streak reset');
+  rc.className = 'roomcall ' + (hit ? 'hit' : 'miss');
+
+  $('restated').textContent = current.s;
+  $('whyText').textContent = current.why;
+
+  $('askBlock').classList.add('hidden');
+  $('revealBlock').classList.remove('hidden');
+}
+
+$('startBtn').addEventListener('click', ()=>{
+  deck = shuffle(DATA);
+  cardNum = 0; streak = 0; best = 0;
+  $('streakVal').textContent = '0';
+  $('bestVal').textContent = '0';
+  $('startScreen').classList.remove('active');
+  $('gameScreen').classList.add('active');
+  nextCard();
+});
+
+document.querySelectorAll('.call-btn').forEach(b=>{
+  b.addEventListener('click', ()=> reveal(b.dataset.call === 'true'));
+});
+
+$('nextBtn').addEventListener('click', nextCard);
+</script>
+</body>
+</html>

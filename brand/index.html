@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guess the Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#161226;
+  --bg:#0e0b1a;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  color:var(--cream);
+  font-family:var(--body);
+  margin:0;
+  min-height:100vh;
+  overflow:hidden;
+  background:
+    radial-gradient(1200px 700px at 82% -8%, rgba(255,201,77,.10), transparent 60%),
+    radial-gradient(1000px 700px at 8% 108%, rgba(70,214,224,.10), transparent 60%),
+    var(--bg);
+}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:19px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--muted); text-decoration:none;
+  border:1px solid var(--line); border-radius:999px; padding:6px 11px;
+  transition:.18s;
+}
+.brand a:hover{ color:var(--cream); border-color:rgba(246,240,226,.3) }
+
+.wrap{
+  position:relative; z-index:5;
+  min-height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:96px 22px 40px;
+}
+.screen{ display:none; width:100%; max-width:860px; animation:pop .35s ease }
+.screen.active{ display:block }
+@keyframes pop{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+
+.label{
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:.16em;
+  font-size:11px; color:var(--muted);
+}
+h1{
+  font-family:var(--display); font-weight:800; line-height:.98;
+  font-size:clamp(44px,8vw,86px); margin:.12em 0 .18em;
+}
+.rule{ font-size:clamp(15px,2.1vw,19px); color:var(--muted); max-width:640px; margin:0 0 26px; line-height:1.5 }
+
+.howto{
+  border:1px solid var(--line); border-radius:18px;
+  background:rgba(22,18,38,.5);
+  padding:20px 22px; margin:0 0 30px; max-width:560px;
+}
+.howto .htlabel{
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:.16em;
+  font-size:11px; color:var(--gold); margin-bottom:8px;
+}
+.howto p{ margin:0 0 16px; font-size:15px; color:var(--cream); line-height:1.5 }
+.exrow{ display:flex; align-items:center; gap:12px; margin:9px 0; font-size:16px }
+.exrow .swatches{ display:flex; gap:5px }
+.chip{ width:20px; height:20px; border-radius:6px; border:1px solid rgba(0,0,0,.35); flex:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08) }
+.exrow .arrow{ color:var(--muted); font-family:var(--mono) }
+.exrow .ans{ font-family:var(--display); font-weight:800 }
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:18px;
+  border-radius:13px; padding:14px 26px; cursor:pointer; border:1px solid transparent;
+  transition:.16s transform,.16s filter; user-select:none;
+}
+.btn:active{ transform:translateY(1px) }
+.btn-primary{ background:var(--gold); color:#20160a; border-color:var(--gold) }
+.btn-primary:hover{ filter:brightness(1.06) }
+.btn-ghost{ background:transparent; color:var(--cream); border:1px solid var(--line) }
+.btn-ghost:hover{ border-color:rgba(246,240,226,.34) }
+.btn-row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center }
+
+/* Game */
+.hud{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:14px; flex-wrap:wrap }
+.hud .count{ font-family:var(--mono); font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em }
+.hud .count b{ color:var(--gold) }
+
+.card{
+  border:1px solid var(--line); border-radius:24px; overflow:hidden;
+  background:rgba(22,18,38,.4);
+  box-shadow:0 30px 80px rgba(0,0,0,.45);
+}
+.palette{ display:flex; width:100%; height:min(46vh,380px); }
+.palette .band{ flex:1 1 0; min-width:0; }
+
+.cardfoot{ padding:20px 22px; display:flex; flex-direction:column; gap:14px; align-items:center; text-align:center }
+.hintline{ min-height:26px; font-family:var(--mono); font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--cyan); opacity:0; transition:.2s }
+.hintline.show{ opacity:1 }
+
+.reveal{ opacity:0; height:0; overflow:hidden; transition:opacity .25s }
+.reveal.show{ opacity:1; height:auto }
+.reveal .name{ font-family:var(--display); font-weight:800; font-size:clamp(34px,6vw,62px); line-height:1; margin:0 }
+.reveal .cat{ font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); margin-top:8px }
+
+.controls{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:22px }
+.foot{ margin-top:20px; text-align:center; font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:.08em }
+</style>
+</head>
+<body>
+<div class="brand">🎨 Guess the Brand <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <div class="label">Remote-team party game · share your screen</div>
+    <h1>Guess the<br>Brand</h1>
+    <p class="rule">Share your screen — the colours appear, the team shouts the brand, you reveal.</p>
+
+    <div class="howto">
+      <div class="htlabel">How to play</div>
+      <p>Only a brand's colour palette is shown — no logo, no name. Whoever shouts the right brand first wins the point.</p>
+      <div class="exrow">
+        <span class="swatches"><span class="chip" style="background:#DA291C"></span><span class="chip" style="background:#FFC72C"></span></span>
+        <span class="arrow">→</span>
+        <span class="ans">McDonald's</span>
+      </div>
+      <div class="exrow">
+        <span class="swatches"><span class="chip" style="background:#644117"></span><span class="chip" style="background:#FFB500"></span></span>
+        <span class="arrow">→</span>
+        <span class="ans">UPS</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="startBtn">Start ▶</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">
+      <div class="count">Brand <b id="brandNo">#1</b></div>
+      <div class="label" id="progress"></div>
+    </div>
+
+    <div class="card">
+      <div class="palette" id="palette"></div>
+      <div class="cardfoot">
+        <div class="hintline" id="hintLine"></div>
+        <div class="reveal" id="reveal">
+          <p class="name" id="brandName"></p>
+          <div class="cat" id="brandCat"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-ghost" id="hintBtn">Hint</button>
+      <button class="btn btn-primary" id="revealBtn">Reveal 🎯</button>
+    </div>
+    <div class="foot">Colours only — no logos, no trademarks drawn.</div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var BRANDS = [
+    {name:"McDonald's", colors:["#FFC72C","#DA291C"], hint:"Fast food"},
+    {name:"UPS", colors:["#644117","#FFB500"], hint:"Delivery"},
+    {name:"Twitter", colors:["#1DA1F2","#FFFFFF"], hint:"Social app (the blue bird)"},
+    {name:"Coca-Cola", colors:["#F40009","#FFFFFF"], hint:"Soft drink"},
+    {name:"Pepsi", colors:["#004B93","#EE1C25","#FFFFFF"], hint:"Soft drink"},
+    {name:"Starbucks", colors:["#00704A","#FFFFFF"], hint:"Coffee"},
+    {name:"Spotify", colors:["#1DB954","#191414"], hint:"Music streaming"},
+    {name:"Netflix", colors:["#E50914","#000000"], hint:"Streaming"},
+    {name:"Facebook", colors:["#1877F2","#FFFFFF"], hint:"Social app"},
+    {name:"Instagram", colors:["#F58529","#DD2A7B","#8134AF","#515BD4"], hint:"Social app"},
+    {name:"WhatsApp", colors:["#25D366","#075E54"], hint:"Messaging app"},
+    {name:"Snapchat", colors:["#FFFC00","#FFFFFF"], hint:"Social app"},
+    {name:"YouTube", colors:["#FF0000","#FFFFFF"], hint:"Video streaming"},
+    {name:"Google", colors:["#4285F4","#EA4335","#FBBC05","#34A853"], hint:"Tech / search"},
+    {name:"Amazon", colors:["#FF9900","#232F3E"], hint:"Retail"},
+    {name:"eBay", colors:["#E53238","#0064D2","#F5AF02","#86B817"], hint:"Retail marketplace"},
+    {name:"Microsoft", colors:["#F25022","#7FBA00","#00A4EF","#FFB900"], hint:"Tech"},
+    {name:"Apple", colors:["#000000","#A2AAAD"], hint:"Tech"},
+    {name:"Slack", colors:["#36C5F0","#2EB67D","#ECB22E","#E01E5A"], hint:"Work chat"},
+    {name:"Twitch", colors:["#9146FF","#FFFFFF"], hint:"Live streaming"},
+    {name:"Reddit", colors:["#FF4500","#FFFFFF"], hint:"Social app"},
+    {name:"LinkedIn", colors:["#0A66C2","#FFFFFF"], hint:"Professional network"},
+    {name:"TikTok", colors:["#000000","#25F4EE","#FE2C55"], hint:"Social app"},
+    {name:"Airbnb", colors:["#FF5A5F","#FFFFFF"], hint:"Travel / stays"},
+    {name:"Uber", colors:["#000000","#FFFFFF"], hint:"Ride hailing"},
+    {name:"Lyft", colors:["#FF00BF","#11111F"], hint:"Ride hailing"},
+    {name:"FedEx", colors:["#4D148C","#FF6600"], hint:"Delivery"},
+    {name:"DHL", colors:["#FFCC00","#D40511"], hint:"Delivery"},
+    {name:"Burger King", colors:["#D62300","#F5EBDC","#0033A0"], hint:"Fast food"},
+    {name:"KFC", colors:["#A70E13","#FFFFFF"], hint:"Fast food"},
+    {name:"Subway", colors:["#008C15","#FFC600"], hint:"Fast food"},
+    {name:"Domino's", colors:["#006491","#E31837","#FFFFFF"], hint:"Fast food / pizza"},
+    {name:"Nike", colors:["#000000","#FFFFFF"], hint:"Sportswear"},
+    {name:"Adidas", colors:["#000000","#FFFFFF"], hint:"Sportswear"},
+    {name:"Puma", colors:["#000000","#D50032"], hint:"Sportswear"},
+    {name:"IKEA", colors:["#0051BA","#FFDA1A"], hint:"Furniture retail"},
+    {name:"LEGO", colors:["#DA291C","#FFCF00","#000000"], hint:"Toys"},
+    {name:"Target", colors:["#CC0000","#FFFFFF"], hint:"Retail"},
+    {name:"Walmart", colors:["#0071CE","#FFC220"], hint:"Retail"},
+    {name:"Red Bull", colors:["#001489","#DB0A40","#FFC61E"], hint:"Energy drink"},
+    {name:"Heineken", colors:["#008200","#E30613"], hint:"Beer"},
+    {name:"Pinterest", colors:["#E60023","#FFFFFF"], hint:"Social app"},
+    {name:"Discord", colors:["#5865F2","#FFFFFF"], hint:"Chat app"},
+    {name:"PayPal", colors:["#003087","#009CDE"], hint:"Payments"},
+    {name:"Visa", colors:["#1A1F71","#F7B600"], hint:"Payments"},
+    {name:"Mastercard", colors:["#EB001B","#F79E1B"], hint:"Payments"}
+  ];
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  var order = [], idx = 0;
+
+  function shuffle(){
+    order = BRANDS.map(function(_,i){return i;});
+    for(var i=order.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=order[i]; order[i]=order[j]; order[j]=t;
+    }
+    idx = 0;
+  }
+
+  var $ = function(id){ return document.getElementById(id); };
+  var startScreen=$("startScreen"), gameScreen=$("gameScreen");
+  var palette=$("palette"), hintLine=$("hintLine"), reveal=$("reveal");
+  var brandName=$("brandName"), brandCat=$("brandCat");
+  var brandNo=$("brandNo"), progress=$("progress");
+  var hintBtn=$("hintBtn"), revealBtn=$("revealBtn");
+
+  var revealed=false, hinted=false;
+
+  function render(){
+    if(idx >= order.length) shuffle();
+    var b = BRANDS[order[idx]];
+
+    palette.innerHTML = b.colors.map(function(c){
+      return '<div class="band" style="background:'+esc(c)+'"></div>';
+    }).join("");
+
+    hinted=false; revealed=false;
+    hintLine.textContent=""; hintLine.classList.remove("show");
+    reveal.classList.remove("show");
+    brandName.textContent=""; brandCat.textContent="";
+
+    hintBtn.style.display="";
+    revealBtn.textContent="Reveal 🎯";
+
+    brandNo.textContent = "#"+(idx+1);
+    progress.textContent = (idx+1)+" / "+order.length;
+  }
+
+  function doHint(){
+    if(revealed) return;
+    var b = BRANDS[order[idx]];
+    hintLine.textContent = "Hint · "+b.hint;
+    hintLine.classList.add("show");
+    hinted=true;
+  }
+
+  function doReveal(){
+    var b = BRANDS[order[idx]];
+    if(!revealed){
+      brandName.textContent = b.name;
+      brandCat.textContent = b.hint;
+      reveal.classList.add("show");
+      hintBtn.style.display="none";
+      revealBtn.textContent="Next →";
+      revealed=true;
+    } else {
+      idx++;
+      render();
+    }
+  }
+
+  $("startBtn").addEventListener("click", function(){
+    shuffle();
+    startScreen.classList.remove("active");
+    gameScreen.classList.add("active");
+    render();
+  });
+  hintBtn.addEventListener("click", doHint);
+  revealBtn.addEventListener("click", doReveal);
+
+  document.addEventListener("keydown", function(e){
+    if(!gameScreen.classList.contains("active")) return;
+    if(e.code==="Space" || e.code==="Enter"){ e.preventDefault(); doReveal(); }
+    else if(e.key && e.key.toLowerCase()==="h"){ doHint(); }
+  });
+
+})();
+</script>
+</body>
+</html>

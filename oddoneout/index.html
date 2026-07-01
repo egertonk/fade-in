@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Odd One Out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#14211c;
+  --bg:#0d1613;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(70,214,224,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 120%, rgba(255,77,125,.10), transparent 55%),
+    var(--bg);
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--body); font-weight:600; font-size:12px; text-decoration:none;
+  color:var(--muted); border:1px solid var(--line); padding:5px 11px; border-radius:999px;
+  transition:.15s; background:rgba(246,240,226,.02);
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.32)}
+
+.wrap{
+  min-height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:80px 22px 40px;
+}
+.screen{display:none; width:100%; max-width:960px}
+.screen.active{display:block; animation:fade .35s ease}
+@keyframes fade{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+
+/* ---- Start ---- */
+.hero{text-align:center}
+.hero .kicker{
+  font-family:var(--mono); font-size:12px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--cyan); margin-bottom:14px;
+}
+.hero h1{
+  font-family:var(--display); font-weight:800; font-size:clamp(44px,9vw,84px);
+  line-height:.98; margin:0 0 18px;
+}
+.hero h1 .em{color:var(--gold)}
+.rule{
+  color:var(--muted); font-size:clamp(15px,2.2vw,18px); max-width:640px; margin:0 auto 28px;
+  line-height:1.5;
+}
+.howto{
+  max-width:600px; margin:0 auto 30px; text-align:left;
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px;
+  background:rgba(246,240,226,.025);
+}
+.howto .lbl{
+  font-family:var(--mono); font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--gold); margin-bottom:10px;
+}
+.howto p{margin:0 0 12px; font-size:15px; line-height:1.55; color:var(--cream)}
+.howto .ex{
+  font-size:14.5px; line-height:1.55; color:var(--muted);
+  border-top:1px dashed var(--line); padding-top:12px; margin:0;
+}
+.howto .ex b{color:var(--cream); font-weight:600}
+
+/* ---- Buttons ---- */
+.btn{
+  font-family:var(--display); font-weight:800; font-size:17px; cursor:pointer;
+  border-radius:13px; padding:14px 26px; border:1px solid transparent; transition:.15s;
+  letter-spacing:.2px;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--gold); color:#1a1305; border-color:var(--gold)}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn-ghost:hover{border-color:rgba(246,240,226,.35)}
+.btn:disabled{opacity:.4; cursor:default}
+.actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}
+
+/* ---- Game ---- */
+.hud{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  margin-bottom:26px;
+}
+.round{
+  font-family:var(--display); font-weight:800; font-size:clamp(22px,4vw,32px);
+}
+.round span{color:var(--gold)}
+.hint{
+  font-family:var(--mono); font-size:12px; color:var(--muted); text-align:right;
+  max-width:260px; line-height:1.4;
+}
+
+.grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:18px;
+  margin-bottom:26px;
+}
+.tile{
+  position:relative; cursor:pointer; user-select:none;
+  border:1.5px solid var(--line); border-radius:20px;
+  background:var(--panel);
+  padding:34px 20px; text-align:center; transition:.18s;
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  min-height:170px; justify-content:center;
+}
+.tile:hover{border-color:rgba(246,240,226,.32); transform:translateY(-2px)}
+.tile .em{font-size:clamp(52px,10vw,74px); line-height:1}
+.tile .t{
+  font-family:var(--display); font-weight:800; font-size:clamp(18px,3vw,25px);
+}
+.tile.guess{border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,201,77,.22)}
+.tile.guess::after{
+  content:"Room's guess"; position:absolute; top:10px; right:12px;
+  font-family:var(--mono); font-size:10px; letter-spacing:1px; text-transform:uppercase;
+  color:var(--gold);
+}
+.tile.correct{
+  border-color:var(--green); background:rgba(70,224,138,.10);
+  box-shadow:0 0 0 3px rgba(70,224,138,.25);
+}
+.tile.correct::after{
+  content:"Odd one out ✓"; position:absolute; top:10px; right:12px;
+  font-family:var(--mono); font-size:10px; letter-spacing:1px; text-transform:uppercase;
+  color:var(--green);
+}
+.tile.wrong{
+  border-color:var(--magenta); background:rgba(255,77,125,.08);
+}
+.tile.wrong::after{
+  content:"Room guessed ✗"; position:absolute; top:10px; right:12px;
+  font-family:var(--mono); font-size:10px; letter-spacing:1px; text-transform:uppercase;
+  color:var(--magenta);
+}
+.tile.revealed{cursor:default; transform:none}
+.tile.revealed:hover{transform:none}
+.tile.dim{opacity:.5}
+
+.why{
+  border:1px solid var(--line); border-radius:16px; padding:18px 22px;
+  background:rgba(70,224,138,.06); margin-bottom:24px;
+  font-size:clamp(16px,2.6vw,20px); line-height:1.5;
+  display:none; animation:fade .3s ease;
+}
+.why.show{display:block}
+.why .lbl{
+  font-family:var(--mono); font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--green); margin-bottom:7px;
+}
+.why b{color:var(--gold)}
+
+.gamefoot{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}
+
+@media(max-width:560px){
+  .grid{gap:12px}
+  .tile{padding:24px 14px; min-height:140px}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="brand"><span class="emoji">🎯</span> Odd One Out <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <div class="hero">
+      <div class="kicker">Team party game</div>
+      <h1>Odd <span class="em">One</span> Out</h1>
+      <p class="rule">Share your screen — four things appear, the team argues which one doesn't belong, then you reveal the answer and why.</p>
+
+      <div class="howto">
+        <div class="lbl">How to play</div>
+        <p>Four items show up together; the group debates which one is the odd one out, and the host reveals the correct answer with a single clear reason.</p>
+        <p class="ex"><span class="emoji">🍎</span> Apple · <span class="emoji">🍌</span> Banana · <span class="emoji">🥕</span> Carrot · <span class="emoji">🍒</span> Cherry → <b><span class="emoji">🥕</span> Carrot</b> (it's a vegetable — the rest are fruit)</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="startBtn">Start ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">
+      <div class="round">Round <span id="roundNum">#1</span></div>
+      <div class="hint">Tap a tile to mark the room's guess, then Reveal.</div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="why" id="why">
+      <div class="lbl">The odd one out</div>
+      <div id="whyText"></div>
+    </div>
+
+    <div class="gamefoot">
+      <button class="btn btn-primary" id="revealBtn">Reveal 🎯</button>
+      <button class="btn btn-ghost" id="nextBtn" style="display:none">Next →</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Data: 40+ puzzles ---------- */
+const PUZZLES = [
+  {items:[{t:"Apple",e:"🍎"},{t:"Banana",e:"🍌"},{t:"Carrot",e:"🥕"},{t:"Cherry",e:"🍒"}], odd:2, why:"Carrot is a vegetable; the others are fruit."},
+  {items:[{t:"Lion",e:"🦁"},{t:"Tiger",e:"🐯"},{t:"Shark",e:"🦈"},{t:"Leopard",e:"🐆"}], odd:2, why:"Shark is a fish; the others are big cats."},
+  {items:[{t:"Guitar",e:"🎸"},{t:"Violin",e:"🎻"},{t:"Trumpet",e:"🎺"},{t:"Harp",e:"🎼"}], odd:2, why:"Trumpet is a brass instrument; the others are stringed."},
+  {items:[{t:"Mercury",e:"☿️"},{t:"Venus",e:"♀️"},{t:"Moon",e:"🌙"},{t:"Mars",e:"🔴"}], odd:2, why:"The Moon is a satellite; the others are planets."},
+  {items:[{t:"Soccer",e:"⚽"},{t:"Chess",e:"♟️"},{t:"Basketball",e:"🏀"},{t:"Tennis",e:"🎾"}], odd:1, why:"Chess is a board game; the others use a ball."},
+  {items:[{t:"Rose",e:"🌹"},{t:"Tulip",e:"🌷"},{t:"Oak",e:"🌳"},{t:"Sunflower",e:"🌻"}], odd:2, why:"Oak is a tree; the others are flowers."},
+  {items:[{t:"Copper",e:"🟤"},{t:"Gold",e:"🥇"},{t:"Diamond",e:"💎"},{t:"Silver",e:"🥈"}], odd:2, why:"Diamond is a gemstone; the others are metals."},
+  {items:[{t:"Spain",e:"🇪🇸"},{t:"France",e:"🇫🇷"},{t:"Japan",e:"🇯🇵"},{t:"Italy",e:"🇮🇹"}], odd:2, why:"Japan is in Asia; the others are in Europe."},
+  {items:[{t:"Whale",e:"🐋"},{t:"Dolphin",e:"🐬"},{t:"Tuna",e:"🐟"},{t:"Seal",e:"🦭"}], odd:2, why:"Tuna is a fish; the others are marine mammals."},
+  {items:[{t:"Circle",e:"⭕"},{t:"Square",e:"🟥"},{t:"Triangle",e:"🔺"},{t:"Cube",e:"🧊"}], odd:3, why:"Cube is 3D; the others are flat shapes."},
+  {items:[{t:"Red",e:"🔴"},{t:"Blue",e:"🔵"},{t:"Yellow",e:"🟡"},{t:"Green",e:"🟢"}], odd:3, why:"Green is a secondary colour; the others are primary."},
+  {items:[{t:"Coffee",e:"☕"},{t:"Tea",e:"🍵"},{t:"Cola",e:"🥤"},{t:"Milk",e:"🥛"}], odd:3, why:"Milk contains no caffeine; the others do."},
+  {items:[{t:"Bee",e:"🐝"},{t:"Ant",e:"🐜"},{t:"Spider",e:"🕷️"},{t:"Beetle",e:"🪲"}], odd:2, why:"Spider is an arachnid with eight legs; the others are insects."},
+  {items:[{t:"Piano",e:"🎹"},{t:"Drums",e:"🥁"},{t:"Flute",e:"🪈"},{t:"Cymbals",e:"🔔"}], odd:2, why:"Flute is a wind instrument; the others are percussion."},
+  {items:[{t:"Triangle",e:"🔺"},{t:"Pentagon",e:"⬠"},{t:"Hexagon",e:"⬡"},{t:"Square",e:"🟦"}], odd:0, why:"Triangle has three sides; the others have more than four."},
+  {items:[{t:"Rain",e:"🌧️"},{t:"Snow",e:"❄️"},{t:"Volcano",e:"🌋"},{t:"Fog",e:"🌫️"}], odd:2, why:"Volcano is geological; the others are weather."},
+  {items:[{t:"Kangaroo",e:"🦘"},{t:"Koala",e:"🐨"},{t:"Eagle",e:"🦅"},{t:"Wombat",e:"🐾"}], odd:2, why:"Eagle is a bird; the others are marsupials."},
+  {items:[{t:"Hammer",e:"🔨"},{t:"Saw",e:"🪚"},{t:"Screwdriver",e:"🪛"},{t:"Umbrella",e:"☂️"}], odd:3, why:"Umbrella isn't a tool; the others are workshop tools."},
+  {items:[{t:"Sun",e:"☀️"},{t:"Star",e:"⭐"},{t:"Comet",e:"☄️"},{t:"Sirius",e:"🌟"}], odd:2, why:"Comet is icy debris; the others are stars."},
+  {items:[{t:"Bread",e:"🍞"},{t:"Cheese",e:"🧀"},{t:"Yogurt",e:"🥛"},{t:"Butter",e:"🧈"}], odd:0, why:"Bread isn't a dairy product; the others are."},
+  {items:[{t:"Frog",e:"🐸"},{t:"Turtle",e:"🐢"},{t:"Snake",e:"🐍"},{t:"Lizard",e:"🦎"}], odd:0, why:"Frog is an amphibian; the others are reptiles."},
+  {items:[{t:"Nile",e:"🌊"},{t:"Amazon",e:"🏞️"},{t:"Everest",e:"🏔️"},{t:"Danube",e:"💧"}], odd:2, why:"Everest is a mountain; the others are rivers."},
+  {items:[{t:"Pizza",e:"🍕"},{t:"Sushi",e:"🍣"},{t:"Taco",e:"🌮"},{t:"Croissant",e:"🥐"}], odd:1, why:"Sushi is Japanese; the others originate from around the Mediterranean/Americas... actually the others are all wheat-based — sushi is rice-based."},
+  {items:[{t:"Ruby",e:"❤️"},{t:"Emerald",e:"💚"},{t:"Sapphire",e:"💙"},{t:"Pearl",e:"🤍"}], odd:3, why:"Pearl comes from an oyster; the others are mined gemstones."},
+  {items:[{t:"Car",e:"🚗"},{t:"Bus",e:"🚌"},{t:"Boat",e:"⛵"},{t:"Truck",e:"🚚"}], odd:2, why:"Boat travels on water; the others travel on roads."},
+  {items:[{t:"Cotton",e:"🧵"},{t:"Wool",e:"🐑"},{t:"Silk",e:"🎗️"},{t:"Nylon",e:"🧶"}], odd:3, why:"Nylon is synthetic; the others are natural fibres."},
+  {items:[{t:"Penguin",e:"🐧"},{t:"Ostrich",e:"🦤"},{t:"Sparrow",e:"🐦"},{t:"Emu",e:"🪶"}], odd:2, why:"Sparrow can fly; the others are flightless birds."},
+  {items:[{t:"Mars",e:"🔴"},{t:"Jupiter",e:"🪐"},{t:"Saturn",e:"🪐"},{t:"Neptune",e:"🔵"}], odd:0, why:"Mars is rocky; the others are gas/ice giants."},
+  {items:[{t:"January",e:"❄️"},{t:"March",e:"🌱"},{t:"June",e:"☀️"},{t:"October",e:"🍂"}], odd:2, why:"June has 30 days; the others have 31."},
+  {items:[{t:"Salmon",e:"🐟"},{t:"Trout",e:"🎣"},{t:"Crab",e:"🦀"},{t:"Cod",e:"🐠"}], odd:2, why:"Crab is a crustacean; the others are fish."},
+  {items:[{t:"Guitar",e:"🎸"},{t:"Piano",e:"🎹"},{t:"Microphone",e:"🎤"},{t:"Violin",e:"🎻"}], odd:2, why:"Microphone captures sound but makes none itself; the others are instruments."},
+  {items:[{t:"Egypt",e:"🇪🇬"},{t:"Kenya",e:"🇰🇪"},{t:"Brazil",e:"🇧🇷"},{t:"Nigeria",e:"🇳🇬"}], odd:2, why:"Brazil is in South America; the others are in Africa."},
+  {items:[{t:"Chair",e:"🪑"},{t:"Table",e:"🛋️"},{t:"Lamp",e:"💡"},{t:"Sofa",e:"🛋️"}], odd:2, why:"Lamp is a light fixture; the others are furniture to sit or use."},
+  {items:[{t:"Oxygen",e:"💨"},{t:"Water",e:"💧"},{t:"Nitrogen",e:"🌫️"},{t:"Helium",e:"🎈"}], odd:1, why:"Water is a compound; the others are elements."},
+  {items:[{t:"Baseball",e:"⚾"},{t:"Golf",e:"⛳"},{t:"Boxing",e:"🥊"},{t:"Cricket",e:"🏏"}], odd:2, why:"Boxing uses no ball; the others are ball games."},
+  {items:[{t:"Apple",e:"🍎"},{t:"Grape",e:"🍇"},{t:"Peanut",e:"🥜"},{t:"Peach",e:"🍑"}], odd:2, why:"Peanut is a legume that grows underground; the others are tree/vine fruit."},
+  {items:[{t:"Dolphin",e:"🐬"},{t:"Bat",e:"🦇"},{t:"Eagle",e:"🦅"},{t:"Mosquito",e:"🦟"}], odd:0, why:"Dolphin can't fly; the others can all fly."},
+  {items:[{t:"Sahara",e:"🏜️"},{t:"Gobi",e:"🐫"},{t:"Pacific",e:"🌊"},{t:"Mojave",e:"🌵"}], odd:2, why:"Pacific is an ocean; the others are deserts."},
+  {items:[{t:"Book",e:"📖"},{t:"Newspaper",e:"📰"},{t:"Radio",e:"📻"},{t:"Magazine",e:"📔"}], odd:2, why:"Radio is audio; the others are read."},
+  {items:[{t:"Two",e:"2️⃣"},{t:"Three",e:"3️⃣"},{t:"Nine",e:"9️⃣"},{t:"Seven",e:"7️⃣"}], odd:2, why:"Nine isn't prime; the others are prime numbers."},
+  {items:[{t:"Onion",e:"🧅"},{t:"Potato",e:"🥔"},{t:"Tomato",e:"🍅"},{t:"Garlic",e:"🧄"}], odd:2, why:"Tomato is botanically a fruit; the others are vegetables."},
+  {items:[{t:"Cow",e:"🐄"},{t:"Sheep",e:"🐑"},{t:"Wolf",e:"🐺"},{t:"Goat",e:"🐐"}], odd:2, why:"Wolf is wild; the others are farm livestock."},
+  {items:[{t:"Euro",e:"💶"},{t:"Yen",e:"💴"},{t:"Dollar",e:"💵"},{t:"Bitcoin",e:"🪙"}], odd:3, why:"Bitcoin is digital-only; the others have physical banknotes."},
+  {items:[{t:"Triangle",e:"🔺"},{t:"Circle",e:"⭕"},{t:"Square",e:"🟩"},{t:"Rectangle",e:"▭"}], odd:1, why:"Circle has no straight sides or corners; the others do."},
+  {items:[{t:"Spider",e:"🕷️"},{t:"Scorpion",e:"🦂"},{t:"Tick",e:"🪳"},{t:"Cricket",e:"🦗"}], odd:3, why:"Cricket is an insect (six legs); the others are arachnids (eight legs)."}
+];
+
+/* ---------- Helpers ---------- */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+/* ---------- State ---------- */
+let order = [];
+let orderPos = 0;
+let round = 0;
+let current = null;      // {items:[...], oddIndex:int, why:str}
+let guessIndex = -1;
+let revealed = false;
+
+const el = {
+  startScreen: document.getElementById("startScreen"),
+  gameScreen: document.getElementById("gameScreen"),
+  startBtn: document.getElementById("startBtn"),
+  roundNum: document.getElementById("roundNum"),
+  grid: document.getElementById("grid"),
+  why: document.getElementById("why"),
+  whyText: document.getElementById("whyText"),
+  revealBtn: document.getElementById("revealBtn"),
+  nextBtn: document.getElementById("nextBtn"),
+};
+
+function newOrder(){
+  order = shuffle(PUZZLES.map((_,i)=>i));
+  orderPos = 0;
+}
+
+function loadPuzzle(){
+  if(orderPos >= order.length) newOrder();
+  const base = PUZZLES[order[orderPos]];
+  orderPos++;
+
+  // Shuffle the four item positions, track where the odd one lands.
+  const idxs = shuffle(base.items.map((_,i)=>i));
+  const items = idxs.map(i => base.items[i]);
+  const oddIndex = idxs.indexOf(base.odd);
+
+  current = { items, oddIndex, why: base.why };
+  guessIndex = -1;
+  revealed = false;
+
+  round++;
+  el.roundNum.textContent = "#" + round;
+  el.why.classList.remove("show");
+  el.whyText.innerHTML = "";
+  el.nextBtn.style.display = "none";
+  el.revealBtn.style.display = "";
+  el.revealBtn.disabled = false;
+  renderTiles();
+}
+
+function renderTiles(){
+  el.grid.innerHTML = "";
+  current.items.forEach((item, i) => {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    if(!revealed && guessIndex === i) tile.classList.add("guess");
+
+    if(revealed){
+      tile.classList.add("revealed");
+      if(i === current.oddIndex){
+        tile.classList.add("correct");
+      } else if(guessIndex === i){
+        tile.classList.add("wrong");
+      } else {
+        tile.classList.add("dim");
+      }
+    }
+
+    tile.innerHTML =
+      '<div class="em">'+ esc(item.e) +'</div>' +
+      '<div class="t">'+ esc(item.t) +'</div>';
+
+    if(!revealed){
+      tile.addEventListener("click", () => {
+        guessIndex = (guessIndex === i) ? -1 : i;
+        renderTiles();
+      });
+    }
+    el.grid.appendChild(tile);
+  });
+}
+
+function reveal(){
+  if(revealed) return;
+  revealed = true;
+  const odd = current.items[current.oddIndex];
+  el.whyText.innerHTML =
+    '<b><span class="emoji">'+ esc(odd.e) +'</span> '+ esc(odd.t) +'</b> — ' + esc(current.why);
+  el.why.classList.add("show");
+  el.revealBtn.style.display = "none";
+  el.nextBtn.style.display = "";
+  renderTiles();
+}
+
+/* ---------- Wiring ---------- */
+el.startBtn.addEventListener("click", () => {
+  el.startScreen.classList.remove("active");
+  el.gameScreen.classList.add("active");
+  newOrder();
+  round = 0;
+  loadPuzzle();
+});
+el.revealBtn.addEventListener("click", reveal);
+el.nextBtn.addEventListener("click", loadPuzzle);
+</script>
+</body>
+</html>
