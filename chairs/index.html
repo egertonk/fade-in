@@ -201,21 +201,40 @@ function stopMusicRound(){
   phase='stopping'; stopMusic();
   const b=$('mainBtn'); b.textContent='…'; b.onclick=null;
 }
+function angDist(a,b){ let d=Math.abs(a-b)%(Math.PI*2); return Math.min(d,Math.PI*2-d); }
+
 function eliminate(){
   const g=geo();
-  const vi=Math.floor(Math.random()*active.length);
-  const victim=active[vi]; victimNum=victim.n;
-  const safe=active.filter((_,i)=>i!==vi);
-  // seat the safe avatars in the chairs
   const nChairs=active.length-1;
-  safe.forEach((p,k)=>{
-    const el=avEls.get(p.n); const a=k/nChairs*Math.PI*2 - Math.PI/2;
+  // where each avatar actually stopped, and where the chairs are
+  const avA=active.map((p,i)=> i/active.length*Math.PI*2 - Math.PI/2 + rotation);
+  const chA=[]; for(let i=0;i<nChairs;i++) chA.push(i/nChairs*Math.PI*2 - Math.PI/2);
+  // closest avatars claim the nearest free chair; the one left out is the victim
+  const pairs=[];
+  active.forEach((p,ai)=> chA.forEach((ca,ci)=> pairs.push({ai,ci,d:angDist(avA[ai],ca)}) ));
+  pairs.sort((x,y)=>x.d-y.d);
+  const avTaken=new Array(active.length).fill(false), chTaken=new Array(nChairs).fill(false);
+  const seatOf=new Array(active.length).fill(-1); let seated=0;
+  for(const pr of pairs){
+    if(seated>=nChairs) break;
+    if(!avTaken[pr.ai] && !chTaken[pr.ci]){ avTaken[pr.ai]=true; chTaken[pr.ci]=true; seatOf[pr.ai]=pr.ci; seated++; }
+  }
+  const vi=avTaken.indexOf(false);
+  const victim=active[vi]; victimNum=victim.n;
+  // animate everyone to where they end up
+  active.forEach((p,ai)=>{
+    const el=avEls.get(p.n);
     el.style.transition='left .5s cubic-bezier(.2,1,.4,1),top .5s cubic-bezier(.2,1,.4,1)';
-    el.style.left=(g.cx+g.chr*Math.cos(a))+'px'; el.style.top=(g.cy+g.chr*Math.sin(a))+'px';
-    el.classList.add('safe');
+    if(ai===vi){
+      const a=avA[ai];
+      el.style.left=(g.cx+g.ar*Math.cos(a))+'px'; el.style.top=(g.cy+g.ar*Math.sin(a))+'px';
+      el.classList.add('out');
+    }else{
+      const a=chA[seatOf[ai]];
+      el.style.left=(g.cx+g.chr*Math.cos(a))+'px'; el.style.top=(g.cy+g.chr*Math.sin(a))+'px';
+      el.classList.add('safe');
+    }
   });
-  // victim stays on the outer ring, flagged out
-  const vel=avEls.get(victim.n); vel.classList.add('out');
   $('status').innerHTML='🪑 No chair for <span class="m">Number '+victim.n+'</span> — you\'re out!';
   const b=$('mainBtn'); b.className='btn green';
   b.textContent = (active.length-1<=1) ? 'Crown the winner 🏆' : 'Next round →'; b.onclick=nextRound;
