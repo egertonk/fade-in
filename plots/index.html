@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bad Plot Summaries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#141020;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(255,201,77,.10), transparent 60%),
+    radial-gradient(1000px 600px at 100% 110%, rgba(255,77,125,.12), transparent 55%),
+    radial-gradient(900px 600px at 90% 0%, rgba(70,214,224,.08), transparent 55%),
+    #0c0a14;
+}
+.brand{
+  position:fixed; top:16px; left:18px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; text-transform:uppercase; font-size:10px; letter-spacing:.12em;
+  color:var(--muted); text-decoration:none; padding:5px 10px; border:1px solid var(--line); border-radius:999px;
+  transition:.18s;
+}
+.brand a:hover{ color:var(--cream); border-color:rgba(246,240,226,.3); }
+
+.wrap{
+  min-height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:76px 20px 32px;
+}
+.screen{ width:100%; max-width:860px; }
+.hidden{ display:none !important; }
+
+/* ---------- START SCREEN ---------- */
+.kicker{
+  font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:.22em;
+  color:var(--gold); margin-bottom:14px;
+}
+h1{
+  font-family:var(--display); font-weight:800; line-height:.98;
+  font-size:clamp(44px,9vw,92px); margin:0 0 18px;
+  letter-spacing:-.02em;
+}
+h1 .em{ color:var(--gold); }
+.rule{
+  font-size:clamp(15px,2.2vw,18px); color:var(--muted); max-width:640px; margin:0 0 26px; line-height:1.5;
+}
+
+.chips{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+.chip{
+  font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:.14em;
+  color:var(--cream); background:transparent; border:1px solid var(--line); border-radius:999px;
+  padding:9px 16px; cursor:pointer; transition:.16s;
+}
+.chip:hover{ border-color:rgba(246,240,226,.4); }
+.chip.active{ background:var(--gold); color:#171021; border-color:var(--gold); font-weight:700; }
+
+.howto{
+  border:1px solid var(--line); border-radius:16px; padding:20px 22px; background:rgba(20,16,32,.55);
+  max-width:640px; margin:0 0 28px;
+}
+.howto .lab{
+  font-family:var(--mono); text-transform:uppercase; font-size:10px; letter-spacing:.2em;
+  color:var(--cyan); margin-bottom:12px;
+}
+.howto p{ margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream); }
+.ex{ font-family:var(--mono); font-size:13px; line-height:1.7; color:var(--muted); }
+.ex b{ color:var(--gold); font-weight:700; }
+.ex .ar{ color:var(--magenta); }
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:18px;
+  border-radius:13px; padding:15px 30px; cursor:pointer; border:1px solid transparent;
+  transition:.16s transform,.16s background,.16s border-color; letter-spacing:.01em;
+}
+.btn:active{ transform:translateY(1px) scale(.99); }
+.btn.primary{ background:var(--gold); color:#171021; }
+.btn.primary:hover{ background:#ffd670; }
+.btn.ghost{ background:transparent; color:var(--cream); border-color:var(--line); }
+.btn.ghost:hover{ border-color:rgba(246,240,226,.4); }
+
+/* ---------- GAME SCREEN ---------- */
+.game{ display:flex; flex-direction:column; align-items:center; text-align:center; }
+.hud{
+  display:flex; align-items:center; gap:14px; margin-bottom:8px; flex-wrap:wrap; justify-content:center;
+}
+.hud .num{
+  font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:.2em; color:var(--muted);
+}
+.hud .type{
+  font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:.14em;
+  color:var(--cyan); border:1px solid var(--line); border-radius:999px; padding:5px 12px;
+}
+
+.card{
+  width:100%; max-width:780px; min-height:230px;
+  display:flex; align-items:center; justify-content:center;
+  padding:34px 20px; margin:16px 0 10px;
+}
+.summary{
+  font-family:var(--display); font-weight:800; line-height:1.08;
+  font-size:clamp(28px,5.4vw,52px); letter-spacing:-.015em; margin:0;
+  max-width:820px;
+}
+.answer{
+  font-family:var(--display); font-weight:800; color:var(--gold);
+  font-size:clamp(26px,5vw,50px); line-height:1.05; margin:18px 0 6px; letter-spacing:-.01em;
+  min-height:1px;
+}
+.answer-sub{
+  font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:.2em; color:var(--muted);
+  margin-bottom:6px;
+}
+.controls{ margin-top:22px; display:flex; gap:12px; align-items:center; }
+.hint{
+  font-family:var(--mono); text-transform:uppercase; font-size:10px; letter-spacing:.16em;
+  color:var(--muted); margin-top:16px;
+}
+
+@keyframes pop{
+  0%{ transform:scale(.94); opacity:0; }
+  60%{ transform:scale(1.02); opacity:1; }
+  100%{ transform:scale(1); opacity:1; }
+}
+.pop{ animation:pop .34s cubic-bezier(.2,.9,.3,1.2); }
+
+@media (max-width:560px){
+  .wrap{ padding-top:68px; }
+  .btn{ font-size:16px; padding:14px 24px; }
+}
+</style>
+</head>
+<body>
+<div class="brand">🎬 Bad Plot Summaries <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- ================= START ================= -->
+  <section id="start" class="screen">
+    <div class="kicker">Remote party game · Share your screen</div>
+    <h1>Bad Plot<br><span class="em">Summaries</span></h1>
+    <p class="rule">Share your screen — read the terrible summary out loud, the team shouts the title, you hit <b>Reveal</b>.</p>
+
+    <div class="chips" id="chips">
+      <button class="chip active" data-cat="All">All</button>
+      <button class="chip" data-cat="Movie">Movies</button>
+      <button class="chip" data-cat="Book">Books</button>
+    </div>
+
+    <div class="howto">
+      <div class="lab">How to play</div>
+      <p>A deliberately awful one-line summary appears — the team shouts the movie or book, then you reveal the answer.</p>
+      <div class="ex">
+        A fish with anxiety loses his kid and asks everyone in the ocean for directions. <span class="ar">→</span> <b>Finding Nemo</b><br>
+        Rich guy funds his hobby of dressing as a bat instead of therapy. <span class="ar">→</span> <b>Batman</b>
+      </div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start ▶</button>
+  </section>
+
+  <!-- ================= GAME ================= -->
+  <section id="game" class="screen hidden">
+    <div class="game">
+      <div class="hud">
+        <span class="num" id="cardNum">Card #1</span>
+        <span class="type" id="cardType">🎬 Movie</span>
+      </div>
+
+      <div class="card" id="card">
+        <p class="summary" id="summary"></p>
+      </div>
+
+      <div class="answer-sub" id="answerSub"></div>
+      <div class="answer" id="answer"></div>
+
+      <div class="controls">
+        <button class="btn ghost" id="restartBtn">↺ Menu</button>
+        <button class="btn primary" id="actionBtn">Reveal 🎯</button>
+      </div>
+      <div class="hint">Press <b>Space</b> to reveal / next</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var DATA = [
+  {s:"A fish with anxiety loses his kid and asks everyone in the ocean for directions.", a:"Finding Nemo", t:"Movie"},
+  {s:"Rich guy funds his hobby of dressing as a bat instead of therapy.", a:"Batman", t:"Movie"},
+  {s:"Orphan discovers he's been famous his whole life and everyone forgot to mention it.", a:"Harry Potter", t:"Book"},
+  {s:"Farm boy joins a cult, gets a laser sword, and it turns out his dad is the problem.", a:"Star Wars", t:"Movie"},
+  {s:"Rich woman ignores lifeboat etiquette and lets a poor man freeze so she can keep a door.", a:"Titanic", t:"Movie"},
+  {s:"Billionaire clones dinosaurs and is shocked when the dinosaurs act like dinosaurs.", a:"Jurassic Park", t:"Movie"},
+  {s:"Baby prince runs away over a misunderstanding and comes back to fight his uncle.", a:"The Lion King", t:"Movie"},
+  {s:"Short guys go on a very long walk to throw a piece of jewelry into a volcano.", a:"The Lord of the Rings", t:"Book"},
+  {s:"A beach town's mayor insists everything is fine as a large fish eats the tourists.", a:"Jaws", t:"Movie"},
+  {s:"Queen with ice powers has a panic attack and accidentally cancels summer.", a:"Frozen", t:"Movie"},
+  {s:"Man learns his entire reality is a computer and decides to fight it in sunglasses.", a:"The Matrix", t:"Movie"},
+  {s:"Two teenagers meet at a party and are both dead within a week over poor communication.", a:"Romeo and Juliet", t:"Book"},
+  {s:"Man is so mad at a whale that he ruins everyone's whole career trip.", a:"Moby Dick", t:"Book"},
+  {s:"Wealthy man throws huge parties hoping his ex will just wander in.", a:"The Great Gatsby", t:"Book"},
+  {s:"Girl follows a rabbit into a hole and everyone she meets is rude and possibly on drugs.", a:"Alice in Wonderland", t:"Book"},
+  {s:"Toys have an existential crisis every time a child leaves the room.", a:"Toy Story", t:"Movie"},
+  {s:"Man survives a shipwreck and spends years having long conversations with a volleyball.", a:"Cast Away", t:"Movie"},
+  {s:"Small green man teaches a farm boy how to lift rocks with his feelings.", a:"The Empire Strikes Back", t:"Movie"},
+  {s:"Guy runs across America for several years because he had nothing better to do.", a:"Forrest Gump", t:"Movie"},
+  {s:"Group of kids fights an evil clown who lives in the plumbing.", a:"It", t:"Book"},
+  {s:"Woman marries a man who keeps his first wife in the attic and forgets to mention it.", a:"Jane Eyre", t:"Book"},
+  {s:"Two rich families in England are extremely rude to each other until they get married.", a:"Pride and Prejudice", t:"Book"},
+  {s:"Scientist builds a friend out of corpses and immediately regrets his social choices.", a:"Frankenstein", t:"Book"},
+  {s:"Charming aristocrat has a serious neck fixation and avoids garlic.", a:"Dracula", t:"Book"},
+  {s:"Man wakes up as a giant bug and his family is mostly annoyed about it.", a:"The Metamorphosis", t:"Book"},
+  {s:"Kids fall into a magic wardrobe and get involved in a war run by a lion.", a:"The Lion, the Witch and the Wardrobe", t:"Book"},
+  {s:"Wizard sends thirteen dwarves and a homebody to rob a dragon.", a:"The Hobbit", t:"Book"},
+  {s:"Government controls everything and a man loses a diary-writing rebellion.", a:"1984", t:"Book"},
+  {s:"Society bans books so one fireman decides to read a couple.", a:"Fahrenheit 451", t:"Book"},
+  {s:"Kids get lost on an island and immediately invent politics and murder.", a:"Lord of the Flies", t:"Book"},
+  {s:"Teen boy wanders New York for days complaining that everyone is fake.", a:"The Catcher in the Rye", t:"Book"},
+  {s:"Old man fights a very large fish for an uncomfortably long time.", a:"The Old Man and the Sea", t:"Book"},
+  {s:"Girl is sold a dream by a scarecrow, a robot, and a coward to see a fraud.", a:"The Wizard of Oz", t:"Movie"},
+  {s:"Man dreams inside dreams inside dreams and loses track of his own kids' faces.", a:"Inception", t:"Movie"},
+  {s:"A boat of animals survives a flood led by one very organized old man.", a:"Noah's Ark", t:"Book"},
+  {s:"Woman is haunted by a giant white letter on her shirt for the whole town's amusement.", a:"The Scarlet Letter", t:"Book"},
+  {s:"Chocolate factory owner hosts a lethal tour and blames the children.", a:"Charlie and the Chocolate Factory", t:"Book"},
+  {s:"Nanny with a flying umbrella fixes a family by being smug and singing.", a:"Mary Poppins", t:"Movie"},
+  {s:"Ogre and a donkey go on a road trip to rescue a princess with a secret.", a:"Shrek", t:"Movie"},
+  {s:"Boy raised by apes finally meets humans and it goes poorly for the apes.", a:"Tarzan", t:"Book"},
+  {s:"A pig avoids becoming bacon thanks to the marketing skills of a spider.", a:"Charlotte's Web", t:"Book"},
+  {s:"Boxer who can barely speak gets a shot at the title and mostly just endures punches.", a:"Rocky", t:"Movie"},
+  {s:"Archaeologist keeps stealing artifacts from other countries and calling it history.", a:"Indiana Jones", t:"Movie"},
+  {s:"Robot from the future travels back in time to protect a waitress.", a:"The Terminator", t:"Movie"},
+  {s:"Group of scientists refuse to believe the ship's computer might be lying.", a:"2001: A Space Odyssey", t:"Movie"},
+  {s:"Man buys an island casino operation and slowly becomes the mob.", a:"The Godfather", t:"Movie"},
+  {s:"Two men wait for a guy named Godot who never shows up. That's it.", a:"Waiting for Godot", t:"Book"},
+  {s:"Rabbits leave home and go on a surprisingly violent journey to find a hill.", a:"Watership Down", t:"Book"},
+  {s:"Man is wrongly jailed, escapes, and spends the rest of his life on elaborate revenge.", a:"The Count of Monte Cristo", t:"Book"},
+  {s:"Whale-sized sea captain hunts a giant squid and a big fish under the ocean.", a:"Twenty Thousand Leagues Under the Sea", t:"Book"},
+  {s:"Kid gets a golden ticket and watches other kids get punished for personality flaws.", a:"Willy Wonka", t:"Movie"},
+  {s:"A snowman-obsessed boy grows up and marries someone his family hates.", a:"Wuthering Heights", t:"Book"},
+  {s:"Wooden puppet lies constantly and it affects his nose more than his conscience.", a:"Pinocchio", t:"Book"},
+  {s:"Superhero can't tell his girlfriend who he is despite living in the same office.", a:"Superman", t:"Movie"},
+  {s:"Bug-bitten teen becomes a superhero and immediately gets his uncle killed.", a:"Spider-Man", t:"Movie"},
+  {s:"Man wakes up with amnesia and turns out to be extremely good at fighting.", a:"The Bourne Identity", t:"Movie"},
+  {s:"Boy trains a dragon after his whole village spent years trying to kill dragons.", a:"How to Train Your Dragon", t:"Movie"},
+  {s:"Toy cowboy gets jealous of a toy spaceman and nearly ruins everyone's day.", a:"Toy Story", t:"Movie"},
+  {s:"Robot left alone on Earth falls in love and accidentally saves humanity.", a:"WALL-E", t:"Movie"},
+  {s:"Old man ties balloons to his house to avoid a retirement home.", a:"Up", t:"Movie"},
+  {s:"Girl's emotions run her brain like an office and things fall apart when she moves.", a:"Inside Out", t:"Movie"},
+  {s:"Rat with big dreams controls a chef by pulling his hair like a puppet.", a:"Ratatouille", t:"Movie"},
+  {s:"Ordinary family of superheroes gets bored of hiding their powers.", a:"The Incredibles", t:"Movie"},
+  {s:"Two monsters realize scaring children is a bad energy business model.", a:"Monsters, Inc.", t:"Movie"},
+  {s:"Detective interviews a cannibal to catch a different, less polite killer.", a:"The Silence of the Lambs", t:"Movie"},
+  {s:"Man refuses to leave a building full of criminals during Christmas.", a:"Die Hard", t:"Movie"},
+  {s:"Spy in a tuxedo orders drinks incorrectly and gambles the government's money.", a:"James Bond", t:"Movie"},
+  {s:"Woman falls down and wakes up in a colorful land where witches fight over shoes.", a:"The Wizard of Oz", t:"Book"},
+  {s:"A group of animals overthrows the farmer and slowly becomes worse than the farmer.", a:"Animal Farm", t:"Book"},
+  {s:"Man makes a deal to stay young while his portrait ages horribly in the attic.", a:"The Picture of Dorian Gray", t:"Book"},
+  {s:"Teenager falls for a very old man who sparkles instead of tanning.", a:"Twilight", t:"Book"},
+  {s:"Girl volunteers for a televised murder tournament to save her sister.", a:"The Hunger Games", t:"Book"},
+  {s:"Cowardly lion, tin man, and scarecrow follow a child down a yellow road.", a:"The Wonderful Wizard of Oz", t:"Book"},
+  {s:"Detective solves crimes by being smug and noticing mud.", a:"Sherlock Holmes", t:"Book"},
+  {s:"Sailor gets tied up and beaten by tiny people, then giant people, repeatedly.", a:"Gulliver's Travels", t:"Book"},
+  {s:"Whale swallows a man who then rethinks his life choices from the inside.", a:"Pinocchio", t:"Movie"},
+  {s:"Man builds a baseball field in a cornfield because a voice told him to.", a:"Field of Dreams", t:"Movie"},
+  {s:"Everyone in a small town relives the exact same day until one man improves himself.", a:"Groundhog Day", t:"Movie"}
+];
+
+var state = { cat:"All", pool:[], idx:0, count:0, revealed:false };
+
+var $ = function(id){ return document.getElementById(id); };
+function esc(str){
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+  }
+  return a;
+}
+function buildPool(){
+  var filtered = DATA.filter(function(d){
+    return state.cat === "All" || d.t === state.cat;
+  });
+  state.pool = shuffle(filtered);
+  state.idx = 0;
+}
+
+/* ---- chips ---- */
+var chips = document.querySelectorAll("#chips .chip");
+for(var c=0;c<chips.length;c++){
+  chips[c].addEventListener("click", function(){
+    for(var k=0;k<chips.length;k++){ chips[k].classList.remove("active"); }
+    this.classList.add("active");
+    state.cat = this.getAttribute("data-cat");
+  });
+}
+
+/* ---- start ---- */
+$("startBtn").addEventListener("click", function(){
+  buildPool();
+  state.count = 0;
+  $("start").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  nextCard();
+});
+
+$("restartBtn").addEventListener("click", function(){
+  $("game").classList.add("hidden");
+  $("start").classList.remove("hidden");
+});
+
+/* ---- game flow ---- */
+function nextCard(){
+  if(state.idx >= state.pool.length){
+    buildPool(); // reshuffle when exhausted
+  }
+  var item = state.pool[state.idx];
+  state.idx++;
+  state.count++;
+  state.revealed = false;
+
+  $("cardNum").textContent = "Card #" + state.count;
+  $("cardType").textContent = (item.t === "Book" ? "📖 Book" : "🎬 Movie");
+  $("summary").textContent = item.s;
+
+  $("answer").textContent = "";
+  $("answerSub").textContent = "";
+  $("actionBtn").textContent = "Reveal 🎯";
+
+  var card = $("card");
+  card.classList.remove("pop");
+  void card.offsetWidth; // reflow to restart animation
+  card.classList.add("pop");
+
+  card._current = item;
+}
+
+function reveal(){
+  var item = $("card")._current;
+  if(!item) return;
+  state.revealed = true;
+  $("answerSub").textContent = "The answer is";
+  $("answer").textContent = item.a;
+  $("actionBtn").textContent = "Next →";
+  var a = $("answer");
+  a.classList.remove("pop"); void a.offsetWidth; a.classList.add("pop");
+}
+
+$("actionBtn").addEventListener("click", function(){
+  if(state.revealed){ nextCard(); }
+  else { reveal(); }
+});
+
+/* ---- keyboard: space = reveal then next ---- */
+document.addEventListener("keydown", function(e){
+  if($("game").classList.contains("hidden")) return;
+  if(e.code === "Space" || e.key === " "){
+    e.preventDefault();
+    if(state.revealed){ nextCard(); }
+    else { reveal(); }
+  }
+});
+</script>
+</body>
+</html>

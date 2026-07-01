@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guess the Classic Car</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#15161a;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:
+    radial-gradient(1100px 700px at 80% -10%, rgba(255,201,77,.10), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(70,214,224,.09), transparent 55%),
+    #0d0e11;
+}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:18px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-size:11px; font-weight:400; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+  transition:color .2s, border-color .2s;
+}
+.brand a:hover{ color:var(--cream); border-color:rgba(246,240,226,.35); }
+
+.wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:80px 24px 40px; }
+.screen{ width:100%; max-width:860px; }
+.hidden{ display:none !important; }
+
+.eyebrow{ font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:12px; color:var(--gold); margin-bottom:14px; }
+h1{ font-family:var(--display); font-weight:800; font-size:clamp(38px,7vw,72px); line-height:.98; margin:0 0 16px; }
+.rule{ font-size:clamp(15px,2vw,18px); color:var(--muted); max-width:560px; line-height:1.5; margin:0 0 26px; }
+
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; margin:0 0 30px; max-width:600px;
+  background:rgba(255,255,255,.02);
+}
+.howto .lbl{ font-family:var(--mono); text-transform:uppercase; letter-spacing:1.5px; font-size:11px; color:var(--cyan); margin-bottom:10px; }
+.howto p{ margin:0 0 12px; font-size:15px; line-height:1.5; color:var(--cream); }
+.howto .ex{
+  font-family:var(--mono); font-size:13px; color:var(--muted); line-height:1.6;
+  border-left:2px solid var(--gold); padding-left:12px;
+}
+.howto .ex b{ color:var(--gold); font-weight:700; }
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:18px; border-radius:13px;
+  padding:14px 26px; border:1px solid transparent; cursor:pointer; transition:transform .12s, filter .2s, background .2s;
+}
+.btn:active{ transform:translateY(1px) scale(.99); }
+.btn.primary{ background:var(--gold); color:#171512; }
+.btn.primary:hover{ filter:brightness(1.06); }
+.btn.ghost{ background:transparent; color:var(--cream); border:1px solid var(--line); }
+.btn.ghost:hover{ border-color:rgba(246,240,226,.4); }
+
+.hud{
+  position:fixed; top:20px; right:22px; z-index:20;
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:13px;
+  color:var(--cream); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+  background:rgba(255,255,255,.02);
+}
+
+.card{ text-align:center; }
+.carface{ font-size:clamp(64px,13vw,120px); line-height:1; margin-bottom:8px; }
+.clue{
+  font-family:var(--display); font-weight:800; font-size:clamp(26px,4.6vw,46px); line-height:1.1;
+  margin:6px auto 22px; max-width:760px;
+}
+.hintline{
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:14px; color:var(--cyan);
+  min-height:20px; margin-bottom:22px;
+}
+.answer{
+  font-family:var(--display); font-weight:800; font-size:clamp(30px,5.4vw,58px); line-height:1.02;
+  color:var(--gold); margin:4px auto 6px; max-width:800px;
+}
+.answer .yr{ display:block; font-family:var(--mono); font-weight:700; font-size:clamp(15px,2.4vw,22px); color:var(--cream); letter-spacing:1px; margin-top:8px; }
+.controls{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:26px; }
+.foot{ margin-top:30px; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+
+@keyframes pop{ 0%{ transform:scale(.9); opacity:0; } 60%{ transform:scale(1.03); } 100%{ transform:scale(1); opacity:1; } }
+.pop{ animation:pop .34s cubic-bezier(.2,.9,.3,1.3); }
+
+@media (max-width:560px){
+  .brand{ font-size:15px; }
+  .wrap{ padding:76px 18px 32px; }
+}
+</style>
+</head>
+<body>
+
+<div class="brand">🚗 Guess the Classic Car <a href="../">← All games</a></div>
+<div class="hud hidden" id="hud">Car #1</div>
+
+<div class="wrap">
+
+  <!-- START SCREEN -->
+  <section class="screen" id="startScreen">
+    <div class="eyebrow">Remote team · screen-share party game</div>
+    <h1>Guess the<br>Classic Car</h1>
+    <p class="rule">Share your screen — read the clues, the team shouts the car, you reveal it.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>A set of clues about an iconic car appears, the team shouts the make &amp; model, then you hit reveal to show the car and its year.</p>
+      <div class="ex">1964 · American · pony badge · started the "muscle" craze → <b>Ford Mustang</b></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start ▶</button>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section class="screen hidden" id="gameScreen">
+    <div class="card" id="card">
+      <div class="carface">🚗</div>
+      <div class="clue" id="clueEl">—</div>
+      <div class="hintline" id="hintEl"></div>
+      <div class="answer hidden" id="answerEl"></div>
+      <div class="controls">
+        <button class="btn ghost" id="hintBtn">Hint</button>
+        <button class="btn primary" id="revealBtn">Reveal 🎯</button>
+      </div>
+      <div class="foot">Space = reveal, then next</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const CARS = [
+  {clue:"American muscle icon with a galloping-horse badge, launched the pony-car craze", answer:"Ford Mustang", year:1964, hint:"USA · 1960s"},
+  {clue:"The People's Car — a rounded, air-cooled 'bug' from Germany that became the best-selling shape ever", answer:"Volkswagen Beetle", year:1938, hint:"Germany · 1930s"},
+  {clue:"America's fiberglass two-seat sports car, born in the '50s and still going", answer:"Chevrolet Corvette", year:1953, hint:"USA · 1950s"},
+  {clue:"Tiny British box that dominated rallies and starred in a gold-heist getaway film", answer:"Mini Cooper", year:1961, hint:"UK · 1960s"},
+  {clue:"Rear-engined German sports coupe with round headlights, an icon since the '60s", answer:"Porsche 911", year:1963, hint:"Germany · 1960s"},
+  {clue:"Wedge-shaped Italian supercar with pop-up lights and side strakes, a 1980s bedroom-poster legend", answer:"Ferrari Testarossa", year:1984, hint:"Italy · 1980s"},
+  {clue:"Angular Italian wedge with scissor doors that defined the supercar poster", answer:"Lamborghini Countach", year:1974, hint:"Italy · 1970s"},
+  {clue:"Long-nosed British roadster Enzo called 'the most beautiful car ever made'", answer:"Jaguar E-Type", year:1961, hint:"UK · 1960s"},
+  {clue:"Stainless-steel gull-winged coupe made famous by a time-travelling movie", answer:"DeLorean DMC-12", year:1981, hint:"USA · 1980s"},
+  {clue:"The car that put the world on wheels with a moving assembly line, available in any color as long as it's black", answer:"Ford Model T", year:1908, hint:"USA · 1900s"},
+  {clue:"Chrome-laden American luxury cruiser famous for its towering tail fins", answer:"Cadillac Eldorado", year:1953, hint:"USA · 1950s"},
+  {clue:"Silver British grand tourer with hidden gadgets, driven by a certain 007", answer:"Aston Martin DB5", year:1963, hint:"UK · 1960s"},
+  {clue:"Orange American muscle coupe that jumped rivers in a TV show, horn honking 'Dixie'", answer:"Dodge Charger", year:1966, hint:"USA · 1960s"},
+  {clue:"Chevy's pony-car answer to the Mustang, a bow-tie muscle rival", answer:"Chevrolet Camaro", year:1966, hint:"USA · 1960s"},
+  {clue:"Cheeky little Italian city car, reborn but beloved in its original 1957 form", answer:"Fiat 500", year:1957, hint:"Italy · 1950s"},
+  {clue:"Futuristic French sedan with hydropneumatic suspension and a spaceship look", answer:"Citroën DS", year:1955, hint:"France · 1950s"},
+  {clue:"Japanese sports coupe with a legendary twin-turbo straight-six, a drift and tuner hero", answer:"Toyota Supra", year:1993, hint:"Japan · 1990s"},
+  {clue:"Japanese all-wheel-drive coupe nicknamed 'Godzilla' for crushing racetracks", answer:"Nissan Skyline GT-R", year:1989, hint:"Japan · 1980s"},
+  {clue:"Boxy German homologation special, a touring-car legend with flared arches", answer:"BMW E30 M3", year:1986, hint:"Germany · 1980s"},
+  {clue:"Silver German coupe with upward-opening doors, the first supercar of the '50s", answer:"Mercedes-Benz 300SL Gullwing", year:1954, hint:"Germany · 1950s"},
+  {clue:"Boxy off-roader from Britain, aluminium body, tackled farms and deserts alike", answer:"Land Rover Defender", year:1948, hint:"UK · 1940s"},
+  {clue:"American two-seat roadster with a folding top, revived in the '90s from British roadster spirit", answer:"Mazda MX-5 Miata", year:1989, hint:"Japan · 1980s"},
+  {clue:"Air-cooled German saloon's hot hatchback offspring that invented a whole class", answer:"Volkswagen Golf GTI", year:1976, hint:"Germany · 1970s"},
+  {clue:"Rally-bred Italian hatch, then a mid-engine Group B monster with twin superchargers", answer:"Lancia Delta Integrale", year:1979, hint:"Italy · 1970s"},
+  {clue:"French economy car with a roll-back roof, corrugated bonnet, nicknamed the 'tin snail'", answer:"Citroën 2CV", year:1948, hint:"France · 1940s"},
+  {clue:"British luxury saloon whose radiator wears a 'Spirit of Ecstasy' figurine", answer:"Rolls-Royce Silver Shadow", year:1965, hint:"UK · 1960s"},
+  {clue:"American muscle fastback made famous chasing through San Francisco hills in a Steve McQueen film", answer:"Ford Mustang GT390 (Bullitt)", year:1968, hint:"USA · 1960s"},
+  {clue:"Red mid-engine Italian V8 that dodged laser-firing tanks with a certain spy", answer:"Ferrari 308 GTS", year:1975, hint:"Italy · 1970s"},
+  {clue:"Wedge-shaped supercar and F1 icon, birthed the Miura and the raging-bull badge", answer:"Lamborghini Miura", year:1966, hint:"Italy · 1960s"},
+  {clue:"British roadster from Abingdon, an affordable open-top sports car for the masses", answer:"MG MGB", year:1962, hint:"UK · 1960s"},
+  {clue:"Boxy Swedish 'brick' wagon known for indestructible reliability", answer:"Volvo 240", year:1974, hint:"Sweden · 1970s"},
+  {clue:"American two-seat T-bird cruiser, a stylish personal luxury car of the '50s", answer:"Ford Thunderbird", year:1955, hint:"USA · 1950s"},
+  {clue:"Muscular American ragtop with a 440 V8, star of a '70s road-race movie and later Kowalski legend", answer:"Dodge Challenger", year:1970, hint:"USA · 1970s"},
+  {clue:"Curvaceous 1930s French masterpiece, the most valuable and beautiful pre-war coupe", answer:"Bugatti Type 57 Atlantic", year:1936, hint:"France · 1930s"},
+  {clue:"British racing-green roadster and Le Mans winner with a supercharged engine, Bentley Boys' pride", answer:"Bentley Blower", year:1929, hint:"UK · 1920s"},
+  {clue:"Compact Japanese economy car that became the world's best-seller, front-wheel drive pioneer", answer:"Toyota Corolla", year:1966, hint:"Japan · 1960s"},
+  {clue:"Rear-engined Chevy compact criticized as 'unsafe at any speed' by a young Ralph Nader", answer:"Chevrolet Corvair", year:1959, hint:"USA · 1950s"},
+  {clue:"American ragtop personal-luxury coupe, a boat-sized cruiser of chrome and vinyl", answer:"Lincoln Continental", year:1961, hint:"USA · 1960s"},
+  {clue:"Rotary-engined Japanese sports car with a spinning Wankel heart", answer:"Mazda RX-7", year:1978, hint:"Japan · 1970s"},
+  {clue:"Turbocharged all-wheel-drive Italian-designed rally weapon in Group B, the 'Quattro'", answer:"Audi Quattro", year:1980, hint:"Germany · 1980s"},
+  {clue:"Boxy German luxury sedan nicknamed 'the Panther', a taxi and executive staple", answer:"Mercedes-Benz W123", year:1976, hint:"Germany · 1970s"},
+  {clue:"Retro-styled British sedan, a curvaceous compact luxury car and getaway icon of the '60s", answer:"Jaguar Mark 2", year:1959, hint:"UK · 1950s"},
+  {clue:"American pony car with a screaming-chicken hood decal, Bandit's black-and-gold ride", answer:"Pontiac Firebird Trans Am", year:1970, hint:"USA · 1970s"},
+  {clue:"Boxy American muscle from Plymouth with a giant rear wing and a pointed nose cone, built for NASCAR", answer:"Plymouth Superbird", year:1970, hint:"USA · 1970s"},
+  {clue:"Slant-nosed German turbo whale-tail flagship, the '80s widebody Porsche", answer:"Porsche 930 Turbo", year:1975, hint:"Germany · 1970s"},
+  {clue:"British open two-seater, the sports car that put a whole company on the map post-war", answer:"Triumph TR6", year:1968, hint:"UK · 1960s"},
+  {clue:"Japanese pocket rocket coupe, lightweight and rev-happy, a front-drive AE86 tofu-delivery legend", answer:"Toyota AE86 Corolla", year:1983, hint:"Japan · 1980s"},
+  {clue:"American gullwing-doored 1980s sports coupe from a Ferrari-fighting Detroit dream", answer:"Bricklin SV-1", year:1974, hint:"Canada · 1970s"},
+  {clue:"Sleek British supercar with a mid-mounted V8, wedge shape, once the fastest car in the world", answer:"Jaguar XJ220", year:1992, hint:"UK · 1990s"},
+  {clue:"McLaren's central-seat three-seater V12 hypercar, road and Le Mans conqueror of the '90s", answer:"McLaren F1", year:1992, hint:"UK · 1990s"},
+  {clue:"American brute of a roadster stuffing a huge V8 into a small British body, the snake", answer:"Shelby Cobra", year:1962, hint:"USA · 1960s"},
+  {clue:"Rounded French hatchback economy car, curvy 'jelly-mould' of the late '80s", answer:"Renault 5 Turbo", year:1980, hint:"France · 1980s"},
+  {clue:"Boxy East German two-stroke compact made of resin body panels, a symbol of the DDR", answer:"Trabant 601", year:1963, hint:"Germany · 1960s"},
+  {clue:"Wedge-shaped Italian GT with a folding hardtop, Ferrari's front-V12 grand tourer, the 'Daytona'", answer:"Ferrari 365 GTB/4 Daytona", year:1968, hint:"Italy · 1960s"}
+];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let order = [], pos = 0, count = 0, revealed = false;
+
+function shuffle(a){
+  const arr = a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+
+function startGame(){
+  order = shuffle(CARS.map((_,i)=>i));
+  pos = 0; count = 0;
+  $('startScreen').classList.add('hidden');
+  $('gameScreen').classList.remove('hidden');
+  $('hud').classList.remove('hidden');
+  showCard();
+}
+
+function showCard(){
+  if(pos >= order.length){ order = shuffle(CARS.map((_,i)=>i)); pos = 0; }
+  const car = CARS[order[pos]];
+  count++;
+  $('hud').textContent = 'Car #' + count;
+  revealed = false;
+
+  $('clueEl').textContent = car.clue;
+  $('hintEl').textContent = '';
+  $('answerEl').classList.add('hidden');
+  $('answerEl').innerHTML = '';
+  $('hintBtn').classList.remove('hidden');
+  $('revealBtn').textContent = 'Reveal 🎯';
+
+  const card = $('card');
+  card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+}
+
+function showHint(){
+  const car = CARS[order[pos]];
+  $('hintEl').textContent = car.hint;
+}
+
+function reveal(){
+  const car = CARS[order[pos]];
+  const a = $('answerEl');
+  a.innerHTML = esc(car.answer) + '<span class="yr">' + esc(String(car.year)) + '</span>';
+  a.classList.remove('hidden');
+  a.classList.remove('pop'); void a.offsetWidth; a.classList.add('pop');
+  $('hintEl').textContent = car.hint;
+  $('hintBtn').classList.add('hidden');
+  $('revealBtn').textContent = 'Next →';
+  revealed = true;
+}
+
+function next(){ pos++; showCard(); }
+
+$('startBtn').addEventListener('click', startGame);
+$('hintBtn').addEventListener('click', showHint);
+$('revealBtn').addEventListener('click', () => { revealed ? next() : reveal(); });
+
+document.addEventListener('keydown', e => {
+  if(e.code === 'Space'){
+    if($('gameScreen').classList.contains('hidden')) return;
+    e.preventDefault();
+    revealed ? next() : reveal();
+  }
+});
+</script>
+</body>
+</html>

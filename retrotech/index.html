@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Retro Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#161422;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(255,201,77,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 120%, rgba(255,77,125,.10), transparent 55%),
+    #0e0c17;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji";font-weight:400}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:18px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line);
+  border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+.wrap{
+  min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center;
+  padding:80px 22px 40px; position:relative;
+}
+.screen{display:none; width:100%; max-width:860px}
+.screen.active{display:block}
+
+/* START */
+.hero{text-align:center}
+.kicker{font-family:var(--mono); text-transform:uppercase; letter-spacing:3px; font-size:12px; color:var(--gold); margin-bottom:14px}
+.title{
+  font-family:var(--display); font-weight:800; line-height:.95; margin:0 0 16px;
+  font-size:clamp(52px,11vw,120px); letter-spacing:-1.5px;
+}
+.title .b{color:var(--gold)}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:560px; margin:0 auto 26px; line-height:1.5}
+.howto{
+  text-align:left; max-width:560px; margin:0 auto 28px; padding:20px 22px;
+  border:1px solid var(--line); border-radius:18px; background:rgba(22,20,34,.6);
+}
+.howto .lab{font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:11px; color:var(--cyan); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{
+  font-family:var(--mono); font-size:13.5px; line-height:1.7; color:var(--muted);
+  background:rgba(14,12,23,.6); border:1px solid var(--line); border-radius:12px; padding:12px 14px;
+}
+.ex b{color:var(--gold); font-weight:700}
+.ex .arw{color:var(--green)}
+
+/* BUTTONS */
+.btn{
+  font-family:var(--display); font-weight:800; font-size:18px; cursor:pointer;
+  border-radius:13px; padding:15px 30px; border:1px solid transparent; transition:.15s transform,.15s background;
+  letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--gold); color:#1a1508; border-color:var(--gold)}
+.btn-primary:hover{background:#ffd873}
+.btn-ghost{background:transparent; color:var(--cream); border:1px solid var(--line)}
+.btn-ghost:hover{border-color:rgba(246,240,226,.35)}
+.btn-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+
+/* GAME */
+.hud{
+  position:fixed; top:20px; right:22px; z-index:20;
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:12px; color:var(--muted);
+  border:1px solid var(--line); border-radius:999px; padding:7px 14px; background:rgba(22,20,34,.6);
+}
+.hud b{color:var(--gold)}
+.card{text-align:center; width:100%}
+.bigemoji{
+  font-size:clamp(90px,20vw,190px); line-height:1; margin-bottom:10px;
+  filter:drop-shadow(0 10px 30px rgba(0,0,0,.4));
+}
+.clue{
+  font-family:var(--display); font-weight:800; letter-spacing:-.5px; line-height:1.15;
+  font-size:clamp(26px,5.5vw,54px); max-width:760px; margin:0 auto 8px;
+}
+.decade{
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:14px; color:var(--cyan);
+  min-height:20px; margin-bottom:8px; opacity:0; transition:.2s;
+}
+.decade.show{opacity:1}
+.answer{
+  font-family:var(--display); font-weight:800; color:var(--gold); letter-spacing:-1px;
+  font-size:clamp(40px,9vw,88px); line-height:1; margin:6px 0 4px;
+  height:0; overflow:hidden; opacity:0; transition:.25s;
+}
+.answer.show{height:auto; opacity:1; margin:14px 0 8px}
+.ctrls{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:26px}
+.spacehint{
+  margin-top:20px; font-family:var(--mono); text-transform:uppercase; letter-spacing:1.5px;
+  font-size:11px; color:var(--muted);
+}
+.spacehint kbd{
+  font-family:var(--mono); background:rgba(246,240,226,.08); border:1px solid var(--line);
+  border-radius:6px; padding:2px 8px; color:var(--cream);
+}
+@keyframes pop{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .32s cubic-bezier(.2,.9,.3,1.2)}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">📼</span> Retro Tech <a href="../">← All games</a></div>
+<div class="hud" id="hud">Gadget <b>#1</b></div>
+
+<div class="wrap">
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <div class="hero">
+      <div class="kicker">Guess the old gadget</div>
+      <h1 class="title">Retro <span class="b">Tech</span></h1>
+      <p class="rule">Share your screen — the clue appears, the team shouts the gadget, you reveal it.</p>
+      <div class="howto">
+        <div class="lab">How to play</div>
+        <p>A retro emoji and a one-line clue appear; the team shouts what old piece of tech it is, then the host reveals the gadget and its decade.</p>
+        <div class="ex">
+          <span class="emoji">📟</span> Buzzed on your belt in the '90s, doctors loved it <span class="arw">→</span> <b>Pager</b><br>
+          <span class="emoji">💾</span> 1.44 MB of pure nostalgia <span class="arw">→</span> <b>Floppy disk</b>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="startBtn">Start ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="card" id="card">
+      <div class="bigemoji emoji" id="emoji">📟</div>
+      <div class="clue" id="clue">—</div>
+      <div class="decade" id="decade"></div>
+      <div class="answer" id="answer"></div>
+      <div class="ctrls">
+        <button class="btn btn-ghost" id="hintBtn">Hint</button>
+        <button class="btn btn-primary" id="mainBtn">Reveal 🎯</button>
+      </div>
+      <div class="spacehint"><kbd>Space</kbd> reveals, then goes next</div>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+var ITEMS = [
+  {emoji:"📟", clue:"Buzzed on your belt in the '90s, doctors loved it", answer:"Pager", decade:"1980s–90s"},
+  {emoji:"💾", clue:"1.44 MB of pure nostalgia", answer:"Floppy disk", decade:"1980s–90s"},
+  {emoji:"📼", clue:"Be kind, please rewind", answer:"VHS tape", decade:"1980s–90s"},
+  {emoji:"🎧", clue:"Sony's pocket cassette player that soundtracked your commute", answer:"Walkman", decade:"1980s"},
+  {emoji:"📼", clue:"Wound-up tape you'd fix with a pencil", answer:"Cassette tape", decade:"1970s–80s"},
+  {emoji:"☎️", clue:"You spun a dial to call, and misdials meant starting over", answer:"Rotary phone", decade:"1950s–70s"},
+  {emoji:"⌨️", clue:"Clack-clack and a satisfying 'ding' at the end of each line", answer:"Typewriter", decade:"1900s–80s"},
+  {emoji:"📠", clue:"Screeched a document down the phone line", answer:"Fax machine", decade:"1980s–90s"},
+  {emoji:"🕹️", clue:"Nintendo's grey brick with a green screen and Tetris", answer:"Game Boy", decade:"1990s"},
+  {emoji:"📞", clue:"That screechy handshake noise before you got online", answer:"Dial-up modem", decade:"1990s"},
+  {emoji:"📷", clue:"Shake the photo while it develops in your hand", answer:"Polaroid camera", decade:"1970s–80s"},
+  {emoji:"📻", clue:"Shoulder-mounted speaker beast for the street", answer:"Boombox", decade:"1980s"},
+  {emoji:"📽️", clue:"Teacher slid a transparency onto glass and beamed it up", answer:"Overhead projector", decade:"1970s–90s"},
+  {emoji:"📺", clue:"Big, heavy, glass tube — thwack it when it went fuzzy", answer:"CRT TV", decade:"1960s–90s"},
+  {emoji:"🎶", clue:"Black grooved disc that crackled and spun at 33 rpm", answer:"Vinyl record", decade:"1950s–80s"},
+  {emoji:"📼", clue:"Chunky cartridge that clunked mid-song in your car", answer:"8-track tape", decade:"1960s–70s"},
+  {emoji:"⚡", clue:"Tapped out messages in dots and dashes down a wire", answer:"Telegraph", decade:"1800s"},
+  {emoji:"☎️", clue:"Drop in a coin on the corner to make a call", answer:"Payphone", decade:"1950s–90s"},
+  {emoji:"📞", clue:"Left a beep-then-message on a tiny cassette at home", answer:"Answering machine", decade:"1980s–90s"},
+  {emoji:"🔢", clue:"Handheld with a green display and a solar strip", answer:"Pocket calculator", decade:"1970s–80s"},
+  {emoji:"📷", clue:"You had 24 shots and had to wait a week to see them", answer:"Film camera", decade:"1970s–90s"},
+  {emoji:"📽️", clue:"Click-clack carousel throwing holiday photos on a wall", answer:"Slide projector", decade:"1960s–80s"},
+  {emoji:"📇", clue:"Spinning wheel of business cards on the office desk", answer:"Rolodex", decade:"1960s–90s"},
+  {emoji:"💾", clue:"Iomega's 100 MB disk — 'Click of Death' optional", answer:"Zip drive", decade:"1990s"},
+  {emoji:"💿", clue:"Sony's skip-prone pocket CD player", answer:"Discman", decade:"1990s"},
+  {emoji:"🖐️", clue:"Palm-sized organiser you wrote on with a stylus", answer:"PalmPilot / PDA", decade:"1990s–2000s"},
+  {emoji:"🥚", clue:"Egg-shaped keychain pet you had to feed or it died", answer:"Tamagotchi", decade:"1990s"},
+  {emoji:"📄", clue:"Tiny sheets of film you read at the library on a big machine", answer:"Microfiche", decade:"1960s–80s"},
+  {emoji:"📼", clue:"Sony's tape format that lost the war to VHS", answer:"Betamax", decade:"1970s–80s"},
+  {emoji:"💽", clue:"Sony's little re-recordable disc in a plastic shell", answer:"MiniDisc", decade:"1990s–2000s"},
+  {emoji:"🎮", clue:"Atari's wood-panel box with the joystick and pixel blobs", answer:"Atari 2600", decade:"1970s–80s"},
+  {emoji:"📱", clue:"The indestructible brick with Snake built in", answer:"Nokia 3310", decade:"1990s–2000s"},
+  {emoji:"💿", clue:"Sony/Philips shiny disc that promised 'perfect sound forever'", answer:"CD (Compact Disc)", decade:"1980s–90s"},
+  {emoji:"🖥️", clue:"Beige box with a floppy slot and a whopping 640K", answer:"Personal computer", decade:"1980s–90s"},
+  {emoji:"🖱️", clue:"Roll it over and clean the crud off the little ball inside", answer:"Ball mouse", decade:"1980s–90s"},
+  {emoji:"📀", clue:"The disc that finally killed the VHS rental store", answer:"DVD", decade:"1990s–2000s"},
+  {emoji:"🎥", clue:"Shoulder-mounted tape camera for your kid's birthday", answer:"Camcorder", decade:"1980s–90s"},
+  {emoji:"📻", clue:"Handheld transistor set you took to the beach", answer:"Transistor radio", decade:"1950s–70s"},
+  {emoji:"📟", clue:"Motorola's flip-open two-way you clipped to your jeans", answer:"Two-way pager", decade:"1990s"},
+  {emoji:"🔦", clue:"View 3D cardboard reels by clicking a lever on the side", answer:"View-Master", decade:"1950s–80s"},
+  {emoji:"📼", clue:"Blockbuster charged you a fortune when you forgot to return it", answer:"Rental video tape", decade:"1980s–90s"},
+  {emoji:"⌚", clue:"Press a button and tiny red numbers glowed on your wrist", answer:"LED digital watch", decade:"1970s"},
+  {emoji:"⌚", clue:"Calculator on your wrist — the nerd flex of the era", answer:"Calculator watch", decade:"1980s"},
+  {emoji:"📞", clue:"Brick-sized cellphone with an antenna and a fat battery", answer:"Car phone / brick phone", decade:"1980s–90s"},
+  {emoji:"🖨️", clue:"Perforated paper crawled through it with a screaming buzz", answer:"Dot-matrix printer", decade:"1980s–90s"},
+  {emoji:"🕹️", clue:"Sega's grey 16-bit console that did 'what Nintendon't'", answer:"Sega Genesis / Mega Drive", decade:"1990s"},
+  {emoji:"💻", clue:"Clamshell 'laptop' that weighed as much as a bowling ball", answer:"Luggable computer", decade:"1980s"},
+  {emoji:"📼", clue:"Watch the whole movie or a hundred kids' cartoons on it", answer:"VCR", decade:"1980s–90s"},
+  {emoji:"🎵", clue:"Sing along to the bouncing ball on tapes at parties", answer:"Karaoke machine", decade:"1980s–90s"},
+  {emoji:"📖", clue:"Paper book of numbers thumped on every doorstep once a year", answer:"Phone book", decade:"1950s–90s"},
+  {emoji:"🗺️", clue:"Fold-out paper you could never re-fold correctly", answer:"Road map / atlas", decade:"1950s–90s"},
+  {emoji:"🎞️", clue:"Reel-to-reel spools of magnetic tape for the audiophile", answer:"Reel-to-reel tape", decade:"1950s–70s"},
+  {emoji:"⌨️", clue:"Basement box loading games off cassette with a screech", answer:"Commodore 64", decade:"1980s"},
+  {emoji:"📸", clue:"Kodak's one-button, film-inside, throw-it-away shooter", answer:"Disposable camera", decade:"1990s"},
+  {emoji:"🔊", clue:"CB radio catchphrase gear — 'Breaker breaker, ten-four'", answer:"CB radio", decade:"1970s"},
+  {emoji:"📺", clue:"Two knobs: one for channels, one you had to yank for UHF", answer:"Dial-tuner television", decade:"1960s–70s"}
+];
+
+var order = [], idx = 0, revealed = false;
+
+function esc(s){var d=document.createElement("div"); d.textContent=s; return d.innerHTML;}
+
+function shuffle(){
+  order = ITEMS.map(function(_,i){return i;});
+  for(var i=order.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=order[i]; order[i]=order[j]; order[j]=t;
+  }
+}
+
+var elEmoji=document.getElementById("emoji"),
+    elClue=document.getElementById("clue"),
+    elDecade=document.getElementById("decade"),
+    elAnswer=document.getElementById("answer"),
+    elHud=document.getElementById("hud"),
+    elCard=document.getElementById("card"),
+    elMain=document.getElementById("mainBtn"),
+    elHint=document.getElementById("hintBtn");
+
+function render(){
+  if(idx>=order.length){ shuffle(); idx=0; }
+  var it=ITEMS[order[idx]];
+  revealed=false;
+  elEmoji.textContent=it.emoji;
+  elClue.innerHTML=esc(it.clue);
+  elDecade.textContent=it.decade;
+  elDecade.classList.remove("show");
+  elAnswer.textContent="";
+  elAnswer.classList.remove("show");
+  elMain.textContent="Reveal 🎯";
+  elHint.style.visibility="visible";
+  elHud.innerHTML="Gadget <b>#"+(idx+1)+"</b>";
+  elCard.classList.remove("pop"); void elCard.offsetWidth; elCard.classList.add("pop");
+}
+
+function reveal(){
+  var it=ITEMS[order[idx]];
+  revealed=true;
+  elAnswer.innerHTML=esc(it.answer)+' <span class="decade emoji" style="opacity:1;display:inline;color:var(--muted);font-size:.4em">('+esc(it.decade)+')</span>';
+  elAnswer.classList.add("show");
+  elDecade.classList.add("show");
+  elMain.textContent="Next →";
+  elHint.style.visibility="hidden";
+}
+
+function next(){ idx++; render(); }
+
+function mainAction(){
+  if(revealed){ next(); } else { reveal(); }
+}
+
+elMain.addEventListener("click", mainAction);
+elHint.addEventListener("click", function(){ elDecade.classList.add("show"); });
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  document.getElementById("startScreen").classList.remove("active");
+  document.getElementById("gameScreen").classList.add("active");
+  shuffle(); idx=0; render();
+});
+
+document.addEventListener("keydown", function(e){
+  if(!document.getElementById("gameScreen").classList.contains("active")) return;
+  if(e.code==="Space" || e.key===" "){
+    e.preventDefault();
+    mainAction();
+  }
+});
+</script>
+</body>
+</html>

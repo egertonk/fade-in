@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guess the Cocktail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#ffc94d;--green:#46e08a;--magenta:#ff4d7d;--cyan:#46d6e0;--cream:#f6f0e2;
+    --muted:rgba(246,240,226,.6);--line:rgba(246,240,226,.13);--panel:#1c1418;
+    --bg:#140e12;
+    --display:"Bricolage Grotesque",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;--mono:"Space Mono",ui-monospace,monospace;
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100vh;overflow:hidden;background:
+    radial-gradient(120% 90% at 50% -10%,#241820,var(--bg) 60%);color:var(--cream);font-family:var(--body)}
+  .brand{position:fixed;top:14px;left:16px;z-index:8;font-family:var(--display);font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px}
+  .brand a{color:var(--muted);font-family:var(--body);font-weight:500;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:10px}
+  .brand a:hover{color:var(--cream);border-color:var(--cream)}
+
+  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:70px 20px 30px}
+  .screen{width:100%;max-width:680px;display:none;flex-direction:column;align-items:center;text-align:center}
+  .screen.active{display:flex}
+
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,9vw,72px);margin:6px 0 12px;line-height:1;
+    background:linear-gradient(120deg,var(--magenta),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rule{color:var(--muted);max-width:500px;margin:0 0 20px;font-size:15px}
+  .rule b{color:var(--cream)}
+  .howto{margin:0 0 22px;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.03);max-width:540px;text-align:left;display:flex;gap:18px;align-items:center}
+  .howto .txt{flex:1}
+  .howto .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .howto p{font-size:14px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+  .howto .ex{display:flex;align-items:center;gap:10px;font-size:15px;flex-wrap:wrap}
+  .howto .ex b{color:var(--gold)}
+
+  /* ---- drink renderer ---- */
+  .drink{position:relative;flex:none}
+  .drink svg{display:block;overflow:visible;filter:drop-shadow(0 20px 40px rgba(0,0,0,.55))}
+  .drinkbig{width:min(66vw,340px);margin:2px 0 14px;animation:pop .38s cubic-bezier(.2,1.3,.5,1)}
+  @keyframes pop{from{opacity:0;transform:scale(.9) translateY(8px)}to{opacity:1;transform:none}}
+  .drinkmini{width:78px}
+  .garnish{position:absolute;font-family:var(--emoji);line-height:1;pointer-events:none;
+    filter:drop-shadow(0 3px 5px rgba(0,0,0,.5))}
+
+  .hud{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+  .pill{background:rgba(28,20,24,.7);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .pill b{color:var(--cream);font-family:var(--display);font-size:15px}
+  .answer{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,52px);color:var(--gold);min-height:1.1em;margin:2px 0 4px;line-height:1.05}
+  .hintline{font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.05em;min-height:1.2em;margin-bottom:14px}
+
+  .btn{font-family:var(--display);font-weight:800;font-size:17px;border-radius:13px;padding:13px 24px;cursor:pointer;border:1px solid transparent;transition:.12s}
+  .btn:hover{transform:translateY(-1px)} .btn.primary{background:var(--gold);color:#140e12}
+  .btn.ghost{background:transparent;color:var(--cream);border-color:var(--line)} .btn.ghost:hover{border-color:var(--cream)}
+  .actions{display:flex;gap:10px;justify-content:center}
+</style>
+</head>
+<body>
+  <div class="brand">🍹 Guess the Cocktail <a href="../">← All games</a></div>
+
+  <div class="wrap">
+    <!-- SETUP -->
+    <section class="screen active" id="setup">
+      <div class="kicker">Party game · Recognition</div>
+      <h1>Guess the Cocktail</h1>
+      <p class="rule"><b>Share your screen</b> — a drink appears, the team shouts its name, you hit Reveal.</p>
+      <div class="howto">
+        <div class="txt">
+          <div class="k">How to play</div>
+          <p>Every drink is drawn in pure code (no pictures): the glass, its colour and a garnish. Show it, let the team call it out, then reveal. Hit <b>Hint</b> for the base spirit if they're stuck.</p>
+          <div class="ex"><span>Tall glass, minty green, lime + mint</span> → <b>Mojito</b></div>
+        </div>
+        <span class="drink drinkmini" id="exDrink"></span>
+      </div>
+      <button class="btn primary" id="startBtn">Start ▶</button>
+    </section>
+
+    <!-- GAME -->
+    <section class="screen" id="game">
+      <div class="hud">
+        <div class="pill">Drink <b id="count">1</b></div>
+      </div>
+      <div class="drink drinkbig" id="drink"></div>
+      <div class="answer" id="answer"></div>
+      <div class="hintline" id="hint"></div>
+      <div class="actions">
+        <button class="btn ghost" id="hintBtn">Hint 🍸</button>
+        <button class="btn primary" id="mainBtn">Reveal 🎯</button>
+      </div>
+    </section>
+  </div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ==================================================================
+   DRINK RENDERER
+   Draws an SVG glass whose interior is clipped, then fills it with the
+   drink colour (solid or vertical gradient), optional foam/cream top or
+   ice cubes, plus outline. A garnish emoji is placed on the rim.
+   Coordinate space is 200x260 (viewBox); garnish positioned in %.
+   ================================================================== */
+
+// Glass geometry: each returns {rim, body, foot} paths + garnish anchor.
+// `body` = the outline path of the glass. `fill` = interior region to clip
+// the liquid into (same as body minus a little inset at the top).
+// We build interior fills as separate polygons/paths per glass.
+const GLASSES = {
+  // Tall straight glass
+  highball(){ return {
+    outline:'M64,22 L64,244 Q64,250 70,250 L130,250 Q136,250 136,244 L136,22 Z',
+    interior:{top:34, path:'M67,34 L67,244 Q67,247 70,247 L130,247 Q133,247 133,244 L133,34 Z'},
+    rimY:22, rimX0:64, rimX1:136, garnish:{x:50,y:12,s:1}, stem:false };
+  },
+  // Short wide tumbler
+  rocks(){ return {
+    outline:'M50,96 L50,242 Q50,250 58,250 L142,250 Q150,250 150,242 L150,96 Z',
+    interior:{top:106, path:'M53,106 L53,242 Q53,247 58,247 L142,247 Q147,247 147,242 L147,106 Z'},
+    rimY:96, rimX0:50, rimX1:150, garnish:{x:50,y:82,s:1.05}, stem:false };
+  },
+  // Martini: V bowl on stem
+  martini(){ return {
+    outline:'M40,60 L100,150 L160,60 Z M100,150 L100,238 M74,246 L126,246',
+    interior:{top:68, poly:[[52,72],[100,142],[148,72]]},
+    rimY:60, rimX0:40, rimX1:160, garnish:{x:66,y:52,s:1}, stem:true,
+    stemPath:'M100,150 L100,238 M72,247 L128,247' };
+  },
+  // Coupe / margarita: rounded bowl on stem
+  coupe(){ return {
+    outline:'M42,64 Q42,132 100,138 Q158,132 158,64 M100,138 L100,238 M74,247 L126,247',
+    interior:{top:70, path:'M48,70 Q48,126 100,132 Q152,126 152,70 Z'},
+    rimY:64, rimX0:42, rimX1:158, garnish:{x:64,y:56,s:1}, stem:true,
+    stemPath:'M100,138 L100,238 M74,247 L126,247' };
+  },
+  // Margarita: stepped bowl (wide flare) on stem
+  margarita(){ return {
+    outline:'M34,60 Q40,92 74,96 Q76,120 100,138 Q124,120 126,96 Q160,92 166,60 M100,138 L100,238 M74,247 L126,247',
+    interior:{top:66, path:'M40,66 Q46,88 78,92 Q82,116 100,130 Q118,116 122,92 Q154,88 160,66 Z'},
+    rimY:60, rimX0:34, rimX1:166, garnish:{x:66,y:54,s:1}, stem:true,
+    stemPath:'M100,138 L100,238 M74,247 L126,247' };
+  },
+  // Hurricane: curvy tall bowl on short foot
+  hurricane(){ return {
+    outline:'M70,30 Q52,90 66,150 Q70,196 82,224 L118,224 Q130,196 134,150 Q148,90 130,30 M82,224 L82,238 M72,247 L128,247',
+    interior:{top:44, path:'M72,44 Q56,98 70,150 Q74,192 84,220 L116,220 Q126,192 130,150 Q144,98 128,44 Z'},
+    rimY:30, rimX0:70, rimX1:130, garnish:{x:50,y:20,s:1.05}, stem:true,
+    stemPath:'M82,224 L82,238 M72,247 L128,247' };
+  },
+  // Flute: thin tall bowl on stem
+  flute(){ return {
+    outline:'M80,26 Q78,120 90,168 L90,236 M110,236 L110,168 Q122,120 120,26 Z M76,247 L124,247 M90,236 L110,236',
+    interior:{top:40, path:'M82,40 Q80,120 91,166 L109,166 Q120,120 118,40 Z'},
+    rimY:26, rimX0:80, rimX1:120, garnish:{x:50,y:16,s:.9}, stem:true,
+    stemPath:'M90,168 L90,236 M110,236 L110,168 M76,247 L124,247 M90,236 L110,236' };
+  },
+  // Wine glass: rounded bowl on stem
+  wine(){ return {
+    outline:'M60,40 Q56,120 100,148 Q144,120 140,40 M100,148 L100,236 M72,247 L128,247',
+    interior:{top:52, path:'M64,52 Q62,118 100,142 Q138,118 136,52 Z'},
+    rimY:40, rimX0:60, rimX1:140, garnish:{x:62,y:34,s:.9}, stem:true,
+    stemPath:'M100,148 L100,236 M72,247 L128,247' };
+  },
+  // Pint: beer glass, slight taper wider at top
+  pint(){ return {
+    outline:'M52,26 L64,248 Q64,250 68,250 L132,250 Q136,250 136,248 L148,26 Z',
+    interior:{top:38, path:'M55,38 L66,246 L134,246 L145,38 Z'},
+    rimY:26, rimX0:52, rimX1:148, garnish:{x:50,y:16,s:1}, stem:false };
+  },
+  // Shot glass: small tumbler
+  shot(){ return {
+    outline:'M74,150 L78,246 Q78,250 82,250 L118,250 Q122,250 122,246 L126,150 Z',
+    interior:{top:158, path:'M77,158 L80,244 L120,244 L123,158 Z'},
+    rimY:150, rimX0:74, rimX1:126, garnish:{x:50,y:140,s:.8}, stem:false };
+  }
+};
+
+let UID=0;
+function renderDrink(box, d){
+  box.innerHTML='';
+  const g = (GLASSES[d.glass]||GLASSES.highball)();
+  const uid = 'dk'+(UID++);
+  const clipId=uid+'c', gradId=uid+'g';
+  const colors = d.colors ? d.colors : [d.color, d.color];
+  const fillLevel = d.fillLevel!=null ? d.fillLevel : 0.86; // fraction of interior filled from bottom
+
+  // Determine interior bounding box (approx) for gradient direction & level.
+  // We clip the whole liquid rect to the interior shape.
+  const svgNS='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(svgNS,'svg');
+  svg.setAttribute('viewBox','0 0 200 260');
+  svg.setAttribute('width','100%');
+
+  // defs: clip path = interior region; gradient for liquid
+  const defs=document.createElementNS(svgNS,'defs');
+  const clip=document.createElementNS(svgNS,'clipPath');
+  clip.setAttribute('id',clipId);
+  const clipShape=document.createElementNS(svgNS,'path');
+  if(g.interior.poly){
+    clipShape.setAttribute('d','M'+g.interior.poly.map(p=>p.join(',')).join(' L')+' Z');
+  } else {
+    clipShape.setAttribute('d', g.interior.path);
+  }
+  clip.appendChild(clipShape); defs.appendChild(clip);
+
+  const grad=document.createElementNS(svgNS,'linearGradient');
+  grad.setAttribute('id',gradId);
+  grad.setAttribute('x1','0');grad.setAttribute('y1','0');grad.setAttribute('x2','0');grad.setAttribute('y2','1');
+  colors.forEach((c,i)=>{
+    const st=document.createElementNS(svgNS,'stop');
+    st.setAttribute('offset',(colors.length===1?0:i/(colors.length-1))*100+'%');
+    st.setAttribute('stop-color',c);
+    grad.appendChild(st);
+  });
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+
+  // group clipped to interior -> draw liquid + foam + ice
+  const liquidG=document.createElementNS(svgNS,'g');
+  liquidG.setAttribute('clip-path','url(#'+clipId+')');
+
+  // interior top & bottom (approx from geometry)
+  const topY = g.interior.top;
+  const botY = 248;
+  const liqTopY = topY + (1-fillLevel)*(botY-topY);
+
+  // liquid rect (whole interior below liqTopY)
+  const liq=document.createElementNS(svgNS,'rect');
+  liq.setAttribute('x','0');liq.setAttribute('y',liqTopY);
+  liq.setAttribute('width','200');liq.setAttribute('height',260-liqTopY);
+  liq.setAttribute('fill','url(#'+gradId+')');
+  liquidG.appendChild(liq);
+
+  // surface ellipse-ish highlight line at liquid top
+  const surf=document.createElementNS(svgNS,'rect');
+  surf.setAttribute('x','0');surf.setAttribute('y',liqTopY);
+  surf.setAttribute('width','200');surf.setAttribute('height','3');
+  surf.setAttribute('fill','rgba(255,255,255,.28)');
+  liquidG.appendChild(surf);
+
+  // foam / cream top
+  if(d.foam){
+    const foamH = d.foamH||18;
+    const foam=document.createElementNS(svgNS,'rect');
+    foam.setAttribute('x','0');foam.setAttribute('y',liqTopY-foamH);
+    foam.setAttribute('width','200');foam.setAttribute('height',foamH+4);
+    foam.setAttribute('fill',d.foam);
+    liquidG.appendChild(foam);
+    // bubbly bottom edge
+    for(let i=0;i<7;i++){
+      const b=document.createElementNS(svgNS,'circle');
+      b.setAttribute('cx',30+i*22);b.setAttribute('cy',liqTopY-1);
+      b.setAttribute('r',4+ (i%3));b.setAttribute('fill',d.foam);
+      liquidG.appendChild(b);
+    }
+  }
+
+  // ice cubes
+  if(d.ice){
+    const cubes=[[ -6,-4],[10,2],[2,-14]].slice(0,d.ice);
+    const cx = (g.rimX0+g.rimX1)/2;
+    cubes.forEach((o,i)=>{
+      const size=20;
+      const ice=document.createElementNS(svgNS,'rect');
+      ice.setAttribute('x',cx+o[0]*2-size/2);
+      ice.setAttribute('y',liqTopY+6+o[1]+i*4);
+      ice.setAttribute('width',size);ice.setAttribute('height',size);
+      ice.setAttribute('rx','4');
+      ice.setAttribute('transform',`rotate(${ (i*17)-15 } ${cx+o[0]*2} ${liqTopY+16+o[1]})`);
+      ice.setAttribute('fill','rgba(255,255,255,.22)');
+      ice.setAttribute('stroke','rgba(255,255,255,.4)');
+      ice.setAttribute('stroke-width','1');
+      liquidG.appendChild(ice);
+    });
+  }
+
+  // bubbles (for sparkling)
+  if(d.bubbles){
+    const cx=(g.rimX0+g.rimX1)/2;
+    for(let i=0;i<10;i++){
+      const b=document.createElementNS(svgNS,'circle');
+      b.setAttribute('cx',cx + (Math.random()*40-20));
+      b.setAttribute('cy',liqTopY + Math.random()*(botY-liqTopY-6)+4);
+      b.setAttribute('r',1.3+Math.random()*1.4);
+      b.setAttribute('fill','rgba(255,255,255,.5)');
+      liquidG.appendChild(b);
+    }
+  }
+
+  svg.appendChild(liquidG);
+
+  // glass outline (drawn on top, no fill)
+  function stroke(dpath,w,col){
+    const p=document.createElementNS(svgNS,'path');
+    p.setAttribute('d',dpath);p.setAttribute('fill','none');
+    p.setAttribute('stroke',col||'rgba(246,240,226,.85)');
+    p.setAttribute('stroke-width',w||4);
+    p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');
+    svg.appendChild(p); return p;
+  }
+  // faint glass tint behind liquid already handled; draw outline last
+  stroke(g.outline,4);
+  if(g.stem && g.stemPath) stroke(g.stemPath,4);
+
+  // subtle vertical glass highlight
+  const hl=document.createElementNS(svgNS,'rect');
+  const cx=(g.rimX0+g.rimX1)/2;
+  hl.setAttribute('x',cx-18);hl.setAttribute('y',g.interior.top+4);
+  hl.setAttribute('width','7');hl.setAttribute('height',(botY-g.interior.top)*0.7);
+  hl.setAttribute('rx','4');hl.setAttribute('fill','rgba(255,255,255,.10)');
+  hl.setAttribute('clip-path','url(#'+clipId+')');
+  svg.appendChild(hl);
+
+  box.appendChild(svg);
+
+  // garnish emoji on the rim
+  if(d.garnish){
+    const gs=document.createElement('span');
+    gs.className='garnish';
+    gs.textContent=d.garnish;
+    const base = box.classList.contains('drinkmini')?18:44;
+    gs.style.fontSize=(base*(g.garnish.s||1))+'px';
+    gs.style.left=g.garnish.x+'%';
+    gs.style.top=g.garnish.y+'%';
+    gs.style.transform='translate(-50%,-50%)';
+    box.appendChild(gs);
+  }
+}
+
+/* ==================================================================
+   DRINK DATA — 34 well-known drinks
+   glass, color / colors[] (top→bottom gradient), garnish, hint, extras
+   ================================================================== */
+const DRINKS=[
+  {name:'Mojito', glass:'highball', color:'#c9e8a0', garnish:'🌿', hint:'Rum · minty & fizzy', ice:2, bubbles:true},
+  {name:'Margarita', glass:'margarita', color:'#dff0b0', garnish:'🧂', hint:'Tequila · lime & salt rim'},
+  {name:'Bloody Mary', glass:'highball', color:'#c02417', garnish:'🥬', hint:'Vodka · tomato & spice', ice:2},
+  {name:'Cosmopolitan', glass:'martini', color:'#e8547f', garnish:'🍋', hint:'Vodka · cranberry & lime'},
+  {name:'Martini', glass:'martini', color:'#eef3e0', garnish:'🫒', hint:'Gin/Vodka · dry & clear'},
+  {name:'Piña Colada', glass:'hurricane', color:'#f4ecd0', garnish:'🍍', hint:'Rum · pineapple & coconut'},
+  {name:'Old Fashioned', glass:'rocks', color:'#b5641f', garnish:'🍊', hint:'Whiskey · sugar & bitters', ice:1},
+  {name:'Negroni', glass:'rocks', color:'#c0391b', garnish:'🍊', hint:'Gin · Campari & vermouth', ice:1},
+  {name:'Tequila Sunrise', glass:'highball', colors:['#ffb347','#f77f2e','#d21f3c'], garnish:'🍒', hint:'Tequila · orange & grenadine'},
+  {name:'Gin & Tonic', glass:'highball', color:'#eef6ff', garnish:'🍋', hint:'Gin · tonic, clear & fizzy', ice:2, bubbles:true},
+  {name:'Espresso Martini', glass:'martini', colors:['#c8a06a','#3a2416'], garnish:'', hint:'Vodka · coffee & foam', beans:true},
+  {name:'Aperol Spritz', glass:'wine', color:'#f06423', garnish:'🍊', hint:'Aperol · prosecco & soda', ice:2, bubbles:true},
+  {name:'Manhattan', glass:'coupe', color:'#8a2318', garnish:'🍒', hint:'Whiskey · vermouth & bitters'},
+  {name:'Blue Lagoon', glass:'highball', color:'#1ea8e0', garnish:'🍒', hint:'Vodka · blue curaçao', ice:2},
+  {name:'Mimosa', glass:'flute', color:'#ffab2e', garnish:'', hint:'Champagne · orange juice', bubbles:true},
+  {name:'Champagne', glass:'flute', color:'#f4e4a0', garnish:'', hint:'Sparkling wine, pale gold', bubbles:true},
+  {name:'Beer', glass:'pint', color:'#e0a51e', garnish:'', hint:'Lager · amber with foam', foam:'#fbf3d8', foamH:22, fillLevel:0.78},
+  {name:'Red Wine', glass:'wine', color:'#6e1524', garnish:'', hint:'Deep red vino', fillLevel:0.62},
+  {name:'Daiquiri', glass:'coupe', color:'#eef0d8', garnish:'🍋', hint:'Rum · lime & sugar'},
+  {name:'Mai Tai', glass:'rocks', colors:['#e8901e','#b83218'], garnish:'🍍', hint:'Rum · orgeat & lime', ice:2},
+  // ---- +14 more ----
+  {name:'Whiskey Neat', glass:'rocks', color:'#a85a16', garnish:'', hint:'Whiskey · no ice', fillLevel:0.5},
+  {name:'Tequila Shot', glass:'shot', color:'#f2e8b0', garnish:'🍋', hint:'Tequila · salt & lime'},
+  {name:'Gimlet', glass:'coupe', color:'#d6ecb0', garnish:'🍋', hint:'Gin · lime cordial'},
+  {name:'Cuba Libre', glass:'highball', color:'#4a2a18', garnish:'🍋', hint:'Rum · cola & lime', ice:2, bubbles:true},
+  {name:'Sex on the Beach', glass:'highball', colors:['#ff8c42','#e0244a'], garnish:'🍊', hint:'Vodka · peach & cranberry', ice:2},
+  {name:'Whiskey Sour', glass:'rocks', color:'#e6a12e', garnish:'🍒', hint:'Whiskey · lemon & foam', foam:'#f7ecd0', foamH:12},
+  {name:'Moscow Mule', glass:'highball', color:'#c98a3a', garnish:'🍋', hint:'Vodka · ginger beer', ice:2, bubbles:true},
+  {name:'Long Island Iced Tea', glass:'highball', color:'#8a4a1e', garnish:'🍋', hint:'Everything · cola top', ice:2},
+  {name:'Sangria', glass:'wine', color:'#8e1f30', garnish:'🍊', hint:'Red wine · fruit', ice:1, fillLevel:0.66},
+  {name:'White Russian', glass:'rocks', colors:['#f6ecd8','#a97a44'], garnish:'', hint:'Vodka · coffee & cream', ice:2},
+  {name:'Aviation', glass:'coupe', color:'#b9a8e0', garnish:'🍒', hint:'Gin · violet & maraschino'},
+  {name:'Blue Hawaii', glass:'hurricane', color:'#22b4d6', garnish:'🍍', hint:'Rum · blue curaçao & pineapple'},
+  {name:'Cosmo Shot', glass:'shot', color:'#e0547a', garnish:'', hint:'Layered pink shooter'},
+  {name:'Green Beer', glass:'pint', color:'#3aa63a', garnish:'', hint:'St. Patrick lager', foam:'#eafbe0', foamH:20, fillLevel:0.78}
+];
+
+/* handle coffee-bean garnish (Espresso Martini) as tiny dots via garnish emoji fallback */
+DRINKS.forEach(d=>{ if(d.beans && !d.garnish) d.garnish=''; });
+
+/* ==================================================================
+   GAME LOOP
+   ================================================================== */
+let order=[], idx=0, count=0, revealed=false;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+$('startBtn').onclick=()=>{
+  order = shuffle(DRINKS.map((_,i)=>i)); idx=0; count=0;
+  $('setup').classList.remove('active'); $('game').classList.add('active');
+  nextDrink();
+};
+$('mainBtn').onclick=()=>{ if(!revealed) reveal(); else nextDrink(); };
+$('hintBtn').onclick=()=>{ const d=DRINKS[order[idx]]; $('hint').textContent='🍸 '+d.hint; };
+
+function nextDrink(){
+  if(idx>=order.length){ order=shuffle(order); idx=0; }
+  const d=DRINKS[order[idx]]; count++;
+  $('count').textContent=count;
+  renderDrink($('drink'), d);
+  $('answer').textContent=''; $('hint').textContent='';
+  revealed=false; $('mainBtn').textContent='Reveal 🎯'; $('hintBtn').style.visibility='visible';
+}
+function reveal(){
+  const d=DRINKS[order[idx]]; $('answer').textContent=d.name;
+  revealed=true; idx++; $('mainBtn').textContent='Next →'; $('hintBtn').style.visibility='hidden';
+}
+document.addEventListener('keydown',e=>{ if(!$('game').classList.contains('active')) return;
+  if(e.code==='Space'){ e.preventDefault(); $('mainBtn').click(); } });
+
+// render the how-to example drink (Mojito)
+renderDrink($('exDrink'), DRINKS[0]);
+</script>
+</body>
+</html>
