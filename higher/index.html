@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Higher or Lower</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#16162a;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%,#241b3a 0%,transparent 60%),radial-gradient(1000px 700px at 0% 110%,#0f2230 0%,transparent 55%),#0c0c1a;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20; display:flex; align-items:center; gap:12px;
+  font-family:var(--display); font-weight:800; font-size:18px; letter-spacing:.2px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+}
+.brand a:hover{color:var(--cream); border-color:var(--muted)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:80px 24px 40px}
+.stage{width:100%; max-width:1080px}
+
+.label{font-family:var(--mono); text-transform:uppercase; letter-spacing:.12em; font-size:12px; color:var(--muted)}
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:17px; cursor:pointer;
+  border-radius:13px; padding:14px 26px; border:1px solid transparent; transition:transform .08s ease,filter .15s ease;
+}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--gold); color:#1a1405; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--muted)}
+
+/* START SCREEN */
+#start{text-align:center}
+#start h1{
+  font-family:var(--display); font-weight:800; font-size:clamp(48px,9vw,104px); line-height:.95;
+  margin:0 0 18px; letter-spacing:-.02em;
+}
+#start h1 .em{display:inline-block; transform:translateY(6px); margin-right:10px}
+.rule{font-size:clamp(16px,2.4vw,21px); color:var(--muted); max-width:640px; margin:0 auto 34px; line-height:1.5}
+.chips{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:36px}
+.chip{
+  font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.08em; cursor:pointer;
+  padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--muted);
+  transition:all .12s ease;
+}
+.chip:hover{border-color:var(--muted); color:var(--cream)}
+.chip.on{background:var(--cyan); color:#08222a; border-color:var(--cyan); font-weight:700}
+
+/* HUD */
+.hud{display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:22px; flex-wrap:wrap}
+.pill{
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:9px 20px; min-width:96px;
+}
+.pill .k{font-family:var(--mono); text-transform:uppercase; letter-spacing:.1em; font-size:10px; color:var(--muted)}
+.pill .v{font-family:var(--display); font-weight:800; font-size:26px; line-height:1}
+.pill.cat{background:transparent}
+.pill.cat .v{font-size:20px; color:var(--gold)}
+
+.question{text-align:center; font-family:var(--display); font-weight:800; font-size:clamp(22px,4vw,40px); margin:0 0 6px; letter-spacing:-.01em}
+.question b{color:var(--gold)}
+.qunit{text-align:center; font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:26px}
+
+/* CARDS */
+.cards{display:grid; grid-template-columns:1fr auto 1fr; align-items:stretch; gap:18px}
+.vs{display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:800; font-size:30px; color:var(--muted)}
+.card{
+  background:var(--panel); border:2px solid var(--line); border-radius:22px; padding:34px 22px;
+  display:flex; flex-direction:column; align-items:center; text-align:center; cursor:pointer;
+  transition:transform .1s ease,border-color .15s ease,box-shadow .15s ease; min-height:300px; justify-content:center;
+}
+.card:hover{transform:translateY(-3px); border-color:var(--muted)}
+.card.locked{cursor:default}
+.card .cem{font-size:clamp(64px,12vw,120px); line-height:1; margin-bottom:14px}
+.card .clabel{font-family:var(--display); font-weight:800; font-size:clamp(20px,3vw,30px); line-height:1.05; margin-bottom:16px}
+.card .cval{font-family:var(--display); font-weight:800; font-size:clamp(30px,5.5vw,54px); line-height:1; letter-spacing:-.01em}
+.card .cval.hidden{color:var(--muted)}
+.card .cunit{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-top:8px; min-height:14px}
+.card.right{border-color:var(--green); box-shadow:0 0 0 4px rgba(70,224,138,.16)}
+.card.right .cval{color:var(--green)}
+.card.wrong{border-color:var(--magenta); box-shadow:0 0 0 4px rgba(255,77,125,.16)}
+.card.wrong .cval{color:var(--magenta)}
+
+.actions{display:flex; gap:14px; justify-content:center; margin-top:26px; flex-wrap:wrap; align-items:center}
+.verdict{font-family:var(--display); font-weight:800; font-size:22px; text-align:center; margin-top:20px; min-height:28px}
+.verdict.good{color:var(--green)}
+.verdict.bad{color:var(--magenta)}
+
+.hidden-el{display:none !important}
+
+@media(max-width:720px){
+  .cards{grid-template-columns:1fr; }
+  .vs{transform:rotate(90deg); padding:2px 0}
+  .card{min-height:200px; padding:24px 16px}
+}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">📊</span> Higher or Lower <a href="../">← All games</a></div>
+
+<div class="wrap">
+<div class="stage">
+
+  <!-- START SCREEN -->
+  <section id="start">
+    <h1><span class="em emoji">📊</span>Higher or Lower</h1>
+    <p class="rule">Share your screen — the team shouts which is higher, you reveal. Build the longest streak.</p>
+    <div class="chips" id="chips"></div>
+    <button class="btn primary" id="startBtn">Start ▶</button>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="game" class="hidden-el">
+    <div class="hud">
+      <div class="pill"><span class="k">Streak</span><span class="v" id="streak">0</span></div>
+      <div class="pill"><span class="k">Best</span><span class="v" id="best">0</span></div>
+      <div class="pill cat"><span class="k">Category</span><span class="v" id="catName">—</span></div>
+    </div>
+
+    <h2 class="question" id="question">Which has the <b>HIGHER</b> value?</h2>
+    <div class="qunit" id="qunit"></div>
+
+    <div class="cards">
+      <div class="card" id="cardL" data-side="L">
+        <div class="cem emoji" id="emL">❓</div>
+        <div class="clabel" id="labL">—</div>
+        <div class="cval hidden" id="valL">???</div>
+        <div class="cunit" id="unitL"></div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="card" id="cardR" data-side="R">
+        <div class="cem emoji" id="emR">❓</div>
+        <div class="clabel" id="labR">—</div>
+        <div class="cval hidden" id="valR">???</div>
+        <div class="cunit" id="unitR"></div>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <div class="actions" id="guessRow">
+      <button class="btn ghost" id="guessL">⬅ Left is higher</button>
+      <button class="btn ghost" id="guessR">Right is higher ➡</button>
+    </div>
+    <div class="actions hidden-el" id="nextRow">
+      <button class="btn primary" id="nextBtn">Next →</button>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<script>
+"use strict";
+
+const CATEGORIES = {
+  population: {
+    name:"Population", metric:"population", unit:"people",
+    items:[
+      {label:"India", value:1428600000, emoji:"🇮🇳"},
+      {label:"China", value:1425700000, emoji:"🇨🇳"},
+      {label:"United States", value:339000000, emoji:"🇺🇸"},
+      {label:"Indonesia", value:277500000, emoji:"🇮🇩"},
+      {label:"Brazil", value:216400000, emoji:"🇧🇷"},
+      {label:"Nigeria", value:223800000, emoji:"🇳🇬"},
+      {label:"Japan", value:123300000, emoji:"🇯🇵"},
+      {label:"Mexico", value:128500000, emoji:"🇲🇽"},
+      {label:"Germany", value:83300000, emoji:"🇩🇪"},
+      {label:"United Kingdom", value:67700000, emoji:"🇬🇧"},
+      {label:"France", value:64800000, emoji:"🇫🇷"},
+      {label:"Canada", value:38900000, emoji:"🇨🇦"},
+      {label:"Australia", value:26400000, emoji:"🇦🇺"}
+    ]
+  },
+  area: {
+    name:"Land area", metric:"land area", unit:"km²",
+    items:[
+      {label:"Russia", value:17098246, emoji:"🇷🇺"},
+      {label:"Canada", value:9984670, emoji:"🇨🇦"},
+      {label:"China", value:9596961, emoji:"🇨🇳"},
+      {label:"United States", value:9525067, emoji:"🇺🇸"},
+      {label:"Brazil", value:8515767, emoji:"🇧🇷"},
+      {label:"Australia", value:7692024, emoji:"🇦🇺"},
+      {label:"India", value:3287263, emoji:"🇮🇳"},
+      {label:"Argentina", value:2780400, emoji:"🇦🇷"},
+      {label:"Algeria", value:2381741, emoji:"🇩🇿"},
+      {label:"Mexico", value:1964375, emoji:"🇲🇽"},
+      {label:"France", value:551695, emoji:"🇫🇷"},
+      {label:"Japan", value:377975, emoji:"🇯🇵"},
+      {label:"United Kingdom", value:243610, emoji:"🇬🇧"}
+    ]
+  },
+  speed: {
+    name:"Top speed", metric:"top speed", unit:"mph",
+    items:[
+      {label:"Peregrine falcon", value:240, emoji:"🦅"},
+      {label:"Cheetah", value:70, emoji:"🐆"},
+      {label:"Pronghorn antelope", value:55, emoji:"🦌"},
+      {label:"Lion", value:50, emoji:"🦁"},
+      {label:"Greyhound", value:45, emoji:"🐕"},
+      {label:"Horse", value:44, emoji:"🐎"},
+      {label:"Ostrich", value:43, emoji:"🦆"},
+      {label:"Kangaroo", value:35, emoji:"🦘"},
+      {label:"Giraffe", value:32, emoji:"🦒"},
+      {label:"Cat (domestic)", value:30, emoji:"🐈"},
+      {label:"Elephant", value:25, emoji:"🐘"},
+      {label:"Human (Usain Bolt)", value:28, emoji:"🏃"},
+      {label:"Squirrel", value:12, emoji:"🐿️"}
+    ]
+  },
+  boxoffice: {
+    name:"Box office", metric:"worldwide gross", unit:"US$",
+    items:[
+      {label:"Avatar", value:2923000000, emoji:"🌌"},
+      {label:"Avengers: Endgame", value:2799000000, emoji:"🦸"},
+      {label:"Avatar: The Way of Water", value:2320000000, emoji:"💧"},
+      {label:"Titanic", value:2257000000, emoji:"🚢"},
+      {label:"Star Wars: The Force Awakens", value:2071000000, emoji:"⚔️"},
+      {label:"Jurassic World", value:1671000000, emoji:"🦖"},
+      {label:"The Lion King (2019)", value:1663000000, emoji:"🦁"},
+      {label:"The Avengers", value:1519000000, emoji:"🛡️"},
+      {label:"Frozen II", value:1450000000, emoji:"❄️"},
+      {label:"Barbie", value:1446000000, emoji:"🎀"},
+      {label:"Harry Potter: Deathly Hallows 2", value:1342000000, emoji:"⚡"},
+      {label:"Inception", value:837000000, emoji:"🌀"},
+      {label:"Interstellar", value:731000000, emoji:"🚀"}
+    ]
+  },
+  height: {
+    name:"Structure height", metric:"height", unit:"m",
+    items:[
+      {label:"Burj Khalifa", value:828, emoji:"🏙️"},
+      {label:"Merdeka 118", value:679, emoji:"🏢"},
+      {label:"Shanghai Tower", value:632, emoji:"🌇"},
+      {label:"One World Trade Center", value:541, emoji:"🗽"},
+      {label:"Eiffel Tower", value:330, emoji:"🗼"},
+      {label:"Empire State Building", value:381, emoji:"🏙️"},
+      {label:"The Shard", value:310, emoji:"🔺"},
+      {label:"Great Pyramid of Giza", value:139, emoji:"🔻"},
+      {label:"Big Ben", value:96, emoji:"🕰️"},
+      {label:"Statue of Liberty", value:93, emoji:"🗽"},
+      {label:"Leaning Tower of Pisa", value:57, emoji:"🏛️"},
+      {label:"Christ the Redeemer", value:38, emoji:"✝️"}
+    ]
+  },
+  diameter: {
+    name:"Diameter", metric:"diameter", unit:"km",
+    items:[
+      {label:"Jupiter", value:139820, emoji:"🪐"},
+      {label:"Saturn", value:116460, emoji:"🪐"},
+      {label:"Uranus", value:50724, emoji:"🔵"},
+      {label:"Neptune", value:49244, emoji:"🔵"},
+      {label:"Earth", value:12742, emoji:"🌍"},
+      {label:"Venus", value:12104, emoji:"🌕"},
+      {label:"Mars", value:6779, emoji:"🔴"},
+      {label:"Ganymede (moon)", value:5268, emoji:"🌑"},
+      {label:"Titan (moon)", value:5150, emoji:"🌘"},
+      {label:"Mercury", value:4879, emoji:"☿️"},
+      {label:"Moon", value:3474, emoji:"🌙"},
+      {label:"Pluto", value:2377, emoji:"🩶"}
+    ]
+  }
+};
+
+const KEYS = Object.keys(CATEGORIES);
+
+// ---- state ----
+let selected = "mixed";
+let streak = 0, best = 0;
+let current = null; // {catKey, left, right, revealed}
+
+// ---- helpers ----
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function fmt(n){ return n.toLocaleString("en-US"); }
+function rand(n){ return Math.floor(Math.random()*n); }
+function pickTwoDifferent(items){
+  let a = items[rand(items.length)];
+  let b;
+  let guard = 0;
+  do{
+    b = items[rand(items.length)];
+    guard++;
+  } while((b === a || b.value === a.value) && guard < 200);
+  // fallback: linear scan for a differing value
+  if(b === a || b.value === a.value){
+    for(const it of items){ if(it !== a && it.value !== a.value){ b = it; break; } }
+  }
+  return [a,b];
+}
+
+// ---- DOM ----
+const el = id => document.getElementById(id);
+
+function buildChips(){
+  const chips = el("chips");
+  const opts = [["mixed","🎲 Mixed"]].concat(KEYS.map(k => [k, CATEGORIES[k].name]));
+  chips.innerHTML = "";
+  opts.forEach(([key,label]) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (key === selected ? " on" : "");
+    b.textContent = label;
+    b.dataset.key = key;
+    b.addEventListener("click", () => {
+      selected = key;
+      [...chips.children].forEach(c => c.classList.toggle("on", c.dataset.key === key));
+    });
+    chips.appendChild(b);
+  });
+}
+
+function newRound(){
+  const catKey = (selected === "mixed") ? KEYS[rand(KEYS.length)] : selected;
+  const cat = CATEGORIES[catKey];
+  const [left, right] = pickTwoDifferent(cat.items);
+  current = { catKey, left, right, revealed:false };
+
+  el("catName").textContent = cat.name;
+  el("question").innerHTML = "Which has the <b>HIGHER</b> " + esc(cat.metric) + "?";
+  el("qunit").textContent = "measured in " + cat.unit;
+
+  el("emL").textContent = left.emoji;
+  el("labL").textContent = left.label;
+  el("valL").textContent = "???";
+  el("unitL").textContent = "";
+  el("emR").textContent = right.emoji;
+  el("labR").textContent = right.label;
+  el("valR").textContent = "???";
+  el("unitR").textContent = "";
+
+  ["cardL","cardR"].forEach(id => {
+    el(id).classList.remove("right","wrong","locked");
+  });
+  el("valL").classList.add("hidden");
+  el("valR").classList.add("hidden");
+
+  el("verdict").textContent = "";
+  el("verdict").className = "verdict";
+  el("guessRow").classList.remove("hidden-el");
+  el("nextRow").classList.add("hidden-el");
+}
+
+function reveal(side){
+  if(!current || current.revealed) return;
+  current.revealed = true;
+  const {left, right, catKey} = current;
+  const unit = CATEGORIES[catKey].unit;
+
+  el("valL").textContent = fmt(left.value);
+  el("valR").textContent = fmt(right.value);
+  el("unitL").textContent = unit;
+  el("unitR").textContent = unit;
+  el("valL").classList.remove("hidden");
+  el("valR").classList.remove("hidden");
+
+  const higherSide = (left.value > right.value) ? "L" : "R";
+  el("cardL").classList.add(higherSide === "L" ? "right" : "wrong", "locked");
+  el("cardR").classList.add(higherSide === "R" ? "right" : "wrong", "locked");
+
+  const correct = (side === higherSide);
+  if(correct){
+    streak++;
+    if(streak > best) best = streak;
+    el("verdict").textContent = "✅ Correct! Streak " + streak;
+    el("verdict").className = "verdict good";
+  }else{
+    streak = 0;
+    el("verdict").textContent = "❌ Wrong — streak reset";
+    el("verdict").className = "verdict bad";
+  }
+  el("streak").textContent = streak;
+  el("best").textContent = best;
+
+  el("guessRow").classList.add("hidden-el");
+  el("nextRow").classList.remove("hidden-el");
+}
+
+// ---- wire up ----
+buildChips();
+el("startBtn").addEventListener("click", () => {
+  el("start").classList.add("hidden-el");
+  el("game").classList.remove("hidden-el");
+  newRound();
+});
+el("guessL").addEventListener("click", () => reveal("L"));
+el("guessR").addEventListener("click", () => reveal("R"));
+el("cardL").addEventListener("click", () => reveal("L"));
+el("cardR").addEventListener("click", () => reveal("R"));
+el("nextBtn").addEventListener("click", newRound);
+</script>
+</body>
+</html>

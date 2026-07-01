@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stop the Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#141c2e;
+  --bg:#0c1120;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 70% -10%, #1a2540 0%, var(--bg) 55%);
+}
+a{color:inherit}
+.brand{
+  position:fixed; top:18px; left:22px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:1.2px;
+  text-decoration:none; color:var(--muted);
+  border:1px solid var(--line); border-radius:999px; padding:5px 11px;
+  transition:border-color .15s,color .15s;
+}
+.brand a:hover{ color:var(--cream); border-color:rgba(246,240,226,.35); }
+
+.wrap{
+  position:relative; z-index:1;
+  min-height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:96px 24px 40px;
+}
+.screen{ width:100%; max-width:720px; display:none; }
+.screen.active{ display:block; }
+
+.label{ font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:11px; color:var(--muted); }
+h1.title{ font-family:var(--display); font-weight:800; font-size:clamp(38px,7vw,64px); line-height:.98; margin:6px 0 10px; }
+.rule{
+  font-size:14.5px; color:var(--muted); max-width:560px; line-height:1.5; margin:0 0 26px;
+  border-left:2px solid var(--line); padding-left:14px;
+}
+
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:20px;
+  padding:24px; margin-bottom:18px;
+}
+.card h2{ font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:11px; color:var(--muted); font-weight:700; margin:0 0 14px; }
+
+.chips{ display:flex; flex-wrap:wrap; gap:10px; }
+.chip{
+  font-family:var(--display); font-weight:800; font-size:16px;
+  background:transparent; color:var(--cream); border:1px solid var(--line); border-radius:13px;
+  padding:11px 16px; cursor:pointer; transition:.15s;
+}
+.chip:hover{ border-color:rgba(246,240,226,.35); }
+.chip.sel{ background:var(--gold); color:#1a1200; border-color:var(--gold); }
+
+.players{ display:flex; flex-direction:column; gap:10px; }
+.prow{ display:flex; gap:10px; align-items:center; }
+.prow .num{ font-family:var(--mono); font-size:12px; color:var(--muted); width:22px; text-align:right; }
+input.pname{
+  flex:1; font-family:var(--body); font-size:15px; color:var(--cream);
+  background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:11px;
+  padding:11px 13px; outline:none; transition:border-color .15s;
+}
+input.pname:focus{ border-color:rgba(246,240,226,.4); }
+.iconbtn{
+  background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:10px;
+  width:38px; height:38px; cursor:pointer; font-size:17px; flex:none; transition:.15s;
+}
+.iconbtn:hover{ color:var(--magenta); border-color:var(--magenta); }
+.iconbtn:disabled{ opacity:.3; cursor:not-allowed; }
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:17px;
+  border-radius:13px; padding:13px 22px; cursor:pointer; border:1px solid transparent; transition:.15s;
+}
+.btn.primary{ background:var(--gold); color:#1a1200; }
+.btn.primary:hover{ filter:brightness(1.06); }
+.btn.ghost{ background:transparent; color:var(--cream); border-color:var(--line); }
+.btn.ghost:hover{ border-color:rgba(246,240,226,.4); }
+.btn.big{ font-size:22px; padding:18px 34px; border-radius:16px; }
+.btn.wide{ width:100%; }
+
+.addrow{ margin-top:12px; }
+.actions{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:4px; }
+
+/* PLAY */
+.play-center{ text-align:center; }
+.turn-of{ margin-bottom:10px; }
+.player-name{ font-family:var(--display); font-weight:800; font-size:clamp(34px,6vw,56px); line-height:1; margin:2px 0 6px; }
+.target-line{ font-family:var(--mono); font-size:14px; letter-spacing:1px; color:var(--gold); margin-bottom:34px; }
+
+.stage{
+  position:relative; height:230px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:30px;
+}
+.pulse{
+  position:relative; width:180px; height:180px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:2px; font-size:12px; color:var(--muted);
+  border:1px solid var(--line);
+}
+.pulse .ring{
+  position:absolute; inset:0; border-radius:50%; border:2px solid var(--cyan);
+  opacity:0; transform:scale(.6);
+}
+.pulse.idle .ring{ display:none; }
+.pulse.idle{ color:var(--muted); }
+.reveal{ display:none; }
+.reveal.show{ display:block; }
+.big-num{ font-family:var(--display); font-weight:800; font-size:clamp(64px,14vw,120px); line-height:.9; }
+.big-num .unit{ font-size:.4em; color:var(--muted); margin-left:4px; }
+.result-sub{ font-family:var(--mono); font-size:14px; letter-spacing:1px; color:var(--muted); margin-top:12px; }
+.verdict{ font-family:var(--display); font-weight:800; font-size:clamp(22px,4vw,32px); margin-top:16px; }
+
+.play-actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* LEADERBOARD */
+.lb{ display:flex; flex-direction:column; gap:8px; }
+.lb-row{
+  display:flex; align-items:center; gap:14px;
+  background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:13px; padding:14px 18px;
+}
+.lb-row.lead{ border-color:var(--gold); background:rgba(255,201,77,.08); }
+.lb-rank{ font-family:var(--mono); font-size:14px; color:var(--muted); width:34px; }
+.lb-name{ font-family:var(--display); font-weight:800; font-size:20px; flex:1; }
+.lb-score{ font-family:var(--mono); font-size:15px; color:var(--cream); }
+.lb-row.lead .lb-score{ color:var(--gold); }
+
+.center{ text-align:center; }
+.mt{ margin-top:22px; }
+</style>
+</head>
+<body>
+<div class="brand">⏱️ Stop the Clock <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- SETUP -->
+  <section id="setup" class="screen active">
+    <div class="label">Party timing game</div>
+    <h1 class="title">Stop the Clock</h1>
+    <p class="rule">Share your screen. Each turn: you click Start, the player yells STOP, you click Stop. The timer is hidden — nail the target time by feel alone.</p>
+
+    <div class="card">
+      <h2>Target time</h2>
+      <div class="chips" id="chips">
+        <button class="chip" data-t="5">5s</button>
+        <button class="chip sel" data-t="10">10s</button>
+        <button class="chip" data-t="15">15s</button>
+        <button class="chip" data-t="20">20s</button>
+        <button class="chip" data-t="rand">🎲 Random</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Players</h2>
+      <div class="players" id="players"></div>
+      <div class="addrow">
+        <button class="btn ghost" id="addBtn">+ Add player</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary big" id="startGame">Start game</button>
+      <button class="btn ghost" id="quickBtn">Quick play (no scoring)</button>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" class="screen">
+    <div class="play-center">
+      <div class="turn-of label" id="turnOf">Turn</div>
+      <div class="player-name" id="playerName">Player</div>
+      <div class="target-line" id="targetLine">Stop at 10.0s</div>
+
+      <div class="stage">
+        <div class="pulse idle" id="pulse">
+          <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+          <span id="pulseText">ready</span>
+        </div>
+        <div class="reveal" id="reveal">
+          <div class="big-num" id="bigNum">0.00<span class="unit">s</span></div>
+          <div class="result-sub" id="resultSub"></div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+
+      <div class="play-actions" id="playActions">
+        <button class="btn primary big" id="mainBtn">Start ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="board" class="screen">
+    <div class="label">After round <span id="roundNum">1</span></div>
+    <h1 class="title" style="font-size:clamp(30px,6vw,52px)">Leaderboard</h1>
+    <p class="rule">Lowest total error wins. Keep playing to pile on more rounds.</p>
+    <div class="card">
+      <div class="lb" id="lb"></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary big" id="newRound">New round →</button>
+      <button class="btn ghost" id="quitToSetup">End game</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function show(id){
+    var scr = document.querySelectorAll('.screen');
+    for(var i=0;i<scr.length;i++) scr[i].classList.remove('active');
+    $(id).classList.add('active');
+  }
+
+  // ---- state ----
+  var state = {
+    targetMode: 10,      // number or 'rand'
+    currentTarget: 10,   // resolved target for the round
+    players: [],         // {name, total}
+    idx: 0,
+    round: 1,
+    quick: false,
+    running: false,
+    startT: 0,
+    rafId: 0,
+    phase: 'ready'       // 'ready' | 'running' | 'revealed'
+  };
+
+  // ---- setup: chips ----
+  var chipsEl = $('chips');
+  chipsEl.addEventListener('click', function(e){
+    var b = e.target.closest('.chip'); if(!b) return;
+    var chips = chipsEl.querySelectorAll('.chip');
+    for(var i=0;i<chips.length;i++) chips[i].classList.remove('sel');
+    b.classList.add('sel');
+    var t = b.getAttribute('data-t');
+    state.targetMode = (t === 'rand') ? 'rand' : parseInt(t,10);
+  });
+
+  // ---- setup: players ----
+  var playersEl = $('players');
+  function renderPlayers(rows){
+    playersEl.innerHTML = '';
+    rows.forEach(function(val, i){
+      var row = document.createElement('div');
+      row.className = 'prow';
+      row.innerHTML =
+        '<span class="num">'+(i+1)+'</span>'+
+        '<input class="pname" type="text" maxlength="24" placeholder="Player '+(i+1)+'" />'+
+        '<button class="iconbtn rm" title="Remove">✕</button>';
+      playersEl.appendChild(row);
+      row.querySelector('.pname').value = val || '';
+    });
+    updateRemoveState();
+  }
+  function currentNames(){
+    var inputs = playersEl.querySelectorAll('.pname');
+    return Array.prototype.map.call(inputs, function(i){ return i.value; });
+  }
+  function updateRemoveState(){
+    var rms = playersEl.querySelectorAll('.rm');
+    var disable = rms.length <= 1;
+    for(var i=0;i<rms.length;i++) rms[i].disabled = disable;
+    $('addBtn').disabled = rms.length >= 10;
+  }
+  playersEl.addEventListener('click', function(e){
+    var b = e.target.closest('.rm'); if(!b) return;
+    var names = currentNames();
+    var row = b.closest('.prow');
+    var idx = Array.prototype.indexOf.call(playersEl.children, row);
+    names.splice(idx,1);
+    renderPlayers(names);
+  });
+  $('addBtn').addEventListener('click', function(){
+    var names = currentNames();
+    if(names.length >= 10) return;
+    names.push('');
+    renderPlayers(names);
+  });
+  renderPlayers(['','']);
+
+  // ---- target resolution ----
+  function resolveTarget(){
+    if(state.targetMode === 'rand'){
+      // random 6–20s, one decimal
+      state.currentTarget = Math.round((6 + Math.random()*14) * 10) / 10;
+    } else {
+      state.currentTarget = state.targetMode;
+    }
+  }
+  function fmt(n){ return n.toFixed(2); }
+  function fmt1(n){ return n.toFixed(1); }
+
+  // ---- start game ----
+  $('startGame').addEventListener('click', function(){
+    var names = currentNames()
+      .map(function(s){ return s.trim(); })
+      .filter(function(s){ return s.length; });
+    if(names.length === 0){
+      names = ['Player 1','Player 2'];
+    }
+    state.players = names.map(function(n){ return { name:n, total:0 }; });
+    state.quick = false;
+    state.idx = 0;
+    state.round = 1;
+    resolveTarget();
+    beginTurn();
+    show('play');
+  });
+
+  $('quickBtn').addEventListener('click', function(){
+    state.quick = true;
+    state.players = [];
+    state.round = 1;
+    resolveTarget();
+    beginTurn();
+    show('play');
+  });
+
+  // ---- turn / play screen ----
+  var pulse = $('pulse'), pulseText = $('pulseText'), reveal = $('reveal');
+  var mainBtn = $('mainBtn'), playActions = $('playActions');
+
+  function beginTurn(){
+    state.phase = 'ready';
+    state.running = false;
+    reveal.classList.remove('show');
+    pulse.style.display = '';
+    pulse.classList.add('idle');
+    pulseText.textContent = 'ready';
+
+    if(state.quick){
+      $('turnOf').textContent = 'Quick play';
+      $('playerName').textContent = 'Feel the clock';
+    } else {
+      var p = state.players[state.idx];
+      $('turnOf').textContent = 'Turn ' + (state.idx+1) + ' of ' + state.players.length;
+      $('playerName').textContent = p.name;
+    }
+    $('targetLine').textContent = 'Stop at ' + fmt1(state.currentTarget) + 's';
+
+    playActions.innerHTML = '<button class="btn primary big" id="mainBtn">Start ▶</button>';
+    $('mainBtn').addEventListener('click', onStart);
+  }
+
+  function onStart(){
+    state.phase = 'running';
+    state.running = true;
+    state.startT = performance.now();
+    pulse.classList.remove('idle');
+    pulseText.textContent = 'running…';
+    playActions.innerHTML = '<button class="btn primary big" id="mainBtn">STOP ⏹</button>';
+    $('mainBtn').addEventListener('click', onStop);
+    startPulse();
+  }
+
+  function startPulse(){
+    var ringEls = pulse.querySelectorAll('.ring');
+    function frame(now){
+      if(!state.running) return;
+      var t = (now - state.startT) / 1000; // seconds since start (used ONLY for animation, never shown)
+      // three staggered expanding rings, purely visual, not tied to target
+      for(var i=0;i<ringEls.length;i++){
+        var period = 1.6;
+        var phase = ((t + i*(period/3)) % period) / period; // 0..1
+        var scale = 0.6 + phase * 0.9;
+        var op = Math.max(0, 1 - phase) * 0.7;
+        ringEls[i].style.transform = 'scale(' + scale.toFixed(3) + ')';
+        ringEls[i].style.opacity = op.toFixed(3);
+      }
+      // gentle breathing of the core
+      var breathe = 0.5 + 0.5 * Math.sin(t * 3.0);
+      pulse.style.borderColor = 'rgba(70,214,224,' + (0.25 + breathe*0.5).toFixed(3) + ')';
+      state.rafId = requestAnimationFrame(frame);
+    }
+    state.rafId = requestAnimationFrame(frame);
+  }
+
+  function stopPulse(){
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = 0;
+    pulse.style.borderColor = '';
+    var ringEls = pulse.querySelectorAll('.ring');
+    for(var i=0;i<ringEls.length;i++){ ringEls[i].style.opacity = 0; }
+  }
+
+  function onStop(){
+    if(!state.running) return;
+    var elapsed = (performance.now() - state.startT) / 1000;
+    state.running = false;
+    state.phase = 'revealed';
+    stopPulse();
+
+    var target = state.currentTarget;
+    var err = Math.abs(elapsed - target);
+
+    // record for scoring
+    if(!state.quick){
+      state.players[state.idx].total += err;
+    }
+
+    // verdict
+    var vColor, vText;
+    if(err <= 0.3){ vColor = 'var(--green)'; vText = '🎯 Bang on!'; }
+    else if(err <= 1.0){ vColor = 'var(--gold)'; vText = 'So close'; }
+    else { vColor = 'var(--muted)'; vText = 'Off by ' + fmt(err) + 's'; }
+
+    // reveal
+    pulse.style.display = 'none';
+    reveal.classList.add('show');
+    $('bigNum').innerHTML = esc(fmt(elapsed)) + '<span class="unit">s</span>';
+    $('resultSub').textContent = 'Target ' + fmt1(target) + 's  ·  error ' + fmt(err) + 's';
+    var v = $('verdict');
+    v.textContent = vText;
+    v.style.color = vColor;
+
+    // next action
+    if(state.quick){
+      playActions.innerHTML = '<button class="btn primary big" id="mainBtn">Go again</button>';
+      $('mainBtn').addEventListener('click', function(){
+        if(state.targetMode === 'rand') resolveTarget();
+        beginTurn();
+      });
+    } else {
+      var isLast = state.idx >= state.players.length - 1;
+      var lbl = isLast ? 'See leaderboard →' : 'Next player →';
+      playActions.innerHTML = '<button class="btn primary big" id="mainBtn">' + lbl + '</button>';
+      $('mainBtn').addEventListener('click', function(){
+        if(isLast){
+          renderBoard();
+          show('board');
+        } else {
+          state.idx += 1;
+          beginTurn();
+        }
+      });
+    }
+  }
+
+  // ---- leaderboard ----
+  function renderBoard(){
+    $('roundNum').textContent = state.round;
+    var sorted = state.players.slice().sort(function(a,b){ return a.total - b.total; });
+    var lb = $('lb');
+    lb.innerHTML = '';
+    sorted.forEach(function(p, i){
+      var lead = (i === 0);
+      var row = document.createElement('div');
+      row.className = 'lb-row' + (lead ? ' lead' : '');
+      row.innerHTML =
+        '<span class="lb-rank">'+(i+1)+'</span>'+
+        '<span class="lb-name">'+ (lead ? '👑 ' : '') + esc(p.name) +'</span>'+
+        '<span class="lb-score">'+ fmt(p.total) +'s total</span>';
+      lb.appendChild(row);
+    });
+  }
+
+  $('newRound').addEventListener('click', function(){
+    state.round += 1;
+    state.idx = 0;
+    if(state.targetMode === 'rand') resolveTarget();
+    beginTurn();
+    show('play');
+  });
+
+  $('quitToSetup').addEventListener('click', function(){
+    show('setup');
+  });
+
+})();
+</script>
+</body>
+</html>

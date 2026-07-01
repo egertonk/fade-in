@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Emoji Guess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#1b1030;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #2a1550 0%, transparent 60%),
+             radial-gradient(1000px 700px at -10% 110%, #341a3f 0%, transparent 55%),
+             #140a24;
+}
+.emoji-font{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+a{color:inherit}
+
+.brand{
+  position:fixed; top:18px; left:20px; z-index:10;
+  font-family:var(--display); font-weight:800; font-size:19px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--muted); text-decoration:none;
+  border:1px solid var(--line); border-radius:999px; padding:5px 11px;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.brand a:hover{ color:var(--cream); border-color:rgba(246,240,226,.35); background:rgba(246,240,226,.05); }
+
+.wrap{
+  min-height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:80px 24px 32px;
+}
+.screen{ width:100%; max-width:820px; display:none; }
+.screen.active{ display:block; }
+
+.kicker{ font-family:var(--mono); text-transform:uppercase; letter-spacing:.12em; color:var(--muted); font-size:12px; }
+
+/* ---- Start screen ---- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.95;
+  font-size:clamp(48px,10vw,104px); margin:14px 0 8px;
+}
+.title .em{ font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"; }
+.rule{
+  font-size:16px; color:var(--cream); max-width:560px; margin:0 0 26px; line-height:1.5;
+}
+.rule .hl{ color:var(--gold); font-weight:600; }
+
+.filter-label{ margin:0 0 10px; }
+.chips{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px; }
+.chip{
+  font-family:var(--mono); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--cream); background:transparent; cursor:pointer;
+  border:1px solid var(--line); border-radius:999px; padding:9px 15px;
+  transition:all .14s;
+}
+.chip:hover{ border-color:rgba(246,240,226,.4); }
+.chip.sel{ background:var(--gold); color:#241300; border-color:var(--gold); font-weight:700; }
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:18px; cursor:pointer;
+  border-radius:13px; padding:15px 30px; border:1px solid transparent;
+  transition:transform .1s, filter .14s, background .14s;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--gold); color:#241300; }
+.btn-primary:hover{ filter:brightness(1.06); }
+.btn-ghost{ background:transparent; color:var(--cream); border:1px solid var(--line); }
+.btn-ghost:hover{ border-color:rgba(246,240,226,.4); }
+
+/* ---- Game screen ---- */
+.hud{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  margin-bottom:26px;
+}
+.hud .cat{
+  font-family:var(--mono); text-transform:uppercase; letter-spacing:.1em; font-size:13px;
+  color:var(--gold);
+}
+.hud .cat .em{ font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"; }
+
+.card{
+  border:1px solid var(--line); border-radius:22px; background:rgba(255,255,255,.02);
+  padding:40px 28px; text-align:center;
+  min-height:340px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
+}
+.puzzle{
+  font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji";
+  font-size:clamp(60px,14vw,140px); line-height:1.15; letter-spacing:.04em;
+  word-break:break-word;
+}
+.answer{
+  font-family:var(--display); font-weight:800; line-height:1.05;
+  font-size:clamp(30px,6.5vw,58px); color:var(--green);
+  min-height:0; display:none;
+}
+.answer.show{ display:block; }
+.answer .sub{
+  display:block; font-family:var(--mono); font-weight:400; font-size:12px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted); margin-top:12px;
+}
+
+.pop{ animation:pop .34s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes pop{ 0%{transform:scale(.82); opacity:0} 60%{transform:scale(1.04)} 100%{transform:scale(1); opacity:1} }
+
+.actions{ display:flex; gap:12px; align-items:center; justify-content:center; margin-top:26px; }
+.hint{ text-align:center; margin-top:16px; }
+
+@media (max-width:560px){
+  .wrap{ padding:78px 16px 24px; }
+  .card{ padding:30px 16px; min-height:280px; }
+  .actions{ flex-direction:column; }
+  .actions .btn{ width:100%; }
+}
+</style>
+</head>
+<body>
+<div class="brand"><span class="em emoji-font">🎬</span> Emoji Guess <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section id="start" class="screen active">
+    <div class="kicker">Party game · Emoji rebus</div>
+    <h1 class="title"><span class="em">🎬</span> Emoji Guess</h1>
+    <p class="rule"><span class="hl">Share your screen</span> — show the emojis, the team shouts the answer, you hit Reveal.</p>
+
+    <div class="kicker filter-label">Pick a category</div>
+    <div class="chips" id="chips"></div>
+
+    <button class="btn btn-primary" id="startBtn">Start ▶</button>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <div class="hud">
+      <div class="kicker" id="counter">Puzzle #1</div>
+      <div class="cat" id="catLabel"><span class="em">🎬</span> Movie</div>
+    </div>
+
+    <div class="card">
+      <div class="puzzle emoji-font" id="puzzle">🦁👑</div>
+      <div class="answer" id="answer"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="mainBtn">Reveal answer 🎯</button>
+      <button class="btn btn-ghost" id="quitBtn">End</button>
+    </div>
+    <div class="hint kicker" id="hint">Press Space to reveal</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var PUZZLES = [
+  // ---------- MOVIE ----------
+  {e:"🦁👑", a:"The Lion King", cat:"Movie"},
+  {e:"🕷️🧑", a:"Spider-Man", cat:"Movie"},
+  {e:"👻🚫", a:"Ghostbusters", cat:"Movie"},
+  {e:"🌊🐠🔍", a:"Finding Nemo", cat:"Movie"},
+  {e:"🦇🧑", a:"Batman", cat:"Movie"},
+  {e:"🐝🎬", a:"Bee Movie", cat:"Movie"},
+  {e:"☔️👨‍🎤", a:"Singin' in the Rain", cat:"Movie"},
+  {e:"🌟⚔️", a:"Star Wars", cat:"Movie"},
+  {e:"🐷💰", a:"The Wolf of Wall Street", cat:"Movie"},
+  {e:"🧸🤠", a:"Toy Story", cat:"Movie"},
+  {e:"🚢🧊💔", a:"Titanic", cat:"Movie"},
+  {e:"🦖🏝️", a:"Jurassic Park", cat:"Movie"},
+  {e:"👑💬", a:"The King's Speech", cat:"Movie"},
+  {e:"🔴🌹", a:"American Beauty", cat:"Movie"},
+  {e:"🤖❤️", a:"WALL-E", cat:"Movie"},
+  {e:"👵🏠🎈", a:"Up", cat:"Movie"},
+  {e:"🧙‍♂️💍🌋", a:"The Lord of the Rings", cat:"Movie"},
+  {e:"🐭🍳👨‍🍳", a:"Ratatouille", cat:"Movie"},
+  {e:"❄️👸⛄", a:"Frozen", cat:"Movie"},
+  {e:"🦈🎬", a:"Jaws", cat:"Movie"},
+  {e:"🎈🤡", a:"It", cat:"Movie"},
+  {e:"👽📞🏠", a:"E.T.", cat:"Movie"},
+  {e:"🕶️💊🟥🟦", a:"The Matrix", cat:"Movie"},
+  {e:"🃏🤡", a:"Joker", cat:"Movie"},
+  {e:"🐼🥋", a:"Kung Fu Panda", cat:"Movie"},
+  {e:"🎩🐰⏰", a:"Alice in Wonderland", cat:"Movie"},
+  {e:"👠💃🌆", a:"La La Land", cat:"Movie"},
+  {e:"🐟💛🔍", a:"Finding Dory", cat:"Movie"},
+  {e:"🧠💭🎭", a:"Inside Out", cat:"Movie"},
+
+  // ---------- TV SHOW ----------
+  {e:"🧟‍♂️🚶", a:"The Walking Dead", cat:"TV Show"},
+  {e:"👑🎮", a:"Game of Thrones", cat:"TV Show"},
+  {e:"🧪🔵💰", a:"Breaking Bad", cat:"TV Show"},
+  {e:"👽🔦🚲", a:"Stranger Things", cat:"TV Show"},
+  {e:"🏢📎😐", a:"The Office", cat:"TV Show"},
+  {e:"👫👫👫☕", a:"Friends", cat:"TV Show"},
+  {e:"👑💷", a:"The Crown", cat:"TV Show"},
+  {e:"💵🦑🟢🔴", a:"Squid Game", cat:"TV Show"},
+  {e:"🚑👨‍⚕️", a:"Grey's Anatomy", cat:"TV Show"},
+  {e:"🍩👨🟡", a:"The Simpsons", cat:"TV Show"},
+  {e:"🐴🍺🌵", a:"BoJack Horseman", cat:"TV Show"},
+  {e:"🕵️🚬🚗", a:"Peaky Blinders", cat:"TV Show"},
+  {e:"👨‍🔬🔬🧪⚛️", a:"The Big Bang Theory", cat:"TV Show"},
+  {e:"👽🥒", a:"Rick and Morty", cat:"TV Show"},
+  {e:"🏝️✈️❓", a:"Lost", cat:"TV Show"},
+  {e:"👶👶👶👶👶👶👶👶", a:"Full House", cat:"TV Show"},
+  {e:"🧑‍🍳🔥💯", a:"The Bear", cat:"TV Show"},
+  {e:"⚽🇺🇸🇬🇧😊", a:"Ted Lasso", cat:"TV Show"},
+
+  // ---------- SONG ----------
+  {e:"👋👋👋👋", a:"Hey Jude", cat:"Song"},
+  {e:"👶🦈", a:"Baby Shark", cat:"Song"},
+  {e:"👨‍🚀🎸", a:"Rocket Man", cat:"Song"},
+  {e:"💜☔", a:"Purple Rain", cat:"Song"},
+  {e:"🚶‍♀️🌙", a:"Walking on the Moon", cat:"Song"},
+  {e:"🔥☔", a:"Set Fire to the Rain", cat:"Song"},
+  {e:"👋😢👋", a:"Someone Like You", cat:"Song"},
+  {e:"🌉🌊🔥", a:"Bridge Over Troubled Water", cat:"Song"},
+  {e:"💃🏻👸👑", a:"Dancing Queen", cat:"Song"},
+  {e:"🎂🌧️", a:"MacArthur Park", cat:"Song"},
+  {e:"👁️🐯", a:"Eye of the Tiger", cat:"Song"},
+  {e:"🌕🚶", a:"Man on the Moon", cat:"Song"},
+  {e:"🙋‍♂️👋🌍", a:"Hello", cat:"Song"},
+  {e:"🍬🎶", a:"Sugar", cat:"Song"},
+  {e:"🌪️", a:"Twister", cat:"Song"},
+  {e:"🛑✋❤️", a:"Stop! In the Name of Love", cat:"Song"},
+  {e:"🎃💃", a:"Thriller", cat:"Song"},
+  {e:"☀️⛅🌧️", a:"Here Comes the Sun", cat:"Song"},
+
+  // ---------- PHRASE ----------
+  {e:"🧊🎂", a:"Piece of cake", cat:"Phrase"},
+  {e:"🌮📅", a:"Taco Tuesday", cat:"Phrase"},
+  {e:"🐱👅", a:"Cat got your tongue", cat:"Phrase"},
+  {e:"🌧️🐱🐶", a:"Raining cats and dogs", cat:"Phrase"},
+  {e:"🔨🎯👍", a:"Hit the nail on the head", cat:"Phrase"},
+  {e:"🐦✋🌳🐦🐦", a:"A bird in the hand", cat:"Phrase"},
+  {e:"🐘🚪", a:"Elephant in the room", cat:"Phrase"},
+  {e:"🎳", a:"Right up my alley", cat:"Phrase"},
+  {e:"🍰🍽️👍", a:"Have your cake and eat it too", cat:"Phrase"},
+  {e:"💔🚌", a:"Under the bus", cat:"Phrase"},
+  {e:"🧂👌", a:"Take it with a grain of salt", cat:"Phrase"},
+  {e:"🐛📗", a:"Bookworm", cat:"Phrase"},
+  {e:"🕐🪰🎉", a:"Time flies when you're having fun", cat:"Phrase"},
+  {e:"🙈🙉🙊", a:"See no evil, hear no evil", cat:"Phrase"},
+  {e:"🥶👣", a:"Cold feet", cat:"Phrase"},
+  {e:"🐈👜", a:"Let the cat out of the bag", cat:"Phrase"},
+  {e:"🍎👁️🩺", a:"An apple a day keeps the doctor away", cat:"Phrase"},
+  {e:"🎢💭", a:"Blessing in disguise", cat:"Phrase"},
+
+  // ---------- BRAND ----------
+  {e:"🍎💻", a:"Apple", cat:"Brand"},
+  {e:"🍔👑", a:"Burger King", cat:"Brand"},
+  {e:"🍟🤡🅼", a:"McDonald's", cat:"Brand"},
+  {e:"🐦💬", a:"Twitter", cat:"Brand"},
+  {e:"📖👥", a:"Facebook", cat:"Brand"},
+  {e:"🅰️📦😊", a:"Amazon", cat:"Brand"},
+  {e:"🎥📺🔴", a:"Netflix", cat:"Brand"},
+  {e:"☕🧜‍♀️💚", a:"Starbucks", cat:"Brand"},
+  {e:"👟✔️", a:"Nike", cat:"Brand"},
+  {e:"🕹️🐒", a:"Donkey Kong", cat:"Brand"},
+  {e:"🍫🌊", a:"Nestlé", cat:"Brand"},
+  {e:"🎮🍄🔧", a:"Nintendo", cat:"Brand"},
+  {e:"🚗⚡🔴", a:"Tesla", cat:"Brand"},
+  {e:"👻📸", a:"Snapchat", cat:"Brand"},
+  {e:"🎵📱📹", a:"TikTok", cat:"Brand"},
+  {e:"🟥🟨🔍💡", a:"Google", cat:"Brand"},
+  {e:"🥤🔴🐻‍❄️", a:"Coca-Cola", cat:"Brand"},
+  {e:"🎧🎵🟢", a:"Spotify", cat:"Brand"},
+
+  // ---------- BOOK ----------
+  {e:"🍫🏭", a:"Charlie and the Chocolate Factory", cat:"Book"},
+  {e:"⚡🧙‍♂️🪄", a:"Harry Potter", cat:"Book"},
+  {e:"🐛🍎🍐🍊", a:"The Very Hungry Caterpillar", cat:"Book"},
+  {e:"🐗🐷🐷🐷", a:"Lord of the Flies", cat:"Book"},
+  {e:"🕵️♀️🔎🏚️", a:"Sherlock Holmes", cat:"Book"},
+  {e:"🐋🚣‍♂️⚪", a:"Moby Dick", cat:"Book"},
+  {e:"🐭🍪", a:"If You Give a Mouse a Cookie", cat:"Book"},
+  {e:"🌲🎁", a:"The Giving Tree", cat:"Book"},
+  {e:"🦗🎻", a:"The Cricket in Times Square", cat:"Book"},
+  {e:"🐇⏰🎩", a:"Alice in Wonderland", cat:"Book"},
+  {e:"🐷🕸️", a:"Charlotte's Web", cat:"Book"},
+  {e:"🦟🐦", a:"To Kill a Mockingbird", cat:"Book"},
+  {e:"🐻🐻🐻🥣", a:"Goldilocks and the Three Bears", cat:"Book"},
+  {e:"🌾🕵️", a:"The Catcher in the Rye", cat:"Book"},
+  {e:"🐊🌊", a:"The Enormous Crocodile", cat:"Book"},
+  {e:"👁️1️⃣4️⃣", a:"1984", cat:"Book"},
+  {e:"💍🌋🧝", a:"The Hobbit", cat:"Book"},
+  {e:"🔴🏇⚔️", a:"The Red Badge of Courage", cat:"Book"}
+];
+
+var CATS = ["Movie","TV Show","Song","Phrase","Brand","Book"];
+var CAT_EMOJI = {"Movie":"🎬","TV Show":"📺","Song":"🎵","Phrase":"💬","Brand":"™️","Book":"📖"};
+
+var state = {
+  filter: "All",
+  queue: [],
+  idx: 0,
+  revealed: false,
+  count: 0
+};
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+function buildChips(){
+  var box = document.getElementById("chips");
+  var all = ["All"].concat(CATS);
+  box.innerHTML = "";
+  all.forEach(function(c){
+    var b = document.createElement("button");
+    b.className = "chip" + (c === state.filter ? " sel" : "");
+    b.textContent = c;
+    b.addEventListener("click", function(){
+      state.filter = c;
+      buildChips();
+    });
+    box.appendChild(b);
+  });
+}
+
+function buildQueue(){
+  var pool = state.filter === "All"
+    ? PUZZLES.slice()
+    : PUZZLES.filter(function(p){ return p.cat === state.filter; });
+  state.queue = shuffle(pool);
+  state.idx = 0;
+}
+
+function show(screen){
+  document.getElementById("start").classList.toggle("active", screen === "start");
+  document.getElementById("game").classList.toggle("active", screen === "game");
+}
+
+function renderPuzzle(){
+  if(state.idx >= state.queue.length){
+    buildQueue(); // reshuffle when exhausted
+  }
+  var p = state.queue[state.idx];
+  state.revealed = false;
+  state.count++;
+
+  var puzzleEl = document.getElementById("puzzle");
+  var answerEl = document.getElementById("answer");
+  var mainBtn = document.getElementById("mainBtn");
+
+  puzzleEl.textContent = p.e;
+  answerEl.classList.remove("show");
+  answerEl.innerHTML = "";
+
+  document.getElementById("counter").textContent = "Puzzle #" + state.count;
+  document.getElementById("catLabel").innerHTML =
+    '<span class="em">' + esc(CAT_EMOJI[p.cat] || "❓") + '</span> ' + esc(p.cat);
+
+  mainBtn.textContent = "Reveal answer 🎯";
+  document.getElementById("hint").textContent = "Press Space to reveal";
+
+  // pop animation
+  var card = document.querySelector(".card");
+  card.classList.remove("pop");
+  void card.offsetWidth;
+  card.classList.add("pop");
+}
+
+function reveal(){
+  var p = state.queue[state.idx];
+  var answerEl = document.getElementById("answer");
+  answerEl.innerHTML = esc(p.a) + '<span class="sub">' + esc(p.cat) + '</span>';
+  answerEl.classList.add("show");
+  state.revealed = true;
+  document.getElementById("mainBtn").textContent = "Next →";
+  document.getElementById("hint").textContent = "Press Space for the next puzzle";
+}
+
+function next(){
+  state.idx++;
+  renderPuzzle();
+}
+
+function mainAction(){
+  if(state.revealed){ next(); }
+  else { reveal(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  buildQueue();
+  state.count = 0;
+  show("game");
+  renderPuzzle();
+});
+
+document.getElementById("mainBtn").addEventListener("click", mainAction);
+
+document.getElementById("quitBtn").addEventListener("click", function(){
+  show("start");
+});
+
+document.addEventListener("keydown", function(ev){
+  if(ev.code === "Space" || ev.key === " "){
+    if(document.getElementById("game").classList.contains("active")){
+      ev.preventDefault();
+      mainAction();
+    }
+  }
+});
+
+buildChips();
+</script>
+</body>
+</html>

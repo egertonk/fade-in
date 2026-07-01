@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guess How Many</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#141b2e;
+  --bg:#0c1120;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100vh;overflow:hidden}
+body{
+  color:var(--cream); font-family:var(--body);
+  background:radial-gradient(1200px 800px at 70% -10%, #1a2440 0%, var(--bg) 60%);
+}
+canvas{position:fixed;inset:0;display:block}
+
+.brand{
+  position:fixed;top:16px;left:18px;z-index:30;
+  font-family:var(--display);font-weight:800;font-size:19px;
+  display:flex;align-items:center;gap:12px;letter-spacing:.2px;
+}
+.brand a{
+  font-family:var(--mono);font-weight:400;font-size:11px;text-transform:uppercase;
+  letter-spacing:.6px;text-decoration:none;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px;
+  transition:.15s;
+}
+.brand a:hover{color:var(--cream);border-color:rgba(246,240,226,.35)}
+
+.label{font-family:var(--mono);text-transform:uppercase;letter-spacing:.7px;font-size:11px;color:var(--muted)}
+
+button{
+  font-family:var(--display);font-weight:800;font-size:15px;
+  border-radius:13px;padding:12px 20px;cursor:pointer;border:1px solid var(--line);
+  background:transparent;color:var(--cream);transition:.15s;letter-spacing:.2px;
+}
+button:hover{border-color:rgba(246,240,226,.4);transform:translateY(-1px)}
+button.primary{background:var(--gold);color:#221a06;border-color:transparent}
+button.primary:hover{filter:brightness(1.06)}
+
+/* top / bottom bars — kept off the container center */
+.bar{
+  position:fixed;left:50%;transform:translateX(-50%);z-index:20;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
+  background:rgba(12,17,32,.55);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:16px;padding:9px 12px;
+  max-width:calc(100vw - 24px);
+}
+.topbar{top:14px}
+.bottombar{bottom:16px}
+
+.chips{display:flex;gap:7px}
+.chip{
+  font-family:var(--display);font-weight:800;font-size:14px;
+  border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer;
+  color:var(--cream);background:transparent;transition:.15s;
+}
+.chip:hover{border-color:rgba(246,240,226,.4)}
+.chip.active{background:var(--cream);color:#141b2e;border-color:transparent}
+
+.counter{
+  font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--muted);padding:0 6px;white-space:nowrap;
+}
+.counter b{color:var(--gold);font-family:var(--display);font-weight:800;font-size:16px}
+
+/* overlay screens */
+.screen{
+  position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+.card{
+  background:rgba(20,27,46,.86);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:24px;padding:40px 44px;max-width:560px;width:100%;
+  text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5);
+}
+.kicker{font-family:var(--mono);text-transform:uppercase;letter-spacing:2px;font-size:12px;color:var(--gold);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,7vw,68px);line-height:.98;margin:0 0 18px}
+.rule{font-size:16px;color:var(--muted);margin:0 auto 28px;max-width:400px;line-height:1.5}
+.big{
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(56px,13vw,120px);line-height:.9;margin:6px 0 8px;
+  background:linear-gradient(120deg,var(--gold),var(--magenta) 55%,var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sub{font-size:17px;color:var(--cream);margin:2px 0 26px}
+.sub .win{color:var(--green);font-weight:600}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="brand">🫙 Guess How Many <a href="../">← All games</a></div>
+
+<canvas id="c"></canvas>
+
+<!-- START SCREEN -->
+<div class="screen" id="startScreen">
+  <div class="card">
+    <div class="kicker">Party Game</div>
+    <h1>Guess How Many</h1>
+    <p class="rule">Share your screen — everyone shouts a number, then you Reveal. Closest guess wins the prize.</p>
+    <div class="row">
+      <button class="primary" id="startBtn">Start 🎯</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME CONTROLS -->
+<div class="bar topbar hidden" id="topBar">
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="bar bottombar hidden" id="bottomBar">
+  <div class="counter">Fill <b id="fillNum">#1</b></div>
+  <button id="newBtn">🎲 New fill</button>
+  <button class="primary" id="revealBtn">Reveal count 🎯</button>
+</div>
+
+<!-- REVEAL SCREEN -->
+<div class="screen hidden" id="revealScreen">
+  <div class="card">
+    <div class="kicker">The answer</div>
+    <div class="big"><span id="revealNum">0</span></div>
+    <div class="sub">It was <b id="revealNum2">0</b> balls! <span class="win">Closest guess wins 🚗</span></div>
+    <div class="row">
+      <button class="primary" id="nextBtn">Next fill →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var canvas = document.getElementById("c");
+var ctx = canvas.getContext("2d");
+var W=0, H=0, DPR=1;
+
+// ---- state ----
+var container = "car";      // car | jar | box
+var balls = [];             // {x,y,r,color}
+var fillCount = 0;
+var seededRnd = Math.random;
+
+// vibrant palette
+var PALETTE = [
+  "#ff4d7d","#ffc94d","#46e08a","#46d6e0","#8a6bff",
+  "#ff8a3d","#ff5ec4","#5ea0ff","#7be04d","#ffd93d",
+  "#ff6b6b","#4de0c4","#c46bff","#ffaf4d","#5ee08a"
+];
+
+function rand(a,b){ return a + Math.random()*(b-a); }
+function pick(arr){ return arr[(Math.random()*arr.length)|0]; }
+
+// ---------- container geometry ----------
+// Each returns {path:function(ctx) that traces INTERIOR, decorate:function(ctx),
+//   bounds:{x,y,w,h}} in a coordinate space we set up. We compute a centered
+// layout box based on viewport then build paths inside it.
+
+function layoutBox(){
+  // reserve space for bars top/bottom
+  var padTop = 90, padBottom = 96, padSide = 40;
+  var availW = W - padSide*2;
+  var availH = H - padTop - padBottom;
+  var aspect = (container==="car") ? 1.7 : (container==="jar" ? 0.72 : 1.28);
+  var bw = availW, bh = bw/aspect;
+  if(bh > availH){ bh = availH; bw = bh*aspect; }
+  // cap size a touch for big screens
+  var maxW = 1050;
+  if(bw > maxW){ bw = maxW; bh = bw/aspect; }
+  var x = (W - bw)/2;
+  var y = padTop + (availH - bh)/2;
+  return {x:x, y:y, w:bw, h:bh};
+}
+
+function roundRectPath(c, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+// returns geometry object for current container inside box b
+function buildContainer(b){
+  if(container==="car")  return buildCar(b);
+  if(container==="jar")  return buildJar(b);
+  return buildBox(b);
+}
+
+function buildCar(b){
+  // body occupies most; wheels below body baseline
+  var wheelR = b.h*0.16;
+  var bodyH = b.h*0.60;
+  var bodyY = b.y + b.h*0.10;
+  var bodyX = b.x + b.w*0.04;
+  var bodyW = b.w*0.92;
+  var baseline = bodyY + bodyH;      // bottom of body
+  // cabin (window area) sits on top-mid of body
+  var cabX = bodyX + bodyW*0.24;
+  var cabW = bodyW*0.44;
+  var cabH = b.h*0.26;
+  var cabY = bodyY - cabH*0.62;
+
+  // interior path = body rounded rect UNION cabin rounded rect
+  function interior(c){
+    roundRectPath(c, bodyX, bodyY, bodyW, bodyH, bodyH*0.42);
+    roundRectPath(c, cabX, cabY, cabW, cabH, cabH*0.35);
+  }
+  var wheel1x = bodyX + bodyW*0.26;
+  var wheel2x = bodyX + bodyW*0.74;
+  var wheelY = baseline - wheelR*0.35;
+
+  function decorate(c){
+    // wheels (drawn behind fill? draw before fill for tyres, hubcaps after)
+  }
+  function frame(c){
+    // outline over the fill
+    c.save();
+    c.lineJoin="round";
+    c.strokeStyle="rgba(246,240,226,.85)";
+    c.lineWidth=Math.max(3, b.h*0.012);
+    c.beginPath(); interior(c); c.stroke();
+    c.restore();
+    // window glass tint on cabin (subtle)
+    c.save();
+    c.beginPath(); roundRectPath(c, cabX+6, cabY+6, cabW-12, cabH*0.5, 10);
+    c.fillStyle="rgba(70,214,224,.10)"; c.fill();
+    c.restore();
+  }
+  function wheels(c){
+    for(var i=0;i<2;i++){
+      var wx = i===0?wheel1x:wheel2x;
+      c.beginPath(); c.arc(wx, wheelY, wheelR, 0, Math.PI*2);
+      c.fillStyle="#10131f"; c.fill();
+      c.lineWidth=Math.max(3,b.h*0.012); c.strokeStyle="rgba(246,240,226,.5)"; c.stroke();
+      c.beginPath(); c.arc(wx, wheelY, wheelR*0.42, 0, Math.PI*2);
+      c.fillStyle="#2a3350"; c.fill();
+      c.strokeStyle="rgba(246,240,226,.35)"; c.lineWidth=2; c.stroke();
+    }
+  }
+  return {
+    interior:interior, frame:frame,
+    behind:function(c){ wheels(c); },
+    front:function(c){ frame(c); },
+    // sampling bounds for random ball placement
+    sample:{x:bodyX, y:cabY, w:bodyW, h:(baseline-cabY)}
+  };
+}
+
+function buildJar(b){
+  // jar: neck at top + lid, rounded-bottom body
+  var lidH = b.h*0.06;
+  var lidY = b.y;
+  var neckH = b.h*0.10;
+  var neckW = b.w*0.52;
+  var neckX = b.x + (b.w-neckW)/2;
+  var neckY = lidY + lidH;
+  var bodyY = neckY + neckH;
+  var bodyH = b.h - lidH - neckH;
+  var bodyX = b.x;
+  var bodyW = b.w;
+
+  function interior(c){
+    // body: rounded rect with big bottom radius
+    var r = bodyW*0.24;
+    var y = bodyY, x=bodyX, w=bodyW, h=bodyH;
+    c.moveTo(x, y+ r*0.15);
+    c.lineTo(x, y+h-r);
+    c.arcTo(x, y+h, x+r, y+h, r);
+    c.lineTo(x+w-r, y+h);
+    c.arcTo(x+w, y+h, x+w, y+h-r, r);
+    c.lineTo(x+w, y+r*0.15);
+    // shoulder curve up into neck
+    c.quadraticCurveTo(x+w, y-neckH*0.2, neckX+neckW, neckY+neckH*0.1);
+    c.lineTo(neckX, neckY+neckH*0.1);
+    c.quadraticCurveTo(x, y-neckH*0.2, x, y+r*0.15);
+    c.closePath();
+  }
+  function frame(c){
+    c.save();
+    c.lineJoin="round";
+    c.strokeStyle="rgba(246,240,226,.85)";
+    c.lineWidth=Math.max(3,b.h*0.011);
+    c.beginPath(); interior(c); c.stroke();
+    // lid
+    c.beginPath(); roundRectPath(c, neckX-6, lidY, neckW+12, lidH+neckH*0.35, lidH*0.6);
+    c.fillStyle="rgba(255,201,77,.9)"; c.fill();
+    c.strokeStyle="rgba(0,0,0,.18)"; c.lineWidth=2; c.stroke();
+    // glass sheen down left side
+    c.beginPath();
+    var gx = bodyX + bodyW*0.16;
+    c.moveTo(gx, bodyY+bodyH*0.12);
+    c.lineTo(gx, bodyY+bodyH*0.72);
+    c.strokeStyle="rgba(255,255,255,.10)"; c.lineWidth=b.w*0.05; c.lineCap="round"; c.stroke();
+    c.restore();
+  }
+  return {
+    interior:interior, frame:frame,
+    behind:function(){}, front:function(c){ frame(c); },
+    sample:{x:bodyX, y:neckY, w:bodyW, h:(bodyY+bodyH-neckY)}
+  };
+}
+
+function buildBox(b){
+  var lip = b.h*0.09;
+  var x=b.x, y=b.y+lip, w=b.w, h=b.h-lip;
+  function interior(c){ roundRectPath(c, x, y, w, h, Math.min(w,h)*0.04); }
+  function frame(c){
+    c.save();
+    c.lineJoin="round";
+    // 3D top lip
+    c.beginPath();
+    c.moveTo(x, y);
+    c.lineTo(x+w*0.06, b.y);
+    c.lineTo(x+w+w*0.06, b.y);
+    c.lineTo(x+w, y);
+    c.closePath();
+    c.fillStyle="rgba(255,201,77,.16)"; c.fill();
+    c.strokeStyle="rgba(246,240,226,.55)"; c.lineWidth=Math.max(2,b.h*0.008); c.stroke();
+    // right side lip
+    c.beginPath();
+    c.moveTo(x+w, y); c.lineTo(x+w+w*0.06, b.y);
+    c.lineTo(x+w+w*0.06, b.y+h); c.lineTo(x+w, y+h); c.closePath();
+    c.fillStyle="rgba(0,0,0,.22)"; c.fill();
+    c.strokeStyle="rgba(246,240,226,.4)"; c.stroke();
+    // front frame
+    c.strokeStyle="rgba(246,240,226,.85)";
+    c.lineWidth=Math.max(3,b.h*0.012);
+    c.beginPath(); interior(c); c.stroke();
+    c.restore();
+  }
+  return {
+    interior:interior, frame:frame,
+    behind:function(){}, front:function(c){ frame(c); },
+    sample:{x:x, y:y, w:w, h:h}
+  };
+}
+
+// point-in-path test using the interior path
+function makeHitTester(geom){
+  return function(x,y){
+    ctx.beginPath();
+    geom.interior(ctx);
+    return ctx.isPointInPath(x*DPR, y*DPR);
+  };
+}
+
+// ---------- fill generation ----------
+function generate(){
+  var b = layoutBox();
+  var geom = buildContainer(b);
+  var hit = makeHitTester(geom);
+  var s = geom.sample;
+
+  // size classes scale with container size
+  var unit = Math.min(b.w, b.h);
+  var small = unit*0.020, medium = unit*0.032, large = unit*0.046;
+
+  // more attempts -> denser & higher counts; vary a bit per fill
+  var area = s.w*s.h;
+  var attempts = Math.floor(area / (small*small*Math.PI) * rand(1.6, 2.4));
+  attempts = Math.max(1200, Math.min(attempts, 9000));
+
+  var placed = [];
+  // spatial grid for overlap checks
+  var cell = large;
+  var cols = Math.ceil(s.w/cell)+2;
+  var grid = {};
+  function key(cx,cy){ return cx+"_"+cy; }
+  function insert(ball){
+    var cx = Math.floor((ball.x - s.x)/cell);
+    var cy = Math.floor((ball.y - s.y)/cell);
+    var k = key(cx,cy);
+    (grid[k]||(grid[k]=[])).push(ball);
+  }
+  function tooClose(x,y,r){
+    var cx = Math.floor((x - s.x)/cell);
+    var cy = Math.floor((y - s.y)/cell);
+    for(var ix=-1;ix<=1;ix++)for(var iy=-1;iy<=1;iy++){
+      var arr = grid[key(cx+ix,cy+iy)];
+      if(!arr) continue;
+      for(var j=0;j<arr.length;j++){
+        var o=arr[j];
+        var dx=o.x-x, dy=o.y-y;
+        var mind = (o.r + r)*0.78; // allow slight overlap -> packed
+        if(dx*dx+dy*dy < mind*mind) return true;
+      }
+    }
+    return false;
+  }
+
+  for(var i=0;i<attempts;i++){
+    var rc = Math.random();
+    var r = rc<0.66 ? small*rand(0.85,1.1)
+          : rc<0.9  ? medium*rand(0.9,1.1)
+          :           large*rand(0.9,1.12);
+    var x = s.x + Math.random()*s.w;
+    var y = s.y + Math.random()*s.h;
+    // must be inside interior (test a few points near edges for the radius)
+    if(!hit(x,y)) continue;
+    if(!hit(x, y-r*0.7)) continue;
+    if(!hit(x-r*0.7, y)) continue;
+    if(!hit(x+r*0.7, y)) continue;
+    if(!hit(x, y+r*0.7)) continue;
+    if(tooClose(x,y,r)) continue;
+    var ball = {x:x,y:y,r:r,color:pick(PALETTE)};
+    placed.push(ball);
+    insert(ball);
+  }
+
+  // sort so larger drawn slightly earlier? draw bottom-first for depth
+  placed.sort(function(a,bb){ return a.y - bb.y; });
+
+  balls = placed;
+  return {geom:geom, box:b};
+}
+
+var currentGeom = null;
+var currentBox = null;
+
+function newFill(){
+  fillCount++;
+  document.getElementById("fillNum").textContent = "#"+fillCount;
+  var res = generate();
+  currentGeom = res.geom;
+  currentBox = res.box;
+  draw();
+}
+
+// ---------- rendering ----------
+function drawBall(c, ball){
+  var r = ball.r;
+  var grad = c.createRadialGradient(
+    ball.x - r*0.35, ball.y - r*0.4, r*0.1,
+    ball.x, ball.y, r*1.05
+  );
+  var col = ball.color;
+  grad.addColorStop(0, lighten(col, 0.55));
+  grad.addColorStop(0.45, col);
+  grad.addColorStop(1, darken(col, 0.28));
+  c.beginPath();
+  c.arc(ball.x, ball.y, r, 0, Math.PI*2);
+  c.fillStyle = grad;
+  c.fill();
+  // thin darker rim
+  c.lineWidth = Math.max(0.5, r*0.09);
+  c.strokeStyle = darken(col, 0.4);
+  c.stroke();
+  // glossy hotspot
+  c.beginPath();
+  c.arc(ball.x - r*0.32, ball.y - r*0.36, r*0.24, 0, Math.PI*2);
+  c.fillStyle = "rgba(255,255,255,.6)";
+  c.fill();
+}
+
+function hexToRgb(h){
+  h=h.replace("#","");
+  return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];
+}
+function clamp(v){ return v<0?0:v>255?255:v|0; }
+function lighten(h,a){ var c=hexToRgb(h); return "rgb("+clamp(c[0]+(255-c[0])*a)+","+clamp(c[1]+(255-c[1])*a)+","+clamp(c[2]+(255-c[2])*a)+")"; }
+function darken(h,a){ var c=hexToRgb(h); return "rgb("+clamp(c[0]*(1-a))+","+clamp(c[1]*(1-a))+","+clamp(c[2]*(1-a))+")"; }
+
+function draw(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  if(!currentGeom) return;
+  var geom = currentGeom;
+
+  // behind (wheels etc.)
+  geom.behind(ctx);
+
+  // subtle interior backing so gaps read as inside the container
+  ctx.save();
+  ctx.beginPath(); geom.interior(ctx); ctx.clip();
+  ctx.fillStyle = "rgba(255,255,255,.03)";
+  ctx.fillRect(0,0,W,H);
+
+  // balls clipped to interior
+  for(var i=0;i<balls.length;i++) drawBall(ctx, balls[i]);
+  ctx.restore();
+
+  // front (outline / frame / glass)
+  geom.front(ctx);
+}
+
+// ---------- sizing ----------
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = Math.floor(W*DPR);
+  canvas.height = Math.floor(H*DPR);
+  canvas.style.width = W+"px";
+  canvas.style.height = H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(currentGeom){
+    // regenerate layout at new size, keep same-ish count feel by re-filling
+    var res = generate();
+    currentGeom = res.geom;
+    currentBox = res.box;
+    draw();
+  }
+}
+window.addEventListener("resize", resize);
+
+// ---------- UI ----------
+var CONTAINERS = [
+  {id:"car", label:"🚗 Car"},
+  {id:"jar", label:"🫙 Jar"},
+  {id:"box", label:"📦 Box"}
+];
+var chipsEl = document.getElementById("chips");
+CONTAINERS.forEach(function(cn){
+  var el = document.createElement("button");
+  el.className = "chip" + (cn.id===container?" active":"");
+  el.textContent = cn.label;
+  el.setAttribute("data-id", cn.id);
+  el.addEventListener("click", function(){
+    if(container===cn.id) return;
+    container = cn.id;
+    Array.prototype.forEach.call(chipsEl.children, function(c){
+      c.classList.toggle("active", c.getAttribute("data-id")===container);
+    });
+    newFill();
+  });
+  chipsEl.appendChild(el);
+});
+
+function show(id){ document.getElementById(id).classList.remove("hidden"); }
+function hide(id){ document.getElementById(id).classList.add("hidden"); }
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  hide("startScreen");
+  show("topBar"); show("bottomBar");
+  resize();     // sets DPR/W/H
+  newFill();
+});
+
+document.getElementById("newBtn").addEventListener("click", newFill);
+
+document.getElementById("revealBtn").addEventListener("click", function(){
+  var n = balls.length;
+  document.getElementById("revealNum").textContent = n;
+  document.getElementById("revealNum2").textContent = n;
+  show("revealScreen");
+});
+
+document.getElementById("nextBtn").addEventListener("click", function(){
+  hide("revealScreen");
+  newFill();
+});
+
+// init sizing (without a fill until Start pressed)
+resize();
+})();
+</script>
+</body>
+</html>
