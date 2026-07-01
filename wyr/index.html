@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Would You Rather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#161226;
+  --bg:#0f0b1a;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:
+    radial-gradient(1100px 700px at 15% -10%, rgba(70,214,224,.12), transparent 60%),
+    radial-gradient(1000px 700px at 100% 110%, rgba(255,77,125,.12), transparent 55%),
+    var(--bg);
+}
+a{color:inherit}
+.brand{
+  position:fixed; top:16px; left:18px; z-index:50;
+  font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.12em;
+  text-decoration:none; color:var(--muted);
+  border:1px solid var(--line); border-radius:999px; padding:5px 11px;
+  transition:.18s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+
+.screen{ position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; padding:74px 20px 26px; }
+.screen.active{display:flex}
+
+/* ---------- START ---------- */
+#start{ text-align:center; }
+.title{
+  font-family:var(--display); font-weight:800; line-height:.94;
+  font-size:clamp(46px,10vw,116px); letter-spacing:-.02em; margin:0 0 14px;
+}
+.title .l1{color:var(--cyan)} .title .l2{color:var(--magenta)}
+.rule{
+  max-width:640px; color:var(--muted); font-size:clamp(15px,2vw,18px); line-height:1.5; margin:0 auto 26px;
+}
+.howto{
+  max-width:560px; text-align:left; margin:0 auto 30px;
+  border:1px solid var(--line); border-radius:18px; padding:18px 20px; background:rgba(246,240,226,.03);
+}
+.howto .lab{
+  font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.16em; color:var(--gold); margin-bottom:9px;
+}
+.howto p{margin:0 0 12px; font-size:15px; line-height:1.55; color:var(--cream)}
+.howto .eg{
+  margin:0; font-size:14px; line-height:1.55; color:var(--muted);
+  border-left:2px solid var(--line); padding-left:13px;
+}
+.howto .eg b{color:var(--cream); font-weight:600}
+.howto .vs{font-family:var(--display); font-weight:800; color:var(--gold)}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  font-family:var(--display); font-weight:800; font-size:17px; cursor:pointer;
+  border-radius:13px; padding:14px 26px; border:1px solid transparent; transition:.16s; letter-spacing:.2px;
+}
+.btn.primary{ background:var(--gold); color:#231a06; }
+.btn.primary:hover{ filter:brightness(1.06); transform:translateY(-1px); }
+.btn.ghost{ background:transparent; color:var(--cream); border:1px solid var(--line); }
+.btn.ghost:hover{ border-color:rgba(246,240,226,.4); }
+
+/* ---------- GAME ---------- */
+#game{ padding:64px 18px 20px; }
+.hud{
+  position:fixed; top:16px; left:0; right:0; display:flex; justify-content:center; z-index:40;
+  pointer-events:none;
+}
+.hud .qnum{
+  font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.18em; color:var(--muted);
+  border:1px solid var(--line); border-radius:999px; padding:6px 14px; background:rgba(15,11,26,.6);
+}
+.arena{
+  width:100%; max-width:1180px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:16px;
+}
+.rows{
+  width:100%; display:grid; grid-template-columns:1fr auto 1fr; gap:14px; align-items:stretch;
+}
+.card{
+  position:relative; cursor:pointer; user-select:none;
+  border:1px solid var(--line); border-radius:22px; padding:30px 26px;
+  min-height:min(46vh,340px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  background:rgba(246,240,226,.03); transition:transform .12s, border-color .18s, background .18s;
+  overflow:hidden;
+}
+.card:hover{ border-color:rgba(246,240,226,.34); background:rgba(246,240,226,.055); }
+.card:active{ transform:scale(.985); }
+.card.left{ box-shadow:inset 0 0 0 2px rgba(70,214,224,.12); }
+.card.right{ box-shadow:inset 0 0 0 2px rgba(255,77,125,.12); }
+.card .side{
+  font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.2em; margin-bottom:16px;
+}
+.card.left .side{color:var(--cyan)} .card.right .side{color:var(--magenta)}
+.card .opt{
+  font-family:var(--display); font-weight:800; line-height:1.05; letter-spacing:-.01em;
+  font-size:clamp(22px,3.1vw,38px); margin-bottom:20px;
+}
+.card .count{
+  font-family:var(--display); font-weight:800; font-size:clamp(30px,4vw,52px); line-height:1;
+}
+.card.left .count{color:var(--cyan)} .card.right .count{color:var(--magenta)}
+.card .tap{
+  font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); margin-top:8px;
+}
+.orwrap{ display:flex; align-items:center; justify-content:center; }
+.or{
+  font-family:var(--display); font-weight:800; font-size:clamp(24px,3vw,40px); color:var(--gold);
+  border:1px solid var(--line); border-radius:50%; width:66px; height:66px; display:flex; align-items:center; justify-content:center;
+  background:rgba(15,11,26,.7);
+}
+
+/* live bar */
+.barwrap{ width:100%; }
+.barmeta{
+  display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; letter-spacing:.08em; margin-bottom:7px;
+}
+.barmeta .lp{color:var(--cyan)} .barmeta .rp{color:var(--magenta)}
+.bar{
+  width:100%; height:16px; border-radius:999px; overflow:hidden; border:1px solid var(--line);
+  display:flex; background:rgba(246,240,226,.05);
+}
+.bar .lfill{ background:var(--cyan); transition:width .35s cubic-bezier(.3,.9,.3,1); }
+.bar .rfill{ background:var(--magenta); transition:width .35s cubic-bezier(.3,.9,.3,1); }
+.controls{ display:flex; gap:12px; margin-top:6px; flex-wrap:wrap; justify-content:center; }
+
+/* pop-in animation */
+@keyframes popin{ 0%{opacity:0; transform:translateY(14px) scale(.97)} 100%{opacity:1; transform:none} }
+.pop{ animation:popin .38s cubic-bezier(.2,.8,.25,1); }
+
+@media (max-width:720px){
+  .rows{ grid-template-columns:1fr; }
+  .card{ min-height:auto; padding:22px; }
+  .orwrap{ padding:2px 0; }
+  .or{ width:52px; height:52px; }
+}
+</style>
+</head>
+<body>
+
+<div class="brand">🤔 Would You Rather <a href="../">← All games</a></div>
+
+<!-- START -->
+<section id="start" class="screen active">
+  <h1 class="title"><span class="l1">Would You</span><br><span class="l2">Rather</span></h1>
+  <p class="rule">Share your screen — two options appear, the team argues and votes, you tap each side to count.</p>
+
+  <div class="howto">
+    <div class="lab">How to play</div>
+    <p>Two ridiculous options pop up side by side; the room debates and votes out loud, and you tap each card to tally the votes as a live bar shows the split.</p>
+    <p class="eg">Example: <b>Fight 1 horse-sized duck</b> <span class="vs">🆚</span> <b>100 duck-sized horses</b> — everyone picks a side, you tap to tally the votes.</p>
+  </div>
+
+  <button class="btn primary" id="startBtn">Start ▶</button>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen">
+  <div class="hud"><div class="qnum" id="qnum">Question #1</div></div>
+
+  <div class="arena">
+    <div class="rows" id="rows">
+      <div class="card left" id="cardL" role="button" tabindex="0">
+        <div class="side">Option A</div>
+        <div class="opt" id="optL">—</div>
+        <div class="count" id="countL">0</div>
+        <div class="tap">tap to add a vote</div>
+      </div>
+
+      <div class="orwrap"><div class="or">OR</div></div>
+
+      <div class="card right" id="cardR" role="button" tabindex="0">
+        <div class="side">Option B</div>
+        <div class="opt" id="optR">—</div>
+        <div class="count" id="countR">0</div>
+        <div class="tap">tap to add a vote</div>
+      </div>
+    </div>
+
+    <div class="barwrap">
+      <div class="barmeta"><span class="lp" id="pctL">50%</span><span class="rp" id="pctR">50%</span></div>
+      <div class="bar">
+        <div class="lfill" id="lfill" style="width:50%"></div>
+        <div class="rfill" id="rfill" style="width:50%"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn ghost" id="resetBtn">Reset votes</button>
+      <button class="btn primary" id="nextBtn">Next →</button>
+    </div>
+  </div>
+</section>
+
+<script>
+"use strict";
+
+var PROMPTS = [
+  {a:"Fight 1 horse-sized duck", b:"Fight 100 duck-sized horses"},
+  {a:"Have unlimited free coffee forever", b:"Never sit in traffic again"},
+  {a:"Always have to sing instead of talk", b:"Always have to dance while you walk"},
+  {a:"Be able to teleport but only to places you've been", b:"Be able to fly but only 3 feet off the ground"},
+  {a:"Have a rewind button for your life", b:"Have a pause button for your life"},
+  {a:"Speak every language fluently", b:"Play every instrument perfectly"},
+  {a:"Have fingers as long as your legs", b:"Have legs as long as your fingers"},
+  {a:"Always be 10 minutes late", b:"Always be 20 minutes early"},
+  {a:"Have a personal chef", b:"Have a personal chauffeur"},
+  {a:"Never have to sleep again", b:"Never have to eat again"},
+  {a:"Be a famous inventor", b:"Be a famous explorer"},
+  {a:"Only be able to whisper", b:"Only be able to shout"},
+  {a:"Have taste buds in your hands", b:"Have eyes on the back of your head"},
+  {a:"Live where it's always summer", b:"Live where it's always autumn"},
+  {a:"Have a pet dragon the size of a cat", b:"Have a pet dinosaur the size of a dog"},
+  {a:"Be able to talk to animals", b:"Be able to talk to plants"},
+  {a:"Have every meeting be 10 minutes", b:"Have every email answer itself"},
+  {a:"Get a free vacation every year (random destination)", b:"Get every Friday off (staycation)"},
+  {a:"Be the funniest person in the room", b:"Be the smartest person in the room"},
+  {a:"Always know when someone is lying", b:"Always get away with lying"},
+  {a:"Have hiccups for the rest of your life", b:"Feel like you need to sneeze but can't"},
+  {a:"Control the weather but only for yourself", b:"Read minds but only during small talk"},
+  {a:"Have a tail you can't control", b:"Have a second nose"},
+  {a:"Be able to eat any food with zero consequences", b:"Sleep perfectly every night forever"},
+  {a:"Live in a treehouse", b:"Live in a houseboat"},
+  {a:"Only be able to walk backwards", b:"Only be able to walk sideways"},
+  {a:"Have a robot that does your chores", b:"Have a robot that does your paperwork"},
+  {a:"Time travel to the past (only observe)", b:"Time travel to the future (only observe)"},
+  {a:"Be able to breathe underwater", b:"Be able to survive in space"},
+  {a:"Have a rewind on any awkward conversation", b:"Have subtitles for everyone you meet"},
+  {a:"Always have perfect hair", b:"Always have perfect skin"},
+  {a:"Win a small prize every single day", b:"Win a huge prize once a year"},
+  {a:"Be a wizard in a tiny village", b:"Be a knight in a giant castle"},
+  {a:"Have unlimited storage space", b:"Have unlimited battery life"},
+  {a:"Never lose your keys again", b:"Never lose your phone again"},
+  {a:"Have a snooze button for meetings", b:"Have a mute button for the world"},
+  {a:"Be able to change your hair color by thinking", b:"Be able to change your outfit by blinking"},
+  {a:"Always find the shortest checkout line", b:"Always find a great parking spot"},
+  {a:"Have a tiny elephant as a pet", b:"Have a giant hamster as a pet"},
+  {a:"Only eat pizza for a year", b:"Only eat tacos for a year"},
+  {a:"Be able to pause music with your mind", b:"Be able to fast-forward boring parts of your day"},
+  {a:"Have a treehouse office", b:"Have an underwater office"},
+  {a:"Be famous for a hobby you love", b:"Be rich from a job you're okay with"},
+  {a:"Have a memory that never forgets", b:"Have the ability to forget on command"},
+  {a:"Ride a giant snail everywhere", b:"Ride a giant turtle everywhere"},
+  {a:"Have a personal theme song that plays when you enter", b:"Have a narrator describe your day"},
+  {a:"Get the ability to teleport home instantly", b:"Get the ability to nap and wake up refreshed in 10 minutes"},
+  {a:"Be able to draw anything perfectly", b:"Be able to sing anything perfectly"},
+  {a:"Always have exact change", b:"Always have your phone at full battery"},
+  {a:"Have a garden that grows any food you want", b:"Have a fridge that's always fully stocked"},
+  {a:"Be able to teleport your luggage", b:"Be able to skip every airport line"},
+  {a:"Have a talking pet that only tells jokes", b:"Have a talking pet that only gives advice"},
+  {a:"Be able to speed-read any book in a minute", b:"Be able to instantly master any recipe"},
+  {a:"Have a shrinking machine", b:"Have a growing machine"},
+  {a:"Only communicate in emojis for a week", b:"Only communicate in rhymes for a week"},
+  {a:"Have a couch that's always the perfect temperature", b:"Have shoes that never hurt your feet"},
+  {a:"Be able to summon any snack instantly", b:"Be able to summon any drink instantly"},
+  {a:"Have a map that shows where you left things", b:"Have a clock that adds an extra hour when needed"},
+  {a:"Be the best cook in town", b:"Be the best dancer in town"},
+  {a:"Have a hot air balloon", b:"Have a tiny submarine"},
+  {a:"Always know the perfect thing to say", b:"Always know the perfect gift to give"},
+  {a:"Have wheels on your shoes to skate everywhere", b:"Have a jetpack that only goes walking speed"},
+  {a:"Turn any wall into a door", b:"Turn any window into a portal to yesterday"},
+  {a:"Have a plant that waters itself", b:"Have a pet that feeds itself"},
+  {a:"Be able to swap places with anyone for a day", b:"Be able to relive any one day of your choosing"},
+  {a:"Have a hat that keeps you cool in summer", b:"Have a scarf that keeps you warm in winter"},
+  {a:"Be able to high-five through video calls", b:"Be able to smell food through the screen"},
+  {a:"Have a desk that tidies itself", b:"Have an inbox that sorts itself"}
+];
+
+/* ---- state ---- */
+var idx = 0;
+var order = [];
+var qCount = 0;
+var votesL = 0, votesR = 0;
+
+var $ = function(id){ return document.getElementById(id); };
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function shuffle(n){
+  var arr = [];
+  for(var i=0;i<n;i++) arr.push(i);
+  for(var j=arr.length-1;j>0;j--){
+    var k = Math.floor(Math.random()*(j+1));
+    var t = arr[j]; arr[j] = arr[k]; arr[k] = t;
+  }
+  return arr;
+}
+
+function loadPrompt(){
+  if(idx >= order.length){ order = shuffle(PROMPTS.length); idx = 0; }
+  var p = PROMPTS[order[idx]];
+  idx++;
+  qCount++;
+  votesL = 0; votesR = 0;
+  $("optL").innerHTML = esc(p.a);
+  $("optR").innerHTML = esc(p.b);
+  $("qnum").textContent = "Question #" + qCount;
+  updateTally();
+  // pop animation
+  var rows = $("rows");
+  rows.classList.remove("pop");
+  void rows.offsetWidth; // reflow to restart animation
+  rows.classList.add("pop");
+}
+
+function updateTally(){
+  $("countL").textContent = votesL;
+  $("countR").textContent = votesR;
+  var total = votesL + votesR;
+  var lpct = total === 0 ? 50 : Math.round((votesL/total)*100);
+  var rpct = total === 0 ? 50 : 100 - lpct;
+  $("lfill").style.width = lpct + "%";
+  $("rfill").style.width = rpct + "%";
+  $("pctL").textContent = lpct + "%";
+  $("pctR").textContent = rpct + "%";
+}
+
+function resetVotes(){
+  votesL = 0; votesR = 0;
+  updateTally();
+}
+
+/* ---- wiring ---- */
+$("startBtn").addEventListener("click", function(){
+  order = shuffle(PROMPTS.length);
+  idx = 0; qCount = 0;
+  $("start").classList.remove("active");
+  $("game").classList.add("active");
+  loadPrompt();
+});
+
+function bumpL(){ votesL++; updateTally(); }
+function bumpR(){ votesR++; updateTally(); }
+
+$("cardL").addEventListener("click", bumpL);
+$("cardR").addEventListener("click", bumpR);
+$("cardL").addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); bumpL(); } });
+$("cardR").addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); bumpR(); } });
+
+$("resetBtn").addEventListener("click", resetVotes);
+$("nextBtn").addEventListener("click", loadPrompt);
+</script>
+</body>
+</html>
