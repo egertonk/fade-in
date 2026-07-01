@@ -100,6 +100,7 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
 .turn-of{ margin-bottom:10px; }
 .player-name{ font-family:var(--display); font-weight:800; font-size:clamp(34px,6vw,56px); line-height:1; margin:2px 0 6px; }
 .target-line{ font-family:var(--mono); font-size:14px; letter-spacing:1px; color:var(--gold); margin-bottom:34px; }
+.target-big{ font-family:var(--display); font-weight:800; font-size:clamp(72px,17vw,150px); line-height:.9; color:var(--gold); margin:6px 0 28px; text-shadow:0 0 40px rgba(255,201,77,.25); }
 
 .stage{
   position:relative; height:230px; display:flex; align-items:center; justify-content:center;
@@ -151,7 +152,7 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
   <section id="setup" class="screen active">
     <div class="label">Party timing game</div>
     <h1 class="title">Stop the Clock</h1>
-    <p class="rule">Share your screen. Each turn: you click Start, the player yells STOP, you click Stop. The timer is hidden — nail the target time by feel alone.</p>
+    <p class="rule">Share your screen. Click Start, everyone watches the big target and yells STOP when they think you've hit it — then you click Stop. The timer is hidden, so it's all by feel.</p>
 
     <div class="card">
       <h2>Target time</h2>
@@ -164,26 +165,16 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
       </div>
     </div>
 
-    <div class="card">
-      <h2>Players</h2>
-      <div class="players" id="players"></div>
-      <div class="addrow">
-        <button class="btn ghost" id="addBtn">+ Add player</button>
-      </div>
-    </div>
-
     <div class="actions">
-      <button class="btn primary big" id="startGame">Start game</button>
-      <button class="btn ghost" id="quickBtn">Quick play (no scoring)</button>
+      <button class="btn primary big" id="startGame">Start ▶</button>
     </div>
   </section>
 
   <!-- PLAY -->
   <section id="play" class="screen">
     <div class="play-center">
-      <div class="turn-of label" id="turnOf">Turn</div>
-      <div class="player-name" id="playerName">Player</div>
-      <div class="target-line" id="targetLine">Stop at 10.0s</div>
+      <div class="label">Stop the clock at</div>
+      <div class="target-big" id="targetBig">10.0s</div>
 
       <div class="stage">
         <div class="pulse idle" id="pulse">
@@ -200,20 +191,6 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
       <div class="play-actions" id="playActions">
         <button class="btn primary big" id="mainBtn">Start ▶</button>
       </div>
-    </div>
-  </section>
-
-  <!-- LEADERBOARD -->
-  <section id="board" class="screen">
-    <div class="label">After round <span id="roundNum">1</span></div>
-    <h1 class="title" style="font-size:clamp(30px,6vw,52px)">Leaderboard</h1>
-    <p class="rule">Lowest total error wins. Keep playing to pile on more rounds.</p>
-    <div class="card">
-      <div class="lb" id="lb"></div>
-    </div>
-    <div class="actions">
-      <button class="btn primary big" id="newRound">New round →</button>
-      <button class="btn ghost" id="quitToSetup">End game</button>
     </div>
   </section>
 
@@ -259,48 +236,6 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
     state.targetMode = (t === 'rand') ? 'rand' : parseInt(t,10);
   });
 
-  // ---- setup: players ----
-  var playersEl = $('players');
-  function renderPlayers(rows){
-    playersEl.innerHTML = '';
-    rows.forEach(function(val, i){
-      var row = document.createElement('div');
-      row.className = 'prow';
-      row.innerHTML =
-        '<span class="num">'+(i+1)+'</span>'+
-        '<input class="pname" type="text" maxlength="24" placeholder="Player '+(i+1)+'" />'+
-        '<button class="iconbtn rm" title="Remove">✕</button>';
-      playersEl.appendChild(row);
-      row.querySelector('.pname').value = val || '';
-    });
-    updateRemoveState();
-  }
-  function currentNames(){
-    var inputs = playersEl.querySelectorAll('.pname');
-    return Array.prototype.map.call(inputs, function(i){ return i.value; });
-  }
-  function updateRemoveState(){
-    var rms = playersEl.querySelectorAll('.rm');
-    var disable = rms.length <= 1;
-    for(var i=0;i<rms.length;i++) rms[i].disabled = disable;
-    $('addBtn').disabled = rms.length >= 10;
-  }
-  playersEl.addEventListener('click', function(e){
-    var b = e.target.closest('.rm'); if(!b) return;
-    var names = currentNames();
-    var row = b.closest('.prow');
-    var idx = Array.prototype.indexOf.call(playersEl.children, row);
-    names.splice(idx,1);
-    renderPlayers(names);
-  });
-  $('addBtn').addEventListener('click', function(){
-    var names = currentNames();
-    if(names.length >= 10) return;
-    names.push('');
-    renderPlayers(names);
-  });
-  renderPlayers(['','']);
-
   // ---- target resolution ----
   function resolveTarget(){
     if(state.targetMode === 'rand'){
@@ -313,27 +248,9 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
   function fmt(n){ return n.toFixed(2); }
   function fmt1(n){ return n.toFixed(1); }
 
-  // ---- start game ----
+  // ---- start ----
   $('startGame').addEventListener('click', function(){
-    var names = currentNames()
-      .map(function(s){ return s.trim(); })
-      .filter(function(s){ return s.length; });
-    if(names.length === 0){
-      names = ['Player 1','Player 2'];
-    }
-    state.players = names.map(function(n){ return { name:n, total:0 }; });
-    state.quick = false;
-    state.idx = 0;
-    state.round = 1;
-    resolveTarget();
-    beginTurn();
-    show('play');
-  });
-
-  $('quickBtn').addEventListener('click', function(){
     state.quick = true;
-    state.players = [];
-    state.round = 1;
     resolveTarget();
     beginTurn();
     show('play');
@@ -351,15 +268,7 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
     pulse.classList.add('idle');
     pulseText.textContent = 'ready';
 
-    if(state.quick){
-      $('turnOf').textContent = 'Quick play';
-      $('playerName').textContent = 'Feel the clock';
-    } else {
-      var p = state.players[state.idx];
-      $('turnOf').textContent = 'Turn ' + (state.idx+1) + ' of ' + state.players.length;
-      $('playerName').textContent = p.name;
-    }
-    $('targetLine').textContent = 'Stop at ' + fmt1(state.currentTarget) + 's';
+    $('targetBig').textContent = fmt1(state.currentTarget) + 's';
 
     playActions.innerHTML = '<button class="btn primary big" id="mainBtn">Start ▶</button>';
     $('mainBtn').addEventListener('click', onStart);
@@ -416,11 +325,6 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
     var target = state.currentTarget;
     var err = Math.abs(elapsed - target);
 
-    // record for scoring
-    if(!state.quick){
-      state.players[state.idx].total += err;
-    }
-
     // verdict
     var vColor, vText;
     if(err <= 0.3){ vColor = 'var(--green)'; vText = '🎯 Bang on!'; }
@@ -437,57 +341,12 @@ input.pname:focus{ border-color:rgba(246,240,226,.4); }
     v.style.color = vColor;
 
     // next action
-    if(state.quick){
-      playActions.innerHTML = '<button class="btn primary big" id="mainBtn">Go again</button>';
-      $('mainBtn').addEventListener('click', function(){
-        if(state.targetMode === 'rand') resolveTarget();
-        beginTurn();
-      });
-    } else {
-      var isLast = state.idx >= state.players.length - 1;
-      var lbl = isLast ? 'See leaderboard →' : 'Next player →';
-      playActions.innerHTML = '<button class="btn primary big" id="mainBtn">' + lbl + '</button>';
-      $('mainBtn').addEventListener('click', function(){
-        if(isLast){
-          renderBoard();
-          show('board');
-        } else {
-          state.idx += 1;
-          beginTurn();
-        }
-      });
-    }
-  }
-
-  // ---- leaderboard ----
-  function renderBoard(){
-    $('roundNum').textContent = state.round;
-    var sorted = state.players.slice().sort(function(a,b){ return a.total - b.total; });
-    var lb = $('lb');
-    lb.innerHTML = '';
-    sorted.forEach(function(p, i){
-      var lead = (i === 0);
-      var row = document.createElement('div');
-      row.className = 'lb-row' + (lead ? ' lead' : '');
-      row.innerHTML =
-        '<span class="lb-rank">'+(i+1)+'</span>'+
-        '<span class="lb-name">'+ (lead ? '👑 ' : '') + esc(p.name) +'</span>'+
-        '<span class="lb-score">'+ fmt(p.total) +'s total</span>';
-      lb.appendChild(row);
+    playActions.innerHTML = '<button class="btn primary big" id="mainBtn">Go again ↻</button>';
+    $('mainBtn').addEventListener('click', function(){
+      if(state.targetMode === 'rand') resolveTarget();
+      beginTurn();
     });
   }
-
-  $('newRound').addEventListener('click', function(){
-    state.round += 1;
-    state.idx = 0;
-    if(state.targetMode === 'rand') resolveTarget();
-    beginTurn();
-    show('play');
-  });
-
-  $('quitToSetup').addEventListener('click', function(){
-    show('setup');
-  });
 
 })();
 </script>
