@@ -38,8 +38,12 @@
   .overlay.show{display:flex}
   .card{width:min(600px,94vw);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
   .card .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  .card .big{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,46px);line-height:1.05;margin:6px 0 16px;color:var(--gold)}
-  #answerMap{width:100%;height:300px;border-radius:14px;margin-bottom:18px;background:#1b2230}
+  .card .big{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,46px);line-height:1.05;margin:6px 0 4px;color:var(--gold)}
+  .card .desc{font-family:var(--body);font-size:15px;color:var(--cream);margin:0 0 16px;min-height:1px}
+  .card .desc .st{color:var(--cyan);font-weight:600}
+  #answerMap{width:100%;height:280px;border-radius:14px;margin-bottom:12px;background:#1b2230}
+  .maplink{display:inline-block;margin-bottom:16px;font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none;border-bottom:1px dashed var(--line)}
+  .maplink:hover{color:var(--cyan);border-color:var(--cyan)}
 
   /* full-screen panels */
   .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;z-index:20;background:radial-gradient(120% 120% at 50% 0%,#1f1442 0%,#0d1117 60%);overflow:auto}
@@ -76,7 +80,9 @@
     <div class="card">
       <div class="kicker">The answer was…</div>
       <div class="big" id="placeName">—</div>
+      <div class="desc" id="placeDesc"></div>
       <div id="answerMap"></div>
+      <a class="maplink" id="mapsLink" target="_blank" rel="noopener">Open this exact spot in Google Maps ↗</a>
       <button class="btn green" id="nextBtn" style="width:100%">Next location →</button>
     </div>
   </div>
@@ -150,6 +156,7 @@ const SPOTS=[
 
 let sv, panorama, answerMap, marker=null, actual=null, current=null, count=0, attemptGuard=0;
 const $=id=>document.getElementById(id);
+const escapeHtml=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 window.initGame=function(){
   sv=new google.maps.StreetViewService();
@@ -192,6 +199,8 @@ function loadSpot(done){
     (data,status)=>{
       if(status==='OK' && data && data.location){
         attemptGuard=0; current=spot; actual=data.location.latLng;
+        // Street View hands back the road/place name — no extra API needed
+        current.desc=data.location.description||data.location.shortDescription||'';
         count++; $('count').textContent=count;
         panorama.setPano(data.location.pano);
         panorama.setPov({heading:Math.random()*360, pitch:0});
@@ -204,6 +213,11 @@ function loadSpot(done){
 function showAnswer(){
   if(!actual||!current) return;
   $('placeName').textContent=current.n;
+  const lat=actual.lat(), lng=actual.lng();
+  $('placeDesc').innerHTML = current.desc
+    ? `📍 <span class="st">${escapeHtml(current.desc)}</span>`
+    : `📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  $('mapsLink').href=`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
   $('overlay').classList.add('show');
   if(!answerMap){
     answerMap=new google.maps.Map($('answerMap'),{disableDefaultUI:true,clickableIcons:false,zoom:5});
