@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Who Would Say That?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">🗣️</span> Who Would Say That? <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Who Would <span class="big">Say</span> That?</h1>
+    <p class="rule">Share your screen — read the line, the team shouts <b>WHO</b> would say it, you hit Reveal.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>A classic thing a grown-up says to a kid pops up — the team shouts who in the family (or beyond) would most likely say it, then you reveal the answer.</p>
+      <div class="ex"><b>"Wait till your father gets home!"</b> → <b>Mom</b></div>
+      <div class="ex"><b>"Back in my day, we walked 10 miles to school — uphill both ways."</b> → <b>Grandpa</b></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Line <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote"><span class="qm">“</span><span id="quoteText"></span><span class="qm">”</span></div>
+      <div class="reveal" id="reveal">
+        <div class="rem emoji" id="revEmoji"></div>
+        <div class="rwho" id="revWho"></div>
+        <div class="rwhy" id="revWhy"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">🎯</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var CAST = [
+  {emoji:"👩", label:"Mom"},
+  {emoji:"👨", label:"Dad"},
+  {emoji:"👵", label:"Grandma"},
+  {emoji:"👴", label:"Grandpa"},
+  {emoji:"🧑", label:"Aunt"},
+  {emoji:"🧔", label:"Uncle"},
+  {emoji:"🧒", label:"Older sibling"},
+  {emoji:"👩‍🏫", label:"Teacher"},
+  {emoji:"🧑‍🤝‍🧑", label:"Family friend"},
+  {emoji:"🚶", label:"Stranger"},
+  {emoji:"🧑‍🍼", label:"Babysitter"}
+];
+
+var ITEMS = [
+  {quote:"Wait till your father gets home!", who:"Mom", emoji:"👩", why:"The classic parental threat-by-proxy."},
+  {quote:"Because I said so, that's why.", who:"Mom", emoji:"👩", why:"The undefeated end of every debate."},
+  {quote:"I'm not mad, I'm just disappointed.", who:"Mom", emoji:"👩", why:"Somehow ten times worse than mad."},
+  {quote:"Were you born in a barn? Close the door!", who:"Mom", emoji:"👩", why:"The eternal fury at an open front door."},
+  {quote:"If your friends jumped off a bridge, would you do it too?", who:"Mom", emoji:"👩", why:"Peer-pressure logic, patented by moms everywhere."},
+  {quote:"I'm counting to three... one... two...", who:"Mom", emoji:"👩", why:"Nobody has ever learned what happens at three."},
+  {quote:"Eat your vegetables, there are kids starving somewhere.", who:"Mom", emoji:"👩", why:"Guilt served with a side of broccoli."},
+  {quote:"Did you flush AND wash your hands?", who:"Mom", emoji:"👩", why:"The double-check she'll ask about forever."},
+
+  {quote:"We're not lost, I know exactly where we are.", who:"Dad", emoji:"👨", why:"Said while very much circling the same roundabout."},
+  {quote:"Money doesn't grow on trees, you know.", who:"Dad", emoji:"👨", why:"Delivered while eyeing the electricity bill."},
+  {quote:"When I was your age I had a paper route AND a job.", who:"Dad", emoji:"👨", why:"The origin story gets more heroic every year."},
+  {quote:"I'm not sleeping, I'm just resting my eyes.", who:"Dad", emoji:"👨", why:"Reported live from the recliner, mid-snore."},
+  {quote:"Who left all these lights on? We're not made of money.", who:"Dad", emoji:"👨", why:"Patrolling the house like an energy inspector."},
+  {quote:"Hi Hungry, I'm Dad.", who:"Dad", emoji:"👨", why:"The joke he'll never, ever retire."},
+  {quote:"We'll get there when we get there.", who:"Dad", emoji:"👨", why:"The official road-trip time estimate."},
+  {quote:"Turn that music down, you'll go deaf.", who:"Dad", emoji:"👨", why:"Yelled from two rooms away, somehow."},
+
+  {quote:"You're all skin and bones, have another helping.", who:"Grandma", emoji:"👵", why:"An empty plate is a personal insult to her."},
+  {quote:"Let me just fix your hair, come here.", who:"Grandma", emoji:"👵", why:"Armed with a licked thumb and no warning."},
+  {quote:"Oh, I remember when you were this big!", who:"Grandma", emoji:"👵", why:"Complete with the tiny-hand gesture."},
+  {quote:"Have you eaten? You look thin. Sit, sit.", who:"Grandma", emoji:"👵", why:"Feeding you is her love language and her sport."},
+  {quote:"Don't tell your mother I gave you cookies before dinner.", who:"Grandma", emoji:"👵", why:"Cheekily ambiguous — grandpas run this scheme too."},
+  {quote:"I knitted you a sweater, try it on for me.", who:"Grandma", emoji:"👵", why:"Three sizes too big so you 'grow into it'."},
+
+  {quote:"Back in my day, we walked 10 miles to school — uphill both ways.", who:"Grandpa", emoji:"👴", why:"The commute got longer and snowier over the decades."},
+  {quote:"Pull my finger.", who:"Grandpa", emoji:"👴", why:"You know exactly how this ends, and you'll do it anyway."},
+  {quote:"Here's twenty bucks, don't tell your mom.", who:"Grandpa", emoji:"👴", why:"The tax-free grandkid economy in action."},
+  {quote:"This used to cost a nickel, you know.", who:"Grandpa", emoji:"👴", why:"Everything used to cost a nickel."},
+  {quote:"I've got a war story for that... sit down.", who:"Grandpa", emoji:"👴", why:"You will hear all forty minutes of it."},
+  {quote:"Turn it to channel 3, that's the good one.", who:"Grandpa", emoji:"👴", why:"Still convinced the VCR needs channel 3."},
+
+  {quote:"Don't tell your mom, but you're my favorite.", who:"Aunt", emoji:"🧑", why:"Says this to every single niece and nephew."},
+  {quote:"You are NOT going out dressed like that — actually, you look amazing.", who:"Aunt", emoji:"🧑", why:"The cool aunt flips mid-sentence."},
+  {quote:"Tell me everything, I won't judge... okay maybe a little.", who:"Aunt", emoji:"🧑", why:"The keeper of all the family gossip."},
+  {quote:"I'm basically your older sister, not an adult.", who:"Aunt", emoji:"🧑", why:"Cheekily ambiguous — could easily be the older sibling."},
+  {quote:"We're getting ice cream and your parents don't need to know the flavor count.", who:"Aunt", emoji:"🧑", why:"Sworn to spoil, sworn to secrecy."},
+
+  {quote:"Wanna see something your parents told you not to do?", who:"Uncle", emoji:"🧔", why:"The fun uncle, chief instigator of chaos."},
+  {quote:"Don't worry, I've done this a hundred times.", who:"Uncle", emoji:"🧔", why:"He has done it zero times."},
+  {quote:"Wanna hold the fireworks? Just kidding. ...Unless?", who:"Uncle", emoji:"🧔", why:"Officially the reason for the new house rule."},
+  {quote:"Here, hold my drink and watch this.", who:"Uncle", emoji:"🧔", why:"Famous last words at every barbecue."},
+  {quote:"Your dad was WAY more trouble than you at your age.", who:"Uncle", emoji:"🧔", why:"Has the childhood blackmail to prove it."},
+
+  {quote:"Mom said I'm in charge, so you have to listen to me.", who:"Older sibling", emoji:"🧒", why:"A title assumed the second the parents leave."},
+  {quote:"If you touch my stuff, you're dead.", who:"Older sibling", emoji:"🧒", why:"Border security for one bedroom shelf."},
+  {quote:"I'm telling.", who:"Older sibling", emoji:"🧒", why:"The nuclear option, deployed constantly."},
+  {quote:"You were adopted, obviously.", who:"Older sibling", emoji:"🧒", why:"A classic sibling lie with zero evidence."},
+  {quote:"Stop copying me. Stop copying me. STOP COPYING ME.", who:"Older sibling", emoji:"🧒", why:"An argument that can last a full car ride."},
+  {quote:"I called shotgun, that's the law.", who:"Older sibling", emoji:"🧒", why:"The front-seat constitution, strictly enforced."},
+
+  {quote:"We don't run in the hallway.", who:"Teacher", emoji:"👩‍🏫", why:"The corridor speed limit, enforced daily."},
+  {quote:"I'll wait.", who:"Teacher", emoji:"👩‍🏫", why:"Two words that silence a whole classroom."},
+  {quote:"Is that something you'd like to share with the whole class?", who:"Teacher", emoji:"👩‍🏫", why:"You would not, in fact, like to share it."},
+  {quote:"This is going on your permanent record.", who:"Teacher", emoji:"👩‍🏫", why:"A record no one has ever actually seen."},
+  {quote:"Eyes on your own paper, please.", who:"Teacher", emoji:"👩‍🏫", why:"The all-seeing gaze during any quiz."},
+  {quote:"The bell doesn't dismiss you, I do.", who:"Teacher", emoji:"👩‍🏫", why:"A hostage negotiation as the class edges to the door."},
+  {quote:"There's no such thing as a stupid question.", who:"Teacher", emoji:"👩‍🏫", why:"Immediately regrets it after the next question."},
+
+  {quote:"My, how you've grown! Last time you were this tall.", who:"Family friend", emoji:"🧑‍🤝‍🧑", why:"You have no memory of ever meeting them."},
+  {quote:"You probably don't remember me, but I changed your diapers!", who:"Family friend", emoji:"🧑‍🤝‍🧑", why:"An icebreaker you never asked for."},
+  {quote:"Your parents and I go WAY back, ask them about Vegas.", who:"Family friend", emoji:"🧑‍🤝‍🧑", why:"Keeper of stories your parents would rather forget."},
+  {quote:"Look at you, all grown up! Do you have a boyfriend yet?", who:"Family friend", emoji:"🧑‍🤝‍🧑", why:"The dreaded dinner-party interrogation."},
+
+  {quote:"Are you lost sweetie, where are your parents?", who:"Stranger", emoji:"🚶", why:"The gentle-but-concerned aisle-four rescue."},
+  {quote:"You dropped this, kiddo!", who:"Stranger", emoji:"🚶", why:"A brief, kind cameo in your day."},
+  {quote:"Smile, it might never happen!", who:"Stranger", emoji:"🚶", why:"Nobody has ever smiled because of this."},
+  {quote:"Careful there, watch your step!", who:"Stranger", emoji:"🚶", why:"The universal sidewalk guardian angel."},
+  {quote:"Aren't you a bit young to be out on your own?", who:"Stranger", emoji:"🚶", why:"Cheekily ambiguous — a grandparent could ask this too."},
+
+  {quote:"Okay, we can watch ONE more episode, but don't tell your parents.", who:"Babysitter", emoji:"🧑‍🍼", why:"Bedtime is more of a suggestion tonight."},
+  {quote:"If you go to bed now, I'll let you have dessert.", who:"Babysitter", emoji:"🧑‍🍼", why:"Bargaining like a tiny hostage negotiator."},
+  {quote:"Your parents will be back soon, I promise.", who:"Babysitter", emoji:"🧑‍🍼", why:"Said mostly to reassure themselves."},
+  {quote:"Pizza for dinner? Let's just keep that between us.", who:"Babysitter", emoji:"🧑‍🍼", why:"The unofficial babysitter meal plan."},
+  {quote:"We are NOT calling your mom over a scraped knee, you're fine.", who:"Babysitter", emoji:"🧑‍🍼", why:"Nervously googling 'when to call parents'."}
+];
+
+// ---------- legend ----------
+(function(){
+  var el = document.getElementById("legend");
+  var html = CAST.map(function(c){
+    return '<span class="lgi"><span class="emoji">'+c.emoji+'</span> '+escapeHtml(c.label)+'</span>';
+  }).join('<span class="lgi" style="color:var(--line)">·</span>');
+  el.innerHTML = html;
+})();
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var quoteTextEl = document.getElementById("quoteText");
+var revealEl    = document.getElementById("reveal");
+var revEmojiEl  = document.getElementById("revEmoji");
+var revWhoEl    = document.getElementById("revWho");
+var revWhyEl    = document.getElementById("revWhy");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  quoteTextEl.textContent = item.quote;
+  revEmojiEl.textContent = item.emoji;
+  revWhoEl.textContent = item.who;
+  revWhyEl.textContent = item.why;
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">🎯</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>
