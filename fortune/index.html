@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wheel of Fortune</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#111a3a; --tile:#0d2c6b;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(70,214,224,.18), transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, rgba(255,77,125,.15), transparent 55%),
+    linear-gradient(160deg,#0a1230,#0a0f24 60%,#0b1338);
+  background-attachment:fixed;
+}
+.wrap{max-width:1120px; margin:0 auto; padding:20px 18px 80px}
+.brand{
+  display:flex; align-items:center; gap:14px; font-family:var(--display); font-weight:800;
+  font-size:20px; letter-spacing:.3px; margin-bottom:22px; flex-wrap:wrap;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:12px; text-transform:uppercase; letter-spacing:.14em;
+  color:var(--muted); text-decoration:none; border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  transition:.18s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+
+.label{font-family:var(--mono); text-transform:uppercase; letter-spacing:.18em; font-size:12px; color:var(--muted)}
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:17px; border-radius:13px; border:1px solid var(--line);
+  padding:13px 22px; cursor:pointer; background:transparent; color:var(--cream); transition:.16s transform, .16s background, .16s border-color;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:var(--gold); color:#241a04; border-color:transparent; box-shadow:0 10px 30px rgba(255,201,77,.25)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4; cursor:default; transform:none}
+
+/* ---------- start screen ---------- */
+.hero{text-align:center; padding:40px 10px 10px}
+.hero h1{
+  font-family:var(--display); font-weight:800; font-size:clamp(42px,9vw,86px); line-height:.98; margin:6px 0 4px;
+  background:linear-gradient(180deg,#fff,var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 40px rgba(255,201,77,.15);
+}
+.hero .sub{font-family:var(--mono); text-transform:uppercase; letter-spacing:.3em; font-size:13px; color:var(--cyan); margin-bottom:26px}
+.howto{
+  max-width:620px; margin:24px auto 30px; text-align:left; border:1px solid var(--line); border-radius:18px;
+  padding:22px 24px; background:rgba(17,26,58,.5); backdrop-filter:blur(4px);
+}
+.howto .label{margin-bottom:12px; display:block}
+.howto p{margin:0; line-height:1.65; font-size:16px; color:rgba(246,240,226,.9)}
+.howto b{color:var(--gold)}
+
+/* ---------- board ---------- */
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:8px}
+.stats{display:flex; gap:20px; flex-wrap:wrap; align-items:baseline}
+.stat b{font-family:var(--display); font-weight:800; font-size:22px}
+.stat span{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-left:6px}
+
+.catwrap{text-align:center; margin:14px 0 20px}
+.catpill{
+  display:inline-block; font-family:var(--mono); text-transform:uppercase; letter-spacing:.22em; font-size:13px;
+  color:#241a04; background:var(--gold); padding:8px 20px; border-radius:999px; font-weight:700;
+  box-shadow:0 8px 24px rgba(255,201,77,.28);
+}
+
+.board{
+  display:flex; flex-wrap:wrap; gap:16px 26px; justify-content:center; align-items:flex-start;
+  padding:26px 14px; margin:0 auto 26px; max-width:1000px;
+  border-radius:22px; border:1px solid var(--line);
+  background:radial-gradient(120% 140% at 50% 0%, rgba(70,214,224,.10), transparent 60%), rgba(9,14,34,.55);
+}
+.word{display:flex; gap:8px; flex-wrap:nowrap}
+.tile{
+  --sz:clamp(34px,7.2vw,62px);
+  width:var(--sz); height:calc(var(--sz)*1.28);
+  border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-weight:800; font-size:calc(var(--sz)*.62); line-height:1;
+  perspective:600px; position:relative;
+}
+.tile .inner{
+  position:absolute; inset:0; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  transition:transform .45s cubic-bezier(.2,.9,.3,1.2), background .3s, color .3s, box-shadow .3s;
+  transform-style:preserve-3d; backface-visibility:hidden;
+}
+/* letter tile hidden (blank blue) */
+.tile.letter .inner{
+  background:linear-gradient(180deg,#12419f,#0a2464);
+  border:1px solid rgba(70,214,224,.5);
+  box-shadow:inset 0 2px 10px rgba(255,255,255,.14), inset 0 -8px 18px rgba(0,0,0,.4), 0 0 22px rgba(70,214,224,.22);
+  color:transparent;
+}
+.tile.letter.revealed .inner{
+  color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.5);
+  transform:rotateX(360deg);
+}
+.tile.letter.solved .inner{
+  background:linear-gradient(180deg,#ffe08a,#ffbf3a);
+  border-color:rgba(255,255,255,.6);
+  color:#241a04; text-shadow:none;
+  box-shadow:0 0 26px rgba(255,201,77,.6), inset 0 2px 8px rgba(255,255,255,.5);
+  transform:rotateX(360deg);
+}
+/* punctuation shown, no box */
+.tile.punc{background:transparent}
+.tile.punc .inner{background:transparent; color:var(--cream); font-size:calc(var(--sz)*.7)}
+.gap{width:clamp(14px,3vw,30px)}
+
+/* ---------- keyboard ---------- */
+.kbwrap{max-width:760px; margin:0 auto 24px}
+.kb{display:flex; flex-wrap:wrap; gap:9px; justify-content:center}
+.key{
+  width:clamp(38px,8.2vw,52px); height:clamp(46px,10vw,58px); border-radius:11px;
+  font-family:var(--display); font-weight:800; font-size:clamp(16px,4vw,22px);
+  background:rgba(246,240,226,.06); border:1px solid var(--line); color:var(--cream); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:.14s;
+}
+.key:hover:not(:disabled){background:rgba(246,240,226,.14); transform:translateY(-2px)}
+.key.hit{background:var(--green); color:#04220f; border-color:transparent; box-shadow:0 6px 18px rgba(70,224,138,.3)}
+.key.miss{background:transparent; color:rgba(246,240,226,.28); border-color:rgba(246,240,226,.08); text-decoration:line-through}
+.key:disabled{cursor:default}
+.key:disabled:hover{transform:none}
+
+.controls{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:6px}
+
+.iconbtn{
+  font-family:var(--mono); font-size:13px; background:transparent; border:1px solid var(--line);
+  color:var(--muted); border-radius:999px; padding:8px 14px; cursor:pointer; transition:.16s;
+}
+.iconbtn:hover{color:var(--cream); border-color:rgba(246,240,226,.35)}
+
+.hidden{display:none !important}
+
+/* celebration confetti dots */
+@keyframes pop{0%{transform:scale(.6);opacity:0}40%{opacity:1}100%{transform:scale(1)}}
+.solved-anim{animation:pop .5s ease}
+
+.toast{
+  position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px);
+  background:var(--gold); color:#241a04; font-family:var(--display); font-weight:800; font-size:18px;
+  padding:14px 26px; border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.4); opacity:0; pointer-events:none;
+  transition:.3s; z-index:50;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+@media(max-width:560px){
+  .board{gap:12px 16px; padding:18px 8px}
+  .word{gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">🔠 Wheel of Fortune <a href="../">← All games</a></div>
+
+  <!-- ===== START SCREEN ===== -->
+  <section id="start">
+    <div class="hero">
+      <div class="sub">Screen-share party edition</div>
+      <h1>Wheel of<br>Fortune</h1>
+      <div class="howto">
+        <span class="label">How to play</span>
+        <p>A hidden phrase shows as <b>blanks</b>, with a category hint. The team calls out letters — you tap them on the keyboard and every matching letter flips into view. When the team thinks they've got it, hit <b>Solve</b> to reveal the whole phrase.</p>
+      </div>
+      <button class="btn primary" id="startBtn" style="font-size:22px; padding:16px 40px">Start ▶</button>
+    </div>
+  </section>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <section id="game" class="hidden">
+    <div class="topbar">
+      <div class="stats">
+        <div class="stat"><b id="revCount">0</b><span>revealed</span></div>
+        <div class="stat"><b id="wrongCount">0</b><span>wrong</span></div>
+        <div class="stat"><b id="puzNum">1</b><span>puzzle</span></div>
+      </div>
+      <button class="iconbtn" id="muteBtn">🔊 Sound on</button>
+    </div>
+
+    <div class="catwrap"><span class="catpill" id="category">Phrase</span></div>
+
+    <div class="board" id="board"></div>
+
+    <div class="kbwrap">
+      <div class="kb" id="kb"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="solveBtn">Solve it 🎉</button>
+      <button class="btn ghost" id="newBtn">New puzzle →</button>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------------- PUZZLE DATA (60+) ---------------- */
+const PUZZLES = [
+  {phrase:"A blessing in disguise", category:"Phrase"},
+  {phrase:"Better late than never", category:"Phrase"},
+  {phrase:"Bite the bullet", category:"Phrase"},
+  {phrase:"Break the ice", category:"Phrase"},
+  {phrase:"The ball is in your court", category:"Phrase"},
+  {phrase:"Once in a blue moon", category:"Phrase"},
+  {phrase:"Piece of cake", category:"Phrase"},
+  {phrase:"Speak of the devil", category:"Phrase"},
+  {phrase:"The best of both worlds", category:"Phrase"},
+  {phrase:"Under the weather", category:"Phrase"},
+  {phrase:"Curiosity killed the cat", category:"Saying"},
+  {phrase:"Every cloud has a silver lining", category:"Saying"},
+  {phrase:"Actions speak louder than words", category:"Saying"},
+  {phrase:"The early bird catches the worm", category:"Saying"},
+  {phrase:"When in Rome do as the Romans do", category:"Saying"},
+  {phrase:"Two heads are better than one", category:"Saying"},
+  {phrase:"Practice makes perfect", category:"Saying"},
+  {phrase:"Don't count your chickens", category:"Saying"},
+  {phrase:"The Lord of the Rings", category:"Movie Title"},
+  {phrase:"Back to the Future", category:"Movie Title"},
+  {phrase:"The Shawshank Redemption", category:"Movie Title"},
+  {phrase:"Finding Nemo", category:"Movie Title"},
+  {phrase:"Jurassic Park", category:"Movie Title"},
+  {phrase:"The Lion King", category:"Movie Title"},
+  {phrase:"Forrest Gump", category:"Movie Title"},
+  {phrase:"The Grand Budapest Hotel", category:"Movie Title"},
+  {phrase:"Guardians of the Galaxy", category:"Movie Title"},
+  {phrase:"Toy Story", category:"Movie Title"},
+  {phrase:"The Sound of Music", category:"Movie Title"},
+  {phrase:"Groundhog Day", category:"Movie Title"},
+  {phrase:"Bohemian Rhapsody", category:"Song Title"},
+  {phrase:"Sweet Child O' Mine", category:"Song Title"},
+  {phrase:"Dancing Queen", category:"Song Title"},
+  {phrase:"Here Comes the Sun", category:"Song Title"},
+  {phrase:"Rolling in the Deep", category:"Song Title"},
+  {phrase:"Sweet Home Alabama", category:"Song Title"},
+  {phrase:"Uptown Funk", category:"Song Title"},
+  {phrase:"Stairway to Heaven", category:"Song Title"},
+  {phrase:"The Eiffel Tower", category:"Famous Place"},
+  {phrase:"The Great Wall of China", category:"Famous Place"},
+  {phrase:"The Grand Canyon", category:"Famous Place"},
+  {phrase:"Niagara Falls", category:"Famous Place"},
+  {phrase:"The Golden Gate Bridge", category:"Famous Place"},
+  {phrase:"Mount Everest", category:"Famous Place"},
+  {phrase:"The Sydney Opera House", category:"Famous Place"},
+  {phrase:"The Leaning Tower of Pisa", category:"Famous Place"},
+  {phrase:"Times Square", category:"Famous Place"},
+  {phrase:"The Amazon Rainforest", category:"Famous Place"},
+  {phrase:"A cup of coffee", category:"Thing"},
+  {phrase:"A rainy Monday morning", category:"Thing"},
+  {phrase:"Fresh out of the oven", category:"Thing"},
+  {phrase:"A walk in the park", category:"Thing"},
+  {phrase:"The pot of gold", category:"Thing"},
+  {phrase:"A shooting star", category:"Thing"},
+  {phrase:"Message in a bottle", category:"Thing"},
+  {phrase:"Albert Einstein", category:"Famous Person"},
+  {phrase:"William Shakespeare", category:"Famous Person"},
+  {phrase:"Leonardo da Vinci", category:"Famous Person"},
+  {phrase:"Amelia Earhart", category:"Famous Person"},
+  {phrase:"Nelson Mandela", category:"Famous Person"},
+  {phrase:"Marie Curie", category:"Famous Person"},
+  {phrase:"Neil Armstrong", category:"Famous Person"},
+  {phrase:"Rock and roll", category:"Phrase"},
+  {phrase:"Home sweet home", category:"Phrase"},
+  {phrase:"Peace and quiet", category:"Phrase"},
+  {phrase:"Fish and chips", category:"Food & Drink"},
+  {phrase:"Peanut butter and jelly", category:"Food & Drink"},
+  {phrase:"A slice of pizza", category:"Food & Drink"},
+  {phrase:"Ice cream sundae", category:"Food & Drink"},
+  {phrase:"Practice what you preach", category:"Saying"},
+  {phrase:"Let the cat out of the bag", category:"Phrase"},
+  {phrase:"Hit the nail on the head", category:"Phrase"}
+];
+
+/* ---------------- STATE ---------------- */
+let order = [];
+let orderIdx = 0;
+let cur = null;         // {phrase, category}
+let guessed = new Set();
+let revealedCount = 0;
+let wrongCount = 0;
+let puzzleNumber = 0;
+let solvedNow = false;
+let muted = false;
+
+/* ---------------- DOM ---------------- */
+const $ = id => document.getElementById(id);
+const boardEl = $("board");
+const kbEl = $("kb");
+const catEl = $("category");
+const revEl = $("revCount");
+const wrongEl = $("wrongCount");
+const puzNumEl = $("puzNum");
+const toastEl = $("toast");
+
+/* ---------------- UTIL ---------------- */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function isLetter(ch){ return /[A-Za-z]/.test(ch); }
+
+/* ---------------- AUDIO (Web Audio API) ---------------- */
+let actx = null;
+function audio(){
+  if(!actx){
+    try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(actx.state === "suspended") actx.resume();
+  return actx;
+}
+function tone(freq, start, dur, type, gain){
+  const ac = audio(); if(!ac || muted) return;
+  const t0 = ac.currentTime + start;
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = type||"sine";
+  osc.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(gain||0.18, t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0008, t0+dur);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(t0); osc.stop(t0+dur+0.02);
+}
+function dingSound(){
+  tone(880, 0, 0.18, "triangle", 0.16);
+  tone(1318.5, 0.05, 0.22, "sine", 0.12);
+}
+function buzzSound(){
+  const ac = audio(); if(!ac || muted) return;
+  const t0 = ac.currentTime;
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(180, t0);
+  osc.frequency.exponentialRampToValueAtTime(90, t0+0.25);
+  g.gain.setValueAtTime(0.14, t0);
+  g.gain.exponentialRampToValueAtTime(0.0008, t0+0.28);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(t0); osc.stop(t0+0.3);
+}
+function fanfare(){
+  const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+  notes.forEach((f,i)=> tone(f, i*0.12, 0.5, "triangle", 0.16));
+  tone(1567.98, notes.length*0.12, 0.7, "sine", 0.14);
+}
+
+/* ---------------- TOAST ---------------- */
+let toastTimer=null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toastEl.classList.remove("show"), 2200);
+}
+
+/* ---------------- BUILD BOARD ---------------- */
+function buildBoard(){
+  boardEl.innerHTML = "";
+  const words = cur.phrase.split(" ");
+  words.forEach((word, wi)=>{
+    const wEl = document.createElement("div");
+    wEl.className = "word";
+    for(const ch of word){
+      const tile = document.createElement("div");
+      const inner = document.createElement("div");
+      inner.className = "inner";
+      if(isLetter(ch)){
+        tile.className = "tile letter";
+        tile.dataset.letter = ch.toUpperCase();
+        inner.textContent = ch.toUpperCase();
+      }else{
+        tile.className = "tile punc";
+        inner.textContent = ch;
+      }
+      tile.appendChild(inner);
+      wEl.appendChild(tile);
+    }
+    boardEl.appendChild(wEl);
+    if(wi < words.length-1){
+      const gap = document.createElement("div");
+      gap.className = "gap";
+      boardEl.appendChild(gap);
+    }
+  });
+}
+
+/* ---------------- BUILD KEYBOARD ---------------- */
+function buildKeyboard(){
+  kbEl.innerHTML = "";
+  for(let i=65;i<=90;i++){
+    const L = String.fromCharCode(i);
+    const key = document.createElement("button");
+    key.className = "key";
+    key.textContent = L;
+    key.dataset.letter = L;
+    key.addEventListener("click", ()=> guessLetter(L));
+    kbEl.appendChild(key);
+  }
+}
+
+/* ---------------- GUESS ---------------- */
+function guessLetter(L){
+  L = L.toUpperCase();
+  if(solvedNow) return;
+  if(!/[A-Z]/.test(L)) return;
+  if(guessed.has(L)) return;
+  guessed.add(L);
+
+  const key = kbEl.querySelector('.key[data-letter="'+L+'"]');
+  if(key) key.disabled = true;
+
+  const matches = boardEl.querySelectorAll('.tile.letter[data-letter="'+L+'"]:not(.revealed)');
+  if(matches.length){
+    matches.forEach((t,idx)=>{
+      setTimeout(()=>{
+        t.classList.add("revealed","solved-anim");
+        setTimeout(()=>t.classList.remove("solved-anim"), 500);
+      }, idx*90);
+    });
+    revealedCount += matches.length;
+    if(key) key.classList.add("hit");
+    dingSound();
+    updateStats();
+    checkAllRevealed();
+  }else{
+    if(key) key.classList.add("miss");
+    wrongCount++;
+    buzzSound();
+    updateStats();
+  }
+}
+
+function checkAllRevealed(){
+  const remaining = boardEl.querySelectorAll('.tile.letter:not(.revealed)');
+  if(remaining.length === 0 && !solvedNow){
+    solvedNow = true;
+    toast("Puzzle complete! 🎉");
+    fanfare();
+  }
+}
+
+/* ---------------- SOLVE ---------------- */
+function solvePuzzle(){
+  if(solvedNow){
+    // already solved: just gold-flip everything as celebration again
+  }
+  solvedNow = true;
+  const tiles = boardEl.querySelectorAll(".tile.letter");
+  tiles.forEach((t,idx)=>{
+    setTimeout(()=>{
+      t.classList.add("revealed","solved","solved-anim");
+      setTimeout(()=>t.classList.remove("solved-anim"),500);
+    }, idx*55);
+  });
+  // count any newly revealed
+  const wasHidden = boardEl.querySelectorAll('.tile.letter:not(.revealed)').length;
+  revealedCount += 0; // display stays; not double counting
+  // disable keyboard
+  kbEl.querySelectorAll(".key").forEach(k=> k.disabled = true);
+  fanfare();
+  toast("Solved! 🎉 " + cur.phrase);
+}
+
+/* ---------------- STATS ---------------- */
+function updateStats(){
+  revEl.textContent = revealedCount;
+  wrongEl.textContent = wrongCount;
+  puzNumEl.textContent = puzzleNumber;
+}
+
+/* ---------------- LOAD PUZZLE ---------------- */
+function nextPuzzle(){
+  if(orderIdx >= order.length){
+    order = shuffle([...Array(PUZZLES.length).keys()]);
+    orderIdx = 0;
+  }
+  cur = PUZZLES[order[orderIdx]];
+  orderIdx++;
+  puzzleNumber++;
+  guessed = new Set();
+  revealedCount = 0;
+  wrongCount = 0;
+  solvedNow = false;
+  catEl.textContent = cur.category;
+  buildBoard();
+  buildKeyboard();
+  updateStats();
+}
+
+/* ---------------- MUTE ---------------- */
+function toggleMute(){
+  muted = !muted;
+  $("muteBtn").textContent = muted ? "🔇 Muted" : "🔊 Sound on";
+}
+
+/* ---------------- START ---------------- */
+function startGame(){
+  audio(); // unlock on user gesture
+  order = shuffle([...Array(PUZZLES.length).keys()]);
+  orderIdx = 0;
+  puzzleNumber = 0;
+  $("start").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  nextPuzzle();
+}
+
+/* ---------------- EVENTS ---------------- */
+$("startBtn").addEventListener("click", startGame);
+$("solveBtn").addEventListener("click", solvePuzzle);
+$("newBtn").addEventListener("click", nextPuzzle);
+$("muteBtn").addEventListener("click", toggleMute);
+
+document.addEventListener("keydown", (e)=>{
+  if($("game").classList.contains("hidden")) return;
+  if(e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key;
+  if(k && k.length === 1 && /[a-zA-Z]/.test(k)){
+    guessLetter(k);
+  }else if(k === "Enter"){
+    solvePuzzle();
+  }
+});
+</script>
+</body>
+</html>
