@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Poll Position</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+.bignum{font-family:var(--display); font-weight:800; font-size:clamp(72px,16vw,140px); line-height:1; color:var(--green); letter-spacing:-2px}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">📊</span> Poll Position <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Poll <span class="big">Position</span></h1>
+    <p class="rule">Share your screen — read the survey question, the team shouts a <b>percentage</b> out loud, closest guess wins. You judge, then Reveal.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>A "what % of people…" question pops up. Everyone calls out their best guess at the real number. You decide who's closest, hit Reveal to show the actual stat, then Next for a new poll. Family-Feud energy, no wrong shouting.</p>
+      <div class="ex"><b>"What % of people admit to checking their phone within 5 min of waking up?"</b> → <b>80%</b></div>
+      <div class="ex"><b>"What % of people have pretended to be busy to avoid a coworker?"</b> → <b>62%</b></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Poll <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote"><span class="qm">“</span><span id="quoteText"></span><span class="qm">”</span></div>
+      <div class="reveal" id="reveal">
+        <div class="bignum" id="revPct"></div>
+        <div class="rwhy" id="revNote"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">📊</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var ITEMS = [
+  {question:"What % of people admit to checking their phone within 5 minutes of waking up?", pct:"80%", note:"Roughly 4 in 5, across multiple surveys."},
+  {question:"What % of people have pretended to be busy to avoid talking to a coworker?", pct:"62%", note:"Roughly 3 in 5 have dodged the break room."},
+  {question:"What % of people say they've re-read a text before sending it more than five times?", pct:"55%", note:"About half of us over-edit."},
+  {question:"What % of people admit they've talked to a pet like it's a person?", pct:"90%", note:"Roughly 9 in 10 — the pet understands, obviously."},
+  {question:"What % of people have Googled a symptom and immediately assumed the worst?", pct:"65%", note:"About two-thirds have spiraled online."},
+  {question:"What % of people say they've eaten food that fell on the floor (five-second rule)?", pct:"75%", note:"Roughly 3 in 4 trust the countdown."},
+  {question:"What % of people have kept a book they fully intend to read 'someday'?", pct:"70%", note:"About 7 in 10 have a hopeful shelf."},
+  {question:"What % of people admit to hitting snooze at least once every morning?", pct:"57%", note:"Roughly half give themselves 'nine more minutes'."},
+  {question:"What % of people say they've laughed at a message but replied 'haha' with a straight face?", pct:"60%", note:"About 3 in 5 fake the lol."},
+  {question:"What % of people have pretended a call dropped to end a conversation?", pct:"40%", note:"Roughly 2 in 5 have staged the 'you're breaking up'."},
+  {question:"What % of people admit to singing loudly in the car when alone?", pct:"85%", note:"About 6 in 7 give a solo concert."},
+  {question:"What % of people say they've re-warmed the same cup of coffee multiple times?", pct:"68%", note:"Roughly 2 in 3 microwave it twice."},
+  {question:"What % of people have taken a photo of food before eating it?", pct:"58%", note:"About 3 in 5 feed the phone first."},
+  {question:"What % of people admit to procrastinating by cleaning instead of doing the real task?", pct:"64%", note:"Roughly 2 in 3 productively avoid work."},
+  {question:"What % of people say they check the fridge repeatedly hoping new food appears?", pct:"72%", note:"About 7 in 10 believe in fridge magic."},
+  {question:"What % of people have worn the same comfy outfit two days in a row?", pct:"66%", note:"Roughly 2 in 3 embrace the repeat fit."},
+  {question:"What % of people admit they don't fully read terms and conditions before clicking agree?", pct:"91%", note:"About 9 in 10 just scroll and accept."},
+  {question:"What % of people say they've kept a browser tab open for weeks meaning to read it?", pct:"63%", note:"Roughly 3 in 5 hoard tabs."},
+  {question:"What % of people have pretended to know a song they didn't while singing along?", pct:"54%", note:"About half mumble the verses."},
+  {question:"What % of people admit to checking their phone during a meal with others?", pct:"77%", note:"Roughly 3 in 4 sneak a glance."},
+  {question:"What % of people say they've bought something just because it was on sale?", pct:"73%", note:"About 3 in 4 chase the discount."},
+  {question:"What % of people have forgotten why they walked into a room?", pct:"88%", note:"Roughly 9 in 10 have stood there blinking."},
+  {question:"What % of people admit to talking to themselves out loud while working?", pct:"70%", note:"About 7 in 10 narrate their own day."},
+  {question:"What % of people say they've muted a work call to do something else?", pct:"67%", note:"Roughly 2 in 3 multitask on mute."},
+  {question:"What % of people have re-gifted a present they didn't want?", pct:"45%", note:"About 2 in 5 pass the parcel."},
+  {question:"What % of people admit to keeping shopping bags 'in case they're useful'?", pct:"78%", note:"Roughly 4 in 5 have a bag-of-bags."},
+  {question:"What % of people say they've pretended to understand something to avoid asking again?", pct:"69%", note:"About 7 in 10 nod and hope."},
+  {question:"What % of people have used their phone flashlight to find their phone charger?", pct:"52%", note:"Roughly half have lit the search."},
+  {question:"What % of people admit to leaving read receipts on but ignoring texts anyway?", pct:"48%", note:"About half leave people on read."},
+  {question:"What % of people say they've eaten dessert before finishing dinner?", pct:"61%", note:"Roughly 3 in 5 skip ahead to the sweet part."},
+  {question:"What % of people have saved a recipe online and never actually made it?", pct:"82%", note:"About 4 in 5 collect recipes like trophies."},
+  {question:"What % of people admit to checking their step count at the end of the day?", pct:"56%", note:"Roughly half root for the last few hundred."},
+  {question:"What % of people say they've apologized to a chair or table after bumping it?", pct:"43%", note:"About 2 in 5 say sorry to furniture."},
+  {question:"What % of people have kept an app they never open 'just in case'?", pct:"79%", note:"Roughly 4 in 5 have a graveyard screen."},
+  {question:"What % of people admit to snacking straight from the container?", pct:"71%", note:"About 5 in 7 skip the bowl."},
+  {question:"What % of people say they've rehearsed an argument in the shower?", pct:"65%", note:"Roughly 2 in 3 win debates in the steam."},
+  {question:"What % of people have taken a 'quick' phone break that lasted way longer?", pct:"84%", note:"About 5 in 6 have lost the plot to scrolling."},
+  {question:"What % of people admit to keeping way too many photos of the same moment?", pct:"74%", note:"Roughly 3 in 4 take twelve nearly identical shots."},
+  {question:"What % of people say they've pretended to be asleep to avoid getting up?", pct:"59%", note:"About 3 in 5 have faked the snooze."},
+  {question:"What % of people have double-texted then worried they were annoying?", pct:"53%", note:"Roughly half overthink the follow-up."},
+  {question:"What % of people admit to reheating leftovers for breakfast?", pct:"47%", note:"About 2 in 5 have pizza before noon."},
+  {question:"What % of people say they've kept an almost-empty product to squeeze out the last bit?", pct:"76%", note:"Roughly 3 in 4 fight the empty bottle."},
+  {question:"What % of people have used 'I'll do it tomorrow' as a genuine plan?", pct:"86%", note:"About 6 in 7 trust future-them completely."},
+  {question:"What % of people admit to checking who viewed their story or post?", pct:"62%", note:"Roughly 3 in 5 scroll the viewer list."},
+  {question:"What % of people say they've named their car, plant, or houseplant?", pct:"41%", note:"About 2 in 5 have a named companion."},
+  {question:"What % of people have kept a to-do list item so long it became a running joke?", pct:"58%", note:"Roughly 3 in 5 have an eternal task."},
+  {question:"What % of people admit to putting off replying to an email because it felt too long?", pct:"81%", note:"About 4 in 5 star it and flee."},
+  {question:"What % of people say they've pretended to job-search harder than they actually did?", pct:"44%", note:"Roughly 2 in 5 padded the effort."},
+  {question:"What % of people have opened the fridge, forgotten what they wanted, and closed it?", pct:"67%", note:"About 2 in 3 have done the fridge fake-out."},
+  {question:"What % of people admit to wearing headphones with nothing playing to avoid conversation?", pct:"50%", note:"Roughly half use the silent-shield trick."},
+  {question:"What % of people say they've kept a screenshot they can't remember taking?", pct:"71%", note:"About 5 in 7 have a mystery camera roll."},
+  {question:"What % of people have said 'you too' when a waiter said 'enjoy your meal'?", pct:"49%", note:"Roughly half have made the classic slip."}
+];
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var quoteTextEl = document.getElementById("quoteText");
+var revealEl    = document.getElementById("reveal");
+var revPctEl    = document.getElementById("revPct");
+var revNoteEl   = document.getElementById("revNote");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  quoteTextEl.textContent = item.question;
+  revPctEl.textContent = item.pct;
+  revNoteEl.textContent = item.note;
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">📊</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>

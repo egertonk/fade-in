@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Finish the Post</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+
+/* ---------- extra for this game's reveal ---------- */
+.rlbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--cyan)}
+.rsample{font-family:var(--display); font-weight:800; font-size:clamp(24px,4.8vw,44px); color:var(--cream); letter-spacing:-.5px; line-height:1.12; max-width:100%}
+.blank{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">✍️</span> Finish the Post <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Finish the <span class="big">Post</span></h1>
+    <p class="rule">Share your screen — read the start of the caption, the team completes it <b>ALOUD</b>, funniest wins by room vote. Then hit Reveal for one way to finish it.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>A social-media caption or status appears with the ending missing. Everyone shouts their funniest completion — the room votes on a favorite — then you Reveal one sample ending and move on. No scoring, just laughs.</p>
+      <div class="ex"><b>"My camera was on the whole time and…"</b> → <b>you finish it</b></div>
+      <div class="ex"><b>"Nothing humbles you like…"</b> → <b>you finish it</b></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Post <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote"><span class="qm">“</span><span id="quoteText"></span><span class="qm">”</span></div>
+      <div class="reveal" id="reveal">
+        <div class="rlbl">One way to finish it:</div>
+        <div class="rsample" id="revSample"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">🎯</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var ITEMS = [
+  {starter:"You won't believe what happened when I finally muted the group chat…", sample:"…three weeks of peace, then they added me to a NEW one."},
+  {starter:"My camera was on the whole time and…", sample:"…now everyone knows exactly how I eat a sandwich."},
+  {starter:"I posted the story before realizing…", sample:"…my boss was tagged in the very corner of it."},
+  {starter:"Nothing humbles you like…", sample:"…waving back at someone who was waving at the person behind you."},
+  {starter:"I said I'd take a quick nap and…", sample:"…woke up in a completely different time zone of my own life."},
+  {starter:"The meeting could have been an email, and honestly…", sample:"…the email could have been a single thumbs-up."},
+  {starter:"I bought the planner to get organized, then…", sample:"…lost the planner, which felt like foreshadowing."},
+  {starter:"Everyone was clapping at the end of the call except…", sample:"…me, still on mute, gesturing wildly like a mime."},
+  {starter:"I told myself I'd only check my phone for five minutes and…", sample:"…the sun has now set on two separate days."},
+  {starter:"My step count today was impressive until I realized…", sample:"…it was all pacing while on hold with the bank."},
+  {starter:"I replied 'you too' when the waiter said enjoy your meal, and…", sample:"…I've thought about it every night since."},
+  {starter:"The wifi went down for ten minutes and my whole family…", sample:"…rediscovered each other like long-lost explorers."},
+  {starter:"I finally cleaned out my inbox and…", sample:"…felt a peace so profound it lasted forty minutes."},
+  {starter:"My out-of-office is on but my brain…", sample:"…is still drafting replies at 2am like a haunted printer."},
+  {starter:"I confidently walked into the wrong meeting and…", sample:"…contributed two solid ideas before anyone stopped me."},
+  {starter:"I've been on this call so long that…", sample:"…my plant has visibly grown toward the window."},
+  {starter:"The recipe said 'easy' and '30 minutes' and…", sample:"…here I am, three hours later, negotiating with an onion."},
+  {starter:"I muted myself to sneeze and…", sample:"…still apologized to the entire silent room."},
+  {starter:"My phone autocorrected 'meeting' to something unhinged and…", sample:"…HR now has a very colorful calendar invite."},
+  {starter:"I said 'let's circle back' just to…", sample:"…buy myself enough time to Google what they asked."},
+  {starter:"I opened seventeen tabs to research one thing and…", sample:"…now I'm learning about the mating habits of seahorses."},
+  {starter:"The group project taught me that…", sample:"…I would in fact do all of it again, alone, at 4am."},
+  {starter:"I waved at my reflection in the office window and…", sample:"…a coworker on the other side waved back, confused."},
+  {starter:"My 'I'll do it tomorrow' has officially…", sample:"…filed for its own zip code."},
+  {starter:"I turned my camera off to look busy and…", sample:"…was immediately asked to share my screen."},
+  {starter:"The barista wrote a name on my cup and…", sample:"…I've decided to become that person now."},
+  {starter:"I finally spoke up in the big meeting to say…", sample:"…'sorry, I think you're on mute' — to the CEO, who wasn't."},
+  {starter:"My phone battery and my will to work…", sample:"…are draining at exactly the same rate today."},
+  {starter:"I set fourteen alarms this morning and…", sample:"…negotiated with every single one like a hostage situation."},
+  {starter:"The printer sensed my deadline and…", sample:"…chose today, of all days, to demand a mysterious 'part.'"},
+  {starter:"I brought my lunch to save money and…", sample:"…bought lunch anyway because the fridge ate mine."},
+  {starter:"My screen froze mid-presentation and now…", sample:"…everyone has memorized my mid-blink face forever."},
+  {starter:"I said 'happy Monday' to be nice and…", sample:"…three people replied only with a single skull emoji."},
+  {starter:"I reorganized my whole desk to avoid one task and…", sample:"…the task is now beautifully surrounded by productivity."},
+  {starter:"My 'quick sync' has entered its…", sample:"…forty-fifth minute and second act."},
+  {starter:"I accidentally reacted to a two-year-old message and…", sample:"…now I'm relocating to a new identity."},
+  {starter:"The vending machine took my money and…", sample:"…I have chosen to view this as the universe's fault, not mine."},
+  {starter:"I joined the call five minutes early to look keen and…", sample:"…sat alone in the digital void questioning everything."},
+  {starter:"My noise-canceling headphones canceled…", sample:"…my name being called four separate times."},
+  {starter:"I finally hit inbox zero and immediately…", sample:"…got an email titled 'quick question' that was neither."},
+  {starter:"The calendar said I was free until…", sample:"…three meetings materialized like they'd been waiting in the walls."},
+  {starter:"I bought a standing desk to be healthy and…", sample:"…now I sit on a very tall, very expensive stool."},
+  {starter:"My phone reminded me of a memory and…", sample:"…it was a screenshot of a receipt from 2019. Deeply moving."},
+  {starter:"I said 'as per my last email' with a smile that…", sample:"…could curdle milk from across the office."},
+  {starter:"The Monday motivation quote hit different when…", sample:"…I read it while lying face-down on the carpet."},
+  {starter:"I updated my status to 'in a meeting' and…", sample:"…the meeting was me and a sandwich. Very productive."},
+  {starter:"My laptop fan spun up so loud that…", sample:"…it briefly achieved lift-off during the quarterly review."},
+  {starter:"I typed a strongly-worded reply, deleted it, and…", sample:"…sent 'sounds good!' with a little heart, dead inside."},
+  {starter:"The 'you're on mute' award this week goes to…", sample:"…me, for a heartfelt three-minute monologue to nobody."},
+  {starter:"I signed up for the 6am workout class so…", sample:"…future me could resent past me with total clarity."},
+  {starter:"My reply-all mistake is currently…", sample:"…being screenshotted in a group chat I'm thankfully not in."},
+  {starter:"I told my dog about my day and…", sample:"…got more meaningful feedback than in the whole retro."},
+  {starter:"The 'reply by end of day' email arrived…", sample:"…at 4:58pm, because chaos has excellent timing."},
+  {starter:"I practiced saying 'no' in the mirror and then…", sample:"…said 'sure, happy to!' the second someone asked."}
+];
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var quoteTextEl = document.getElementById("quoteText");
+var revealEl    = document.getElementById("reveal");
+var revSampleEl = document.getElementById("revSample");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  quoteTextEl.innerHTML = escapeHtml(item.starter).replace(/…/g, '<span class="blank">…</span>');
+  revSampleEl.textContent = item.sample;
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">🎯</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>

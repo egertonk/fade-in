@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Follower Face-off</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+
+/* ---------- FACE-OFF EXTRAS ---------- */
+.matchup{
+  display:flex; align-items:stretch; justify-content:center; gap:clamp(10px,2.5vw,20px); width:100%; flex-wrap:nowrap;
+}
+.side{
+  flex:1 1 0; min-width:0; border:1px solid var(--line); border-radius:20px; padding:clamp(18px,3vw,30px) clamp(12px,2vw,22px);
+  background:rgba(246,240,226,.03); display:flex; flex-direction:column; align-items:center; gap:10px; transition:.2s;
+}
+.side .cem{font-size:clamp(46px,9vw,74px); line-height:1}
+.side .cname{font-family:var(--display); font-weight:800; font-size:clamp(18px,3vw,26px); line-height:1.05; letter-spacing:-.5px}
+.side .cstat{display:none; flex-direction:column; align-items:center; gap:3px}
+.side .cstat .cnum{font-family:var(--mono); font-weight:700; font-size:clamp(20px,3.6vw,30px); color:var(--cream)}
+.side .cstat .cplat{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted)}
+.reveal.show .side .cstat{display:flex}
+.side.win{border-color:var(--gold); background:rgba(255,201,77,.10); box-shadow:0 0 0 1px var(--gold) inset}
+.side.win .cname{color:var(--gold)}
+.vs{
+  align-self:center; font-family:var(--display); font-weight:800; font-size:clamp(16px,3vw,22px);
+  color:var(--muted); flex:0 0 auto;
+}
+.note{font-size:15px; color:var(--muted); max-width:560px; line-height:1.5; margin-top:6px}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">📈</span> Follower Face-off <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Follower <span class="big">Face-off</span></h1>
+    <p class="rule">Share your screen — two big accounts appear side by side. The team shouts <b>which one has MORE followers</b>, then you hit Reveal.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>Two real public accounts go head to head. The room shouts <b>A</b> or <b>B</b> — whoever they think has more followers or subscribers. Reveal lights up the winner in gold with ballpark counts, then Next serves up a fresh face-off. Numbers are rough and rounded, so go with your gut.</p>
+      <div class="ex"><b>⚽ Cristiano Ronaldo</b> vs <b>🎤 Taylor Swift</b> → <b>Ronaldo (~640M IG)</b></div>
+      <div class="ex"><b>🎮 MrBeast</b> vs <b>🎵 The whole of TikTok's #1</b> → <b>MrBeast (~330M YT)</b></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Match <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote">
+        <div class="matchup">
+          <div class="side" id="sideA">
+            <div class="cem emoji" id="aEmoji"></div>
+            <div class="cname" id="aName"></div>
+            <div class="cstat"><div class="cnum" id="aNum"></div><div class="cplat" id="aPlat"></div></div>
+          </div>
+          <div class="vs">VS</div>
+          <div class="side" id="sideB">
+            <div class="cem emoji" id="bEmoji"></div>
+            <div class="cname" id="bName"></div>
+            <div class="cstat"><div class="cnum" id="bNum"></div><div class="cplat" id="bPlat"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal" id="reveal">
+        <div class="note" id="revNote"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">🎯</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var CAST = [
+  {emoji:"📸", label:"Instagram"},
+  {emoji:"▶️", label:"YouTube"},
+  {emoji:"🎵", label:"TikTok"},
+  {emoji:"✖️", label:"X"}
+];
+
+var ITEMS = [
+  {a:{name:"Cristiano Ronaldo", emoji:"⚽", count:"~640M", platform:"Instagram"}, b:{name:"Taylor Swift", emoji:"🎤", count:"~280M", platform:"Instagram"}, winner:"a", note:"Ronaldo is the most-followed human on Instagram."},
+  {a:{name:"Lionel Messi", emoji:"🐐", count:"~500M", platform:"Instagram"}, b:{name:"Kylie Jenner", emoji:"💄", count:"~400M", platform:"Instagram"}, winner:"a", note:"Messi trails only Ronaldo among people on Instagram."},
+  {a:{name:"MrBeast", emoji:"🍫", count:"~330M", platform:"YouTube"}, b:{name:"T-Series", emoji:"🎬", count:"~290M", platform:"YouTube"}, winner:"a", note:"MrBeast became YouTube's most-subscribed channel overall."},
+  {a:{name:"Selena Gomez", emoji:"🎶", count:"~420M", platform:"Instagram"}, b:{name:"Dwayne Johnson", emoji:"💪", count:"~400M", platform:"Instagram"}, winner:"a", note:"Two of Instagram's biggest names, neck and neck."},
+  {a:{name:"Khaby Lame", emoji:"🤷", count:"~160M", platform:"TikTok"}, b:{name:"Charli D'Amelio", emoji:"💃", count:"~150M", platform:"TikTok"}, winner:"a", note:"Khaby became TikTok's most-followed with no words at all."},
+  {a:{name:"Elon Musk", emoji:"🚀", count:"~200M", platform:"X"}, b:{name:"Barack Obama", emoji:"🎙️", count:"~130M", platform:"X"}, winner:"a", note:"Musk owns the platform and tops its follower charts."},
+  {a:{name:"National Geographic", emoji:"🌍", count:"~280M", platform:"Instagram"}, b:{name:"Nike", emoji:"👟", count:"~300M", platform:"Instagram"}, winner:"b", note:"Nike edges out Nat Geo among big brand accounts."},
+  {a:{name:"BTS (@bts.bighitofficial)", emoji:"🎸", count:"~75M", platform:"Instagram"}, b:{name:"Blackpink", emoji:"🖤", count:"~55M", platform:"Instagram"}, winner:"a", note:"K-pop giants with enormous global fanbases."},
+  {a:{name:"PewDiePie", emoji:"👊", count:"~110M", platform:"YouTube"}, b:{name:"Justin Bieber", emoji:"🎤", count:"~70M", platform:"YouTube"}, winner:"a", note:"PewDiePie held YouTube's top solo spot for years."},
+  {a:{name:"Ariana Grande", emoji:"🌙", count:"~380M", platform:"Instagram"}, b:{name:"Beyoncé", emoji:"🐝", count:"~310M", platform:"Instagram"}, winner:"a", note:"Ariana is among the most-followed musicians on Instagram."},
+  {a:{name:"NASA", emoji:"🛰️", count:"~95M", platform:"Instagram"}, b:{name:"NBA", emoji:"🏀", count:"~90M", platform:"Instagram"}, winner:"a", note:"Space photos pull an out-of-this-world audience."},
+  {a:{name:"Bella Poarch", emoji:"🎀", count:"~90M", platform:"TikTok"}, b:{name:"Addison Rae", emoji:"✨", count:"~88M", platform:"TikTok"}, winner:"a", note:"Bella's lip-sync clip became one of TikTok's most-liked."},
+  {a:{name:"Real Madrid", emoji:"👑", count:"~160M", platform:"Instagram"}, b:{name:"FC Barcelona", emoji:"🔵", count:"~130M", platform:"Instagram"}, winner:"a", note:"Football's biggest club rivalry, on and off the pitch."},
+  {a:{name:"Cocomelon", emoji:"🍉", count:"~190M", platform:"YouTube"}, b:{name:"Justin Bieber", emoji:"🎤", count:"~70M", platform:"YouTube"}, winner:"a", note:"A nursery-rhyme channel out-subscribes most pop stars."},
+  {a:{name:"Kim Kardashian", emoji:"💋", count:"~360M", platform:"Instagram"}, b:{name:"LeBron James", emoji:"🏀", count:"~160M", platform:"Instagram"}, winner:"a", note:"Reality-TV reach beats basketball royalty here."},
+  {a:{name:"Neymar Jr", emoji:"⚡", count:"~230M", platform:"Instagram"}, b:{name:"Kevin Hart", emoji:"😂", count:"~180M", platform:"Instagram"}, winner:"a", note:"The footballer edges the comedian on Instagram."},
+  {a:{name:"Set India", emoji:"📺", count:"~180M", platform:"YouTube"}, b:{name:"MrBeast Gaming", emoji:"🎮", count:"~45M", platform:"YouTube"}, winner:"a", note:"An Indian TV network is a quiet YouTube giant."},
+  {a:{name:"Zach King", emoji:"🎩", count:"~80M", platform:"TikTok"}, b:{name:"Will Smith", emoji:"🎬", count:"~75M", platform:"TikTok"}, winner:"a", note:"The magic-video creator out-follows a Hollywood A-lister."},
+  {a:{name:"Billie Eilish", emoji:"💚", count:"~110M", platform:"Instagram"}, b:{name:"Ed Sheeran", emoji:"🎸", count:"~45M", platform:"Instagram"}, winner:"a", note:"Billie's Instagram reach dwarfs many fellow chart-toppers."},
+  {a:{name:"Bill Gates", emoji:"💻", count:"~65M", platform:"X"}, b:{name:"Neil deGrasse Tyson", emoji:"🔭", count:"~15M", platform:"X"}, winner:"a", note:"The Microsoft founder is a heavyweight on X."},
+  {a:{name:"Vlad and Niki", emoji:"🧒", count:"~130M", platform:"YouTube"}, b:{name:"Dude Perfect", emoji:"🎯", count:"~60M", platform:"YouTube"}, winner:"a", note:"A kids' channel quietly outranks the trick-shot legends."},
+  {a:{name:"Shakira", emoji:"💃", count:"~90M", platform:"Instagram"}, b:{name:"Rihanna", emoji:"🎼", count:"~150M", platform:"Instagram"}, winner:"b", note:"Rihanna's brand empire keeps her Instagram huge."},
+  {a:{name:"Virat Kohli", emoji:"🏏", count:"~270M", platform:"Instagram"}, b:{name:"David Beckham", emoji:"⚽", count:"~90M", platform:"Instagram"}, winner:"a", note:"Cricket's biggest star has a colossal Instagram following."},
+  {a:{name:"Loud House / Like Nastya", emoji:"🎈", count:"~115M", platform:"YouTube"}, b:{name:"Marshmello", emoji:"🎧", count:"~55M", platform:"YouTube"}, winner:"a", note:"Kids' content is a subscriber juggernaut on YouTube."},
+  {a:{name:"WWE", emoji:"🤼", count:"~100M", platform:"YouTube"}, b:{name:"NBA", emoji:"🏀", count:"~22M", platform:"YouTube"}, winner:"a", note:"Wrestling's YouTube reach outmuscles the NBA's channel."},
+  {a:{name:"Jennifer Lopez", emoji:"🌟", count:"~250M", platform:"Instagram"}, b:{name:"Snoop Dogg", emoji:"🎤", count:"~85M", platform:"Instagram"}, winner:"a", note:"J.Lo is one of Instagram's most-followed entertainers."},
+  {a:{name:"Cristiano Ronaldo", emoji:"⚽", count:"~110M", platform:"X"}, b:{name:"Katy Perry", emoji:"🍭", count:"~105M", platform:"X"}, winner:"a", note:"Katy Perry long held the X crown; Ronaldo now leads."},
+  {a:{name:"Google", emoji:"🔎", count:"~15M", platform:"Instagram"}, b:{name:"Instagram (@instagram)", emoji:"📷", count:"~670M", platform:"Instagram"}, winner:"b", note:"Instagram's own account is the platform's most-followed."},
+  {a:{name:"Gordon Ramsay", emoji:"👨‍🍳", count:"~55M", platform:"TikTok"}, b:{name:"Jamie Oliver", emoji:"🍳", count:"~10M", platform:"TikTok"}, winner:"a", note:"Ramsay's reaction videos went massive on TikTok."},
+  {a:{name:"Manchester United", emoji:"🔴", count:"~65M", platform:"Instagram"}, b:{name:"Los Angeles Lakers", emoji:"💜", count:"~25M", platform:"Instagram"}, winner:"a", note:"Global football beats even a marquee NBA franchise."},
+  {a:{name:"Taylor Swift", emoji:"🎤", count:"~95M", platform:"X"}, b:{name:"Justin Bieber", emoji:"🎶", count:"~110M", platform:"X"}, winner:"b", note:"Bieber's early Twitter surge still keeps him near the top."},
+  {a:{name:"Kylian Mbappé", emoji:"⚡", count:"~120M", platform:"Instagram"}, b:{name:"Serena Williams", emoji:"🎾", count:"~17M", platform:"Instagram"}, winner:"a", note:"Football's young superstar towers on Instagram."},
+  {a:{name:"Like Nastya", emoji:"👧", count:"~115M", platform:"YouTube"}, b:{name:"Ed Sheeran", emoji:"🎸", count:"~55M", platform:"YouTube"}, winner:"a", note:"A child creator out-subscribes a global pop icon."},
+  {a:{name:"Kevin Hart", emoji:"😂", count:"~180M", platform:"Instagram"}, b:{name:"Emma Watson", emoji:"📚", count:"~75M", platform:"Instagram"}, winner:"a", note:"Comedy travels far — Hart leads this pairing."},
+  {a:{name:"Netflix", emoji:"🎬", count:"~35M", platform:"Instagram"}, b:{name:"NASA", emoji:"🛰️", count:"~95M", platform:"Instagram"}, winner:"b", note:"Real space beats streaming on Instagram."},
+  {a:{name:"BLACKPINK", emoji:"🖤", count:"~95M", platform:"YouTube"}, b:{name:"BTS (Bangtan)", emoji:"💜", count:"~78M", platform:"YouTube"}, winner:"a", note:"Blackpink's channel is among YouTube's most-subscribed."},
+  {a:{name:"Charli D'Amelio", emoji:"💃", count:"~150M", platform:"TikTok"}, b:{name:"MrBeast", emoji:"🍫", count:"~110M", platform:"TikTok"}, winner:"a", note:"On TikTok specifically, Charli edges MrBeast."},
+  {a:{name:"Sundar Pichai", emoji:"💼", count:"~6M", platform:"X"}, b:{name:"Tim Cook", emoji:"🍎", count:"~14M", platform:"X"}, winner:"b", note:"Apple's CEO out-follows Google's on X."},
+  {a:{name:"Lisa (BLACKPINK)", emoji:"🌸", count:"~105M", platform:"Instagram"}, b:{name:"Miley Cyrus", emoji:"🎸", count:"~215M", platform:"Instagram"}, winner:"b", note:"Miley's long Instagram tenure keeps her ahead."},
+  {a:{name:"Sony Music India", emoji:"🎼", count:"~70M", platform:"YouTube"}, b:{name:"Coldplay", emoji:"🌈", count:"~25M", platform:"YouTube"}, winner:"a", note:"Regional music labels are YouTube powerhouses."},
+  {a:{name:"Kendall Jenner", emoji:"👗", count:"~290M", platform:"Instagram"}, b:{name:"Kevin Durant", emoji:"🏀", count:"~14M", platform:"Instagram"}, winner:"a", note:"The model's reach dwarfs an NBA champion's here."},
+  {a:{name:"Neymar Jr", emoji:"⚡", count:"~65M", platform:"TikTok"}, b:{name:"Lionel Messi", emoji:"🐐", count:"~40M", platform:"TikTok"}, winner:"a", note:"Neymar leans into TikTok more than Messi does."},
+  {a:{name:"WHO", emoji:"🩺", count:"~10M", platform:"Instagram"}, b:{name:"Louvre Museum", emoji:"🖼️", count:"~5M", platform:"Instagram"}, winner:"a", note:"A global health body out-follows a world-famous museum."},
+  {a:{name:"5-Minute Crafts", emoji:"✂️", count:"~80M", platform:"YouTube"}, b:{name:"Adele", emoji:"🎙️", count:"~30M", platform:"YouTube"}, winner:"a", note:"DIY hacks out-subscribe one of music's biggest voices."},
+  {a:{name:"Cristiano Ronaldo", emoji:"⚽", count:"~110M", platform:"TikTok"}, b:{name:"Selena Gomez", emoji:"🎶", count:"~55M", platform:"TikTok"}, winner:"a", note:"Ronaldo is a giant on nearly every platform he joins."},
+  {a:{name:"UEFA Champions League", emoji:"🏆", count:"~110M", platform:"Instagram"}, b:{name:"Formula 1", emoji:"🏎️", count:"~40M", platform:"Instagram"}, winner:"a", note:"Europe's top football competition leads on Instagram."},
+  {a:{name:"Zendaya", emoji:"🎬", count:"~185M", platform:"Instagram"}, b:{name:"Tom Holland", emoji:"🕷️", count:"~65M", platform:"Instagram"}, winner:"a", note:"Zendaya's Instagram following outreaches her co-star's."},
+  {a:{name:"BBC News", emoji:"📰", count:"~50M", platform:"X"}, b:{name:"CNN", emoji:"📡", count:"~65M", platform:"X"}, winner:"b", note:"CNN's long-running X account edges the BBC's."},
+  {a:{name:"Khaby Lame", emoji:"🤷", count:"~80M", platform:"Instagram"}, b:{name:"Gigi Hadid", emoji:"👠", count:"~80M", platform:"Instagram"}, winner:"a", note:"The wordless TikToker translated fame straight to Instagram."},
+  {a:{name:"Mark Rober", emoji:"🔧", count:"~65M", platform:"YouTube"}, b:{name:"Gordon Ramsay", emoji:"👨‍🍳", count:"~20M", platform:"YouTube"}, winner:"a", note:"The engineer-turned-YouTuber has a giant subscriber base."},
+  {a:{name:"Priyanka Chopra", emoji:"🌟", count:"~90M", platform:"Instagram"}, b:{name:"Chris Hemsworth", emoji:"🔨", count:"~60M", platform:"Instagram"}, winner:"a", note:"The global star leads this cross-continent matchup."},
+  {a:{name:"Bad Bunny", emoji:"🐰", count:"~45M", platform:"Instagram"}, b:{name:"Drake", emoji:"🦉", count:"~145M", platform:"Instagram"}, winner:"b", note:"Drake's long Instagram run keeps him far ahead."},
+  {a:{name:"NASA", emoji:"🛰️", count:"~75M", platform:"X"}, b:{name:"SpaceX", emoji:"🚀", count:"~40M", platform:"X"}, winner:"a", note:"NASA's decades-long presence tops SpaceX on X."},
+  {a:{name:"Jason Derulo", emoji:"🎤", count:"~55M", platform:"TikTok"}, b:{name:"Snoop Dogg", emoji:"🎧", count:"~25M", platform:"TikTok"}, winner:"a", note:"Derulo was one of TikTok's earliest big-name adopters."},
+  {a:{name:"Manchester City", emoji:"🩵", count:"~55M", platform:"Instagram"}, b:{name:"Golden State Warriors", emoji:"🏀", count:"~30M", platform:"Instagram"}, winner:"a", note:"Premier League reach beats an NBA dynasty here."}
+];
+
+// ---------- legend ----------
+(function(){
+  var el = document.getElementById("legend");
+  var html = CAST.map(function(c){
+    return '<span class="lgi"><span class="emoji">'+c.emoji+'</span> '+escapeHtml(c.label)+'</span>';
+  }).join('<span class="lgi" style="color:var(--line)">·</span>');
+  el.innerHTML = html;
+})();
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var sideAEl     = document.getElementById("sideA");
+var sideBEl     = document.getElementById("sideB");
+var aEmojiEl    = document.getElementById("aEmoji");
+var aNameEl     = document.getElementById("aName");
+var aNumEl      = document.getElementById("aNum");
+var aPlatEl     = document.getElementById("aPlat");
+var bEmojiEl    = document.getElementById("bEmoji");
+var bNameEl     = document.getElementById("bName");
+var bNumEl      = document.getElementById("bNum");
+var bPlatEl     = document.getElementById("bPlat");
+var revealEl    = document.getElementById("reveal");
+var revNoteEl   = document.getElementById("revNote");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  aEmojiEl.textContent = item.a.emoji;
+  aNameEl.textContent  = item.a.name;
+  aNumEl.textContent   = item.a.count;
+  aPlatEl.textContent  = item.a.platform;
+  bEmojiEl.textContent = item.b.emoji;
+  bNameEl.textContent  = item.b.name;
+  bNumEl.textContent   = item.b.count;
+  bPlatEl.textContent  = item.b.platform;
+  revNoteEl.textContent = item.note;
+  sideAEl.classList.remove("win");
+  sideBEl.classList.remove("win");
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">🎯</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  var item = order[idx];
+  if(item.winner === "a"){ sideAEl.classList.add("win"); }
+  else { sideBEl.classList.add("win"); }
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>

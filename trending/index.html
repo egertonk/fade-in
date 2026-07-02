@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trending or Trash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+
+/* ---------- extra rules for this game's reveal ---------- */
+.verdict{
+  font-family:var(--display); font-weight:800; letter-spacing:-1px; line-height:1;
+  font-size:clamp(48px,10vw,90px); text-transform:uppercase;
+}
+.verdict.trending{color:var(--green)}
+.verdict.trash{color:var(--magenta)}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">🗑️</span> Trending or Trash <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Trending <span class="big">or</span> Trash</h1>
+    <p class="rule">Share your screen — read the made-up app feature or trend out loud, the team yells <b>TRENDING</b> or <b>TRASH</b>, then you hit Reveal for our verdict.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>A ridiculous-but-plausible product, feature, or social trend appears. The room shouts whether it'd blow up (TRENDING) or flop (TRASH). Hit Reveal to show our verdict and a one-line quip. It's just for fun — argue loudly.</p>
+      <div class="ex"><b>"A dating app that only lets you message between 2pm and 2:15pm daily."</b> → <b>TRENDING</b></div>
+      <div class="ex"><b>"Smart socks that email you when your feet are cold."</b> → <b>TRASH</b></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Idea <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote"><span class="qm">“</span><span id="quoteText"></span><span class="qm">”</span></div>
+      <div class="reveal" id="reveal">
+        <div class="verdict" id="revVerdict"></div>
+        <div class="rwhy" id="revWhy"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">🗑️</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var LEGEND = [
+  {emoji:"📈", label:"TRENDING = it'd blow up"},
+  {emoji:"🗑️", label:"TRASH = it'd flop"}
+];
+
+var ITEMS = [
+  {idea:"A dating app that only lets you message between 2pm and 2:15pm daily.", verdict:"trending", quip:"Scarcity marketing meets your lunch break. Weirdly, people would love it."},
+  {idea:"Smart socks that email you when your feet are cold.", verdict:"trash", quip:"Groundbreaking news: you already knew. Your feet told you."},
+  {idea:"A social app where every post self-destructs unless a stranger 'saves' it.", verdict:"trending", quip:"Gamified kindness plus FOMO? That's a dangerous, addictive combo."},
+  {idea:"Bluetooth-enabled forks that vibrate if you eat too fast.", verdict:"trash", quip:"Nobody wants to be scolded mid-spaghetti by their own cutlery."},
+  {idea:"A subscription box that mails you one mystery vegetable a week.", verdict:"trash", quip:"Turns out surprise turnips are a solved problem called 'the store'."},
+  {idea:"An app that reads your group chat and drafts the perfect 'sorry, running late' text.", verdict:"trending", quip:"Solves a genuine daily pain with zero effort. People would pay instantly."},
+  {idea:"A fitness tracker that guilt-trips you in your dead grandmother's voice.", verdict:"trash", quip:"Effective, sure. Emotionally devastating and instantly uninstalled, also sure."},
+  {idea:"A playlist app that only plays songs you skipped last week.", verdict:"trash", quip:"A machine dedicated to serving you exactly what you rejected. Bold. No."},
+  {idea:"A map app that routes you specifically to avoid people you follow on social media.", verdict:"trending", quip:"The introvert market alone would carry this straight to the top."},
+  {idea:"Smart mirrors that rate your outfit and post the score to your feed automatically.", verdict:"trash", quip:"The auto-posting is a lawsuit and a breakup waiting to happen."},
+  {idea:"An app that lets you rent a friend's dog for a single walk.", verdict:"trending", quip:"Dogs, no commitment, a little cash for owners. This absolutely takes off."},
+  {idea:"A keyboard that adds a typo to every message so you seem more 'authentic'.", verdict:"trash", quip:"Manufacturing incompetence is a tough sell, even ironically."},
+  {idea:"A video app where clips are capped at exactly 4 seconds.", verdict:"trending", quip:"Shorter than short-form. Chaotic, unhinged, and absolutely a hit."},
+  {idea:"A meditation app that yells 'RELAX!' if it detects you're stressed.", verdict:"trash", quip:"The single least relaxing sentence in the English language."},
+  {idea:"A calendar that automatically declines meetings that could've been an email.", verdict:"trending", quip:"Every office worker on earth would install this before finishing the sentence."},
+  {idea:"Wireless earbuds that pause your music when someone says your name.", verdict:"trending", quip:"Genuinely useful, faintly creepy — the exact recipe for a viral gadget."},
+  {idea:"A recipe app that requires you to first prove you own every ingredient.", verdict:"trash", quip:"Homework before dinner is nobody's idea of a good time."},
+  {idea:"A social network exclusively for posting pictures of your fridge contents.", verdict:"trash", quip:"A niche too niche. Even the wildest apps need a second use case."},
+  {idea:"An alarm clock that only turns off after you do ten jumping jacks.", verdict:"trending", quip:"The snooze-addict market is enormous and desperate. This sells millions."},
+  {idea:"A browser extension that replaces every 'urgent' in work emails with 'whenever'.", verdict:"trending", quip:"Petty, glorious, and quietly life-improving. Instant cult favorite."},
+  {idea:"An app that lets you leave one-star reviews for weather.", verdict:"trash", quip:"Hilarious for a day, forgotten by Tuesday. No repeat visits."},
+  {idea:"Smart plates that shrink your portions in a photo so you feel virtuous.", verdict:"trash", quip:"Lying to yourself is free. Nobody pays a subscription for it."},
+  {idea:"A trend where everyone narrates their commute like a nature documentary.", verdict:"trending", quip:"Low effort, high comedy, endlessly remixable. This is a summer that happens."},
+  {idea:"An app that turns your daily step count into a tiny growing plant.", verdict:"trending", quip:"Cozy, gentle, screenshot-friendly. The wholesome corner would adopt it overnight."},
+  {idea:"A phone that physically gets heavier the longer you scroll.", verdict:"trending", quip:"A brilliant guilt gimmick people would buy just to talk about it."},
+  {idea:"A dating app that matches you only with people who hate your favorite movie.", verdict:"trending", quip:"'Opposites attract' as a business model. The arguments alone drive engagement."},
+  {idea:"An app that reads bedtime stories in the voice of your least favorite coworker.", verdict:"trash", quip:"A feature engineered to guarantee you never sleep again."},
+  {idea:"A trend where people review their own handwriting on camera.", verdict:"trash", quip:"Oddly soothing for a niche, but there's no second episode in it."},
+  {idea:"Smart shoes that untie themselves if you've been sitting too long.", verdict:"trash", quip:"An enemy in your own footwear. Returns processed immediately."},
+  {idea:"An app that lets you schedule a text to send yourself in five years.", verdict:"trending", quip:"Sentimental, shareable, screenshot bait. This quietly blows up every winter."},
+  {idea:"A social app where you can only post while physically holding your phone upside down.", verdict:"trash", quip:"Novel for an afternoon. The neck cramp ends the fun fast."},
+  {idea:"A trend where teams do stand-up meetings while actually standing on one leg.", verdict:"trending", quip:"Meetings get shorter instantly. Managers would mandate it by Friday."},
+  {idea:"An app that translates your cat's meows into passive-aggressive sticky notes.", verdict:"trending", quip:"Pet content plus comedy is a bulletproof, endlessly viral formula."},
+  {idea:"A fridge that live-streams its own interior to a public channel.", verdict:"trash", quip:"The audience for someone else's leftovers is, thankfully, zero."},
+  {idea:"An app that replaces your ringtone with the sound of your last online purchase.", verdict:"trash", quip:"Getting called and hearing 'cha-ching' is a spiral nobody wants."},
+  {idea:"A trend where people give dramatic Oscar speeches for tiny accomplishments.", verdict:"trending", quip:"Relatable, funny, infinitely remixable. This format runs for months."},
+  {idea:"A note app that deletes anything you haven't looked at in a year, no exceptions.", verdict:"trash", quip:"One lost password later, the one-star reviews write themselves."},
+  {idea:"An app that lets you 'tip' strangers a compliment that arrives anonymously.", verdict:"trending", quip:"Wholesome, warm, and made for sharing. Kindness scales beautifully."},
+  {idea:"Smart curtains that open based on how many likes your morning post got.", verdict:"trash", quip:"Tying your sunlight to a numbers game is a wellness nightmare."},
+  {idea:"A trend where everyone rates their week out of ten in a single deadpan clip.", verdict:"trending", quip:"Simple, universal, endlessly relatable. This becomes a whole genre."},
+  {idea:"An app that charges you a dollar every time you say 'circle back'.", verdict:"trending", quip:"A swear jar for corporate speak. Offices would buy it for the bit alone."},
+  {idea:"A camera app that adds a laugh track to your selfies.", verdict:"trash", quip:"Nobody wants an audience mocking their own photos. Hard pass."},
+  {idea:"A trend where people whisper their entire grocery list like it's a secret mission.", verdict:"trending", quip:"Absurd, low-effort, weirdly hypnotic. Made to be duetted forever."},
+  {idea:"An app that lets you leave a voicemail for your future self on your birthday.", verdict:"trending", quip:"Emotional, sharable, and it comes back around every year. Sticky as glue."},
+  {idea:"A wearable that buzzes every time you use a filler word in a meeting.", verdict:"trash", quip:"Constant buzzing would just make you say 'um' about the buzzing."},
+  {idea:"A social app where posts are ranked by how boring they are.", verdict:"trending", quip:"Reverse-engineering the feed is exactly the kind of chaos that goes viral."},
+  {idea:"Smart trash cans that applaud when you recycle correctly.", verdict:"trending", quip:"Tiny dopamine for good behavior. Genuinely the kind of thing that catches on."},
+  {idea:"An app that makes you solve a riddle before it lets you order fast food.", verdict:"trash", quip:"Hungry people do not want a puzzle standing between them and fries."},
+  {idea:"A trend where roommates leave each other reviews like a hotel.", verdict:"trending", quip:"Petty, funny, deeply relatable. This starts a thousand comment wars."},
+  {idea:"An app that swaps your morning news for one nice fact about an animal.", verdict:"trending", quip:"A calmer start to the day that everyone secretly wants. Easy hit."},
+  {idea:"Headphones that lower the volume the more you slouch.", verdict:"trash", quip:"Posture blackmail via your playlist. Straight into the returns pile."},
+  {idea:"A trend where people give their houseplants full performance reviews.", verdict:"trending", quip:"Plant content plus office comedy. This format is basically free views."},
+  {idea:"An app that lets you pre-order a nap by booking a quiet room near you.", verdict:"trending", quip:"Tired people with money is the biggest market on the planet. Sold."},
+  {idea:"A keyboard that autocorrects 'lol' to 'that was genuinely funny'.", verdict:"trash", quip:"Forcing sincerity is a great gag and a terrible daily driver."},
+  {idea:"A trend where everyone films the exact moment their coffee kicks in.", verdict:"trending", quip:"Universal, relatable, endlessly duettable. This is a whole trend cycle."},
+  {idea:"An app that hides your phone's home screen until you drink a glass of water.", verdict:"trending", quip:"Annoying enough to work, wholesome enough to brag about. It spreads."},
+  {idea:"Smart umbrellas that shame you on social media for forgetting them.", verdict:"trash", quip:"A device whose whole personality is public humiliation. No thanks."},
+  {idea:"A trend where people rank the acoustics of every bathroom they visit.", verdict:"trending", quip:"Deeply silly, wildly relatable, perfect for a running series."},
+  {idea:"An app that turns your unread emails into a scary boss-fight game.", verdict:"trending", quip:"Making the inbox a boss you can beat? People would clear it just to win."},
+  {idea:"A subscription that mails you a handwritten complaint about your day, from you.", verdict:"trash", quip:"Paying to be nagged by yourself is a business model with no fans."},
+  {idea:"A trend where dog owners recreate their pet's morning zoomies themselves.", verdict:"trending", quip:"Pets, chaos, and self-roasting. That's the holy trinity of viral."},
+  {idea:"An app that lets you mute a specific person in real life through your earbuds.", verdict:"trending", quip:"Ethically questionable, universally craved. It'd top the charts in a week."}
+];
+
+// ---------- legend ----------
+(function(){
+  var el = document.getElementById("legend");
+  var html = LEGEND.map(function(c){
+    return '<span class="lgi"><span class="emoji">'+c.emoji+'</span> '+escapeHtml(c.label)+'</span>';
+  }).join('<span class="lgi" style="color:var(--line)">·</span>');
+  el.innerHTML = html;
+})();
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var quoteTextEl = document.getElementById("quoteText");
+var revealEl    = document.getElementById("reveal");
+var revVerdictEl= document.getElementById("revVerdict");
+var revWhyEl    = document.getElementById("revWhy");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  quoteTextEl.textContent = item.idea;
+  revVerdictEl.textContent = item.verdict === "trending" ? "Trending" : "Trash";
+  revVerdictEl.className = "verdict " + item.verdict;
+  revWhyEl.textContent = item.quip;
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">🗑️</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>

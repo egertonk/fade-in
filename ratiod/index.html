@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ratio'd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+
+/* ---------- POST CARD (added for Ratio'd) ---------- */
+.post{
+  width:100%; max-width:560px; text-align:left;
+  border:1px solid var(--line); border-radius:20px; background:rgba(246,240,226,.04);
+  padding:22px 24px;
+}
+.post .prow{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+.post .pav{font-size:38px; line-height:1}
+.post .phandle{font-family:var(--display); font-weight:800; font-size:17px; color:var(--cream); letter-spacing:-.2px}
+.post .ptext{
+  font-family:var(--display); font-weight:600; letter-spacing:-.3px; line-height:1.18;
+  font-size:clamp(20px,3.6vw,30px); color:var(--cream);
+}
+.rbadge{
+  font-family:var(--mono); font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+  font-size:14px; padding:8px 16px; border-radius:999px; border:1px solid transparent;
+}
+.rbadge.viral{color:#0f2b1a; background:var(--green); border-color:var(--green)}
+.rbadge.ratio{color:#2b0f18; background:var(--magenta); border-color:var(--magenta)}
+.rbadge.flop{color:var(--muted); background:rgba(246,240,226,.05); border-color:var(--line)}
+.rstats{
+  font-family:var(--mono); font-size:13px; letter-spacing:.5px; color:var(--muted);
+  display:flex; flex-wrap:wrap; justify-content:center; gap:6px 16px;
+}
+.rstats b{color:var(--cream); font-weight:700}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">💬</span> Ratio'd <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Ratio<span class="big">'</span>d</h1>
+    <p class="rule">Share your screen — a fake post pops up, the team shouts the outcome, you hit Reveal to drop the stats and the verdict.</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>An absurd made-up social post appears. The team shouts whether it <b>WENT VIRAL</b>, <b>GOT RATIO'D</b>, or <b>FLOPPED</b> — then you reveal the "stats" and the verdict.</p>
+      <div class="ex"><b>🔥 @hot_takes_daily:</b> "Cereal is just cold soup." → <b>RATIO'D</b> (48K replies)</div>
+      <div class="ex"><b>🐹 @tiny_pets_hourly:</b> "Here's a hamster in a tiny hat." → <b>VIRAL</b> (2.1M likes)</div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Post <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote">
+        <div class="post">
+          <div class="prow">
+            <div class="pav emoji" id="postAvatar"></div>
+            <div class="phandle" id="postHandle"></div>
+          </div>
+          <div class="ptext" id="postText"></div>
+        </div>
+      </div>
+      <div class="reveal" id="reveal">
+        <div class="rbadge" id="revBadge"></div>
+        <div class="rstats" id="revStats"></div>
+        <div class="rwhy" id="revWhy"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">🎯</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var LEGEND = [
+  {emoji:"🟢", label:"VIRAL — blew up"},
+  {emoji:"🟣", label:"RATIO'D — replies bury the likes"},
+  {emoji:"⚪", label:"FLOP — total silence"}
+];
+
+var ITEMS = [
+  {handle:"@hot_takes_daily", avatar:"🔥", text:"Cereal is just cold soup and I will not be taking questions.", verdict:"ratio", likes:"1.2K", replies:"48K", quip:"48,000 people showed up to take questions anyway."},
+  {handle:"@tiny_pets_hourly", avatar:"🐹", text:"Here is a hamster wearing a tiny cowboy hat. That's the post.", verdict:"viral", likes:"2.1M", replies:"9.4K", quip:"The internet was healed for exactly one afternoon."},
+  {handle:"@deep_thoughts_guy", avatar:"🧠", text:"What if clouds are just the sky's way of clearing its browser history?", verdict:"flop", likes:"11", replies:"0", quip:"Even the sky scrolled right past this one."},
+  {handle:"@office_rebel", avatar:"💼", text:"Replying-all to say 'thanks' should be a federal crime. Thoughts?", verdict:"viral", likes:"340K", replies:"12K", quip:"Everyone replied-all to agree. The irony was lost on no one."},
+  {handle:"@culinary_menace", avatar:"🍕", text:"Pineapple belongs on pizza AND in the lasagna. Fight me in the comments.", verdict:"ratio", likes:"800", replies:"61K", quip:"They accepted the fight. All of them."},
+  {handle:"@monday_motivator", avatar:"☀️", text:"Rise and grind! Woke up at 4am to watch my houseplants respect the hustle.", verdict:"ratio", likes:"2.3K", replies:"55K", quip:"The plants filed a complaint in the replies."},
+  {handle:"@retro_gamer_47", avatar:"🎮", text:"Unpopular opinion: loading screens were the real golden age of gaming.", verdict:"flop", likes:"38", replies:"2", quip:"The post itself is still loading, honestly."},
+  {handle:"@wholesome_grandpa", avatar:"👴", text:"Learned to send a text today. My grandson says I did the 'thumbs up' wrong 47 times.", verdict:"viral", likes:"1.8M", replies:"22K", quip:"The whole internet adopted him as their grandpa."},
+  {handle:"@contrarian_carl", avatar:"🙅", text:"Weekends are overrated. I personally schedule my fun for Tuesday at 2pm.", verdict:"ratio", likes:"90", replies:"33K", quip:"33,000 people RSVP'd 'no' to Tuesday fun."},
+  {handle:"@snack_scientist", avatar:"🥨", text:"I microwaved my ice cream to make it easier to eat. You're welcome, humanity.", verdict:"ratio", likes:"1.1K", replies:"72K", quip:"Humanity did not, in fact, say you're welcome."},
+  {handle:"@sunset_chaser", avatar:"🌅", text:"Caught the most incredible sunset tonight. No filter, just vibes.", verdict:"viral", likes:"920K", replies:"4.1K", quip:"Turns out people still like nice things sometimes."},
+  {handle:"@productivity_bro", avatar:"📈", text:"I don't sleep. Sleep is just a meeting I decline. Grind never stops.", verdict:"ratio", likes:"600", replies:"41K", quip:"The replies staged an intervention."},
+  {handle:"@niche_historian", avatar:"📜", text:"Thread: 47 fascinating facts about the history of the paperclip. 🧵 (1/47)", verdict:"flop", likes:"14", replies:"1", quip:"Nobody made it to fact number two."},
+  {handle:"@chaos_chef", avatar:"👨‍🍳", text:"I put ranch dressing in my coffee to save time in the mornings. Life hack.", verdict:"ratio", likes:"420", replies:"58K", quip:"The comments smelled the ranch through the screen."},
+  {handle:"@puppy_updates", avatar:"🐶", text:"Update: the puppy learned to sit. We are all so proud. Video attached.", verdict:"viral", likes:"3.2M", replies:"18K", quip:"Global productivity dropped 4% that day."},
+  {handle:"@spicy_takes_inc", avatar:"🌶️", text:"Sandwiches cut diagonally taste better. This is settled science, don't @ me.", verdict:"viral", likes:"510K", replies:"31K", quip:"They @'d you. It was a landslide agreement, oddly."},
+  {handle:"@gym_philosopher", avatar:"💪", text:"If you can read this, you should be doing squats right now. Yes, at work.", verdict:"flop", likes:"22", replies:"0", quip:"Everyone kept sitting. The gym remained empty."},
+  {handle:"@urban_forager", avatar:"🍄", text:"That mushroom in your yard? Probably fine. I eat them all. I feel great.", verdict:"ratio", likes:"75", replies:"88K", quip:"88,000 replies begging one man to please stop."},
+  {handle:"@late_night_ceo", avatar:"🌙", text:"Just closed a HUGE deal at 3am. The deal was with my fridge. It's leftovers.", verdict:"viral", likes:"640K", replies:"8.8K", quip:"Relatable content strikes gold once again."},
+  {handle:"@weather_truther", avatar:"⛅", text:"I don't trust the forecast. I predict weather by how my knee feels. 100% accurate.", verdict:"ratio", likes:"310", replies:"44K", quip:"The replies demanded the knee's credentials."},
+  {handle:"@minimalist_max", avatar:"⬜", text:"I threw away all my furniture. I now sit on the floor like a distinguished cloud.", verdict:"flop", likes:"41", replies:"3", quip:"The floor did not go viral. Shocking."},
+  {handle:"@coffee_gremlin", avatar:"☕", text:"Day 12 without coffee. I have started communicating exclusively through hisses.", verdict:"viral", likes:"1.4M", replies:"27K", quip:"An entire office recognized itself instantly."},
+  {handle:"@bold_opinions", avatar:"📢", text:"Toast is just aggressive bread. We should be more concerned about this.", verdict:"flop", likes:"19", replies:"1", quip:"The one reply just said 'ok'."},
+  {handle:"@intern_diaries", avatar:"📎", text:"Fixed the printer by whispering to it kindly. IT department wants to hire me now.", verdict:"viral", likes:"770K", replies:"6.2K", quip:"Every office worker felt this in their soul."},
+  {handle:"@raw_water_randy", avatar:"💧", text:"Bottled water is a scam. I drink straight from the office fountain with my hands.", verdict:"ratio", likes:"140", replies:"39K", quip:"The replies suggested a cup. Just one cup."},
+  {handle:"@vintage_vibes", avatar:"📼", text:"Bringing back the fanny pack. Started with one. Now I wear six at once for storage.", verdict:"viral", likes:"420K", replies:"15K", quip:"Somehow, six fanny packs became a movement."},
+  {handle:"@zen_disaster", avatar:"🧘", text:"Achieved inner peace. Lost it immediately when someone left one email unread.", verdict:"viral", likes:"1.1M", replies:"19K", quip:"The little red notification dot claims another soul."},
+  {handle:"@lawn_authority", avatar:"🌱", text:"Mowed my lawn into a spiral to confuse the neighbors. It's working. They're scared.", verdict:"flop", likes:"56", replies:"4", quip:"Only the neighbors saw it. And they left."},
+  {handle:"@snack_negotiator", avatar:"🍫", text:"I hid the last cookie so well that even I can't find it. This is my villain origin.", verdict:"viral", likes:"690K", replies:"11K", quip:"A universal tragedy, beautifully told."},
+  {handle:"@cold_brew_karen", avatar:"🧊", text:"Ordered a hot coffee iced then microwaved it hot again. Barista is still processing.", verdict:"ratio", likes:"280", replies:"51K", quip:"The barista posted a thread. It also went viral."},
+  {handle:"@thermostat_wars", avatar:"🌡️", text:"Set the office thermostat to 61°F. If you're cold, consider running a marathon at your desk.", verdict:"ratio", likes:"330", replies:"47K", quip:"The replies formed a coalition against you."},
+  {handle:"@lazy_genius", avatar:"🛋️", text:"Invented a way to eat chips without moving: I simply pour the bag directly onto my face.", verdict:"viral", likes:"880K", replies:"13K", quip:"Reckless. Inspired. Immediately imitated."},
+  {handle:"@pun_department", avatar:"🃏", text:"I'm reading a book about anti-gravity. It's impossible to put down. Anyway, goodnight.", verdict:"flop", likes:"27", replies:"2", quip:"Two people put it down instantly."},
+  {handle:"@meeting_survivor", avatar:"📅", text:"This meeting could've been an email. This email could've been a nap. Let us nap.", verdict:"viral", likes:"1.6M", replies:"24K", quip:"The people have spoken, and the people are tired."},
+  {handle:"@extreme_gardener", avatar:"🌵", text:"Watered my cactus every hour for a week to show it I care. It has passed away. RIP.", verdict:"ratio", likes:"210", replies:"36K", quip:"The comments held a funeral. For the cactus."},
+  {handle:"@bread_influencer", avatar:"🥖", text:"My sourdough starter is named Gerald and he is currently more successful than me.", verdict:"viral", likes:"540K", replies:"9.9K", quip:"Gerald gained 40K followers overnight. Gerald won."},
+  {handle:"@armchair_expert", avatar:"🪑", text:"I've never played chess but I could definitely beat a grandmaster if I really tried.", verdict:"ratio", likes:"95", replies:"62K", quip:"63 grandmasters appeared in the replies. Politely."},
+  {handle:"@night_snacker", avatar:"🌜", text:"3am me and 3pm me are two different people and 3am me keeps ordering the pizza.", verdict:"viral", likes:"720K", replies:"7.7K", quip:"3am you is everyone's problem now. And relatable."},
+  {handle:"@fashion_frontier", avatar:"🕶️", text:"Started wearing sunglasses indoors so nobody knows I'm asleep in the meeting. Genius.", verdict:"viral", likes:"460K", replies:"14K", quip:"Half the office quietly ordered sunglasses."},
+  {handle:"@overthinker_9000", avatar:"🌀", text:"Sent 'you too' when the waiter said 'enjoy your meal.' I now live in the woods. Forever.", verdict:"viral", likes:"1.3M", replies:"21K", quip:"The woods are crowded. We all live there now."},
+  {handle:"@budget_astronaut", avatar:"🚀", text:"Built a rocket out of two chairs and pure confidence. Launch is Thursday. Wish me luck.", verdict:"flop", likes:"33", replies:"5", quip:"Thursday came and went. The chairs remain."},
+  {handle:"@salad_skeptic", avatar:"🥗", text:"Salad is just a crunchy way to feel sad. I said what I said. Pass the fries.", verdict:"ratio", likes:"1.5K", replies:"49K", quip:"The salad lobby was NOT having it today."},
+  {handle:"@keyboard_warrior", avatar:"⌨️", text:"I type in all caps because whispering is for cowards. THIS IS MY INDOOR VOICE.", verdict:"ratio", likes:"260", replies:"43K", quip:"43,000 people replied in lowercase, out of spite."},
+  {handle:"@aggressively_calm", avatar:"😌", text:"I've decided to be unbothered forever. Reply below if you have a problem with that.", verdict:"ratio", likes:"400", replies:"52K", quip:"52,000 people had a problem with that. Instantly."},
+  {handle:"@houseplant_dad", avatar:"🪴", text:"Talked to my ferns about my feelings today. They listened better than my group chat.", verdict:"viral", likes:"810K", replies:"10K", quip:"The ferns are now everyone's favorite therapist."},
+  {handle:"@rogue_barista", avatar:"🫖", text:"Refuse to make anything with more than four words in the name. Off menu, off vibe.", verdict:"flop", likes:"48", replies:"3", quip:"The order line moved on without you."},
+  {handle:"@sock_anarchist", avatar:"🧦", text:"I no longer match my socks. Chaos is comfortable. My feet have never felt so free.", verdict:"viral", likes:"390K", replies:"16K", quip:"A quiet revolution, one mismatched foot at a time."},
+  {handle:"@elevator_expert", avatar:"🛗", text:"Pressing the button repeatedly makes the elevator come faster. I have a degree in this.", verdict:"ratio", likes:"180", replies:"37K", quip:"Engineers flooded the replies. So did the elevator."},
+  {handle:"@brunch_baron", avatar:"🥞", text:"Brunch isn't a meal, it's a personality. Mine is 'waffles at 1pm and zero regrets.'", verdict:"viral", likes:"620K", replies:"8.4K", quip:"Nobody disagreed. Everyone wanted waffles."},
+  {handle:"@desk_botanist", avatar:"🌿", text:"My office plant is fake and I still forget to dust it. We both pretend it's thriving.", verdict:"viral", likes:"570K", replies:"9.1K", quip:"A painfully accurate portrait of us all."},
+  {handle:"@bold_bakery", avatar:"🧁", text:"Cupcakes are just muffins that gave up and became fun. Muffins are cupcakes with anxiety.", verdict:"flop", likes:"29", replies:"2", quip:"The bakery discourse never rose."},
+  {handle:"@commute_king", avatar:"🚇", text:"Missed my train by one second and used that time to reevaluate every choice I've made.", verdict:"viral", likes:"940K", replies:"12K", quip:"The whole platform felt this one together."}
+];
+
+// ---------- legend ----------
+(function(){
+  var el = document.getElementById("legend");
+  var html = LEGEND.map(function(c){
+    return '<span class="lgi"><span class="emoji">'+c.emoji+'</span> '+escapeHtml(c.label)+'</span>';
+  }).join('<span class="lgi" style="color:var(--line)">·</span>');
+  el.innerHTML = html;
+})();
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+var VERDICTS = {
+  viral: {cls:"viral", label:"Went Viral 🚀"},
+  ratio: {cls:"ratio", label:"Got Ratio'd 💀"},
+  flop:  {cls:"flop",  label:"Flopped 🦗"}
+};
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var postAvatarEl= document.getElementById("postAvatar");
+var postHandleEl= document.getElementById("postHandle");
+var postTextEl  = document.getElementById("postText");
+var revealEl    = document.getElementById("reveal");
+var revBadgeEl  = document.getElementById("revBadge");
+var revStatsEl  = document.getElementById("revStats");
+var revWhyEl    = document.getElementById("revWhy");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  postAvatarEl.textContent = item.avatar;
+  postHandleEl.textContent = item.handle;
+  postTextEl.textContent = item.text;
+  var v = VERDICTS[item.verdict] || VERDICTS.flop;
+  revBadgeEl.className = "rbadge " + v.cls;
+  revBadgeEl.textContent = v.label;
+  revStatsEl.innerHTML =
+    '❤️ <b>'+escapeHtml(item.likes)+'</b> likes'+
+    '<span>·</span>💬 <b>'+escapeHtml(item.replies)+'</b> replies';
+  revWhyEl.textContent = item.quip;
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">🎯</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>

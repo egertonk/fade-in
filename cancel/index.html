@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cancel or Comeback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#241a12;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 80% -10%, #3a2a1a 0%, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #2e2013 0%, transparent 55%), #1a120b;
+}
+.emoji{font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji"}
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand a{
+  color:var(--muted); text-decoration:none; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s;
+}
+.brand a:hover{color:var(--cream); border-color:var(--cream)}
+
+.wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:78px 22px 32px}
+.screen{display:none; width:100%; max-width:820px}
+.screen.active{display:block}
+
+/* ---------- START ---------- */
+.title{
+  font-family:var(--display); font-weight:800; line-height:.98; letter-spacing:-1px;
+  font-size:clamp(42px,8.5vw,86px); margin:0 0 14px;
+}
+.title .big{font-size:1.15em}
+.rule{font-size:clamp(15px,2.2vw,19px); color:var(--muted); max-width:620px; margin:0 0 26px; line-height:1.5}
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03); margin-bottom:28px;
+}
+.howto .lbl{font-family:var(--mono); text-transform:uppercase; font-size:11px; letter-spacing:1.5px; color:var(--gold); margin-bottom:10px}
+.howto p{margin:0 0 14px; font-size:15px; line-height:1.5; color:var(--cream)}
+.ex{font-family:var(--mono); font-size:13.5px; color:var(--muted); margin:6px 0; line-height:1.55}
+.ex b{color:var(--cream); font-weight:700}
+.legend{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:8px 14px;
+}
+.legend .lgi{font-size:13px; color:var(--muted); white-space:nowrap}
+.legend .lgi .emoji{font-size:16px; margin-right:2px}
+
+.btn{
+  font-family:var(--display); font-weight:800; border-radius:13px; cursor:pointer;
+  font-size:18px; padding:15px 28px; border:1px solid transparent; transition:.15s transform,.15s filter; letter-spacing:.3px;
+}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn.primary{background:var(--gold); color:#2a1c0c; border-color:var(--gold)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cream)}
+
+/* ---------- GAME ---------- */
+.hud{
+  font-family:var(--mono); text-transform:uppercase; font-size:12px; letter-spacing:2px; color:var(--muted);
+  margin-bottom:22px;
+}
+.hud b{color:var(--gold)}
+.card{
+  border:1px solid var(--line); border-radius:24px; background:rgba(246,240,226,.03);
+  padding:clamp(28px,5vw,52px); min-height:280px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+}
+.quote{
+  font-family:var(--display); font-weight:800; line-height:1.08; letter-spacing:-.5px;
+  font-size:clamp(26px,5.4vw,52px); position:relative; max-width:100%;
+}
+.quote .qm{color:var(--gold); font-size:1.05em}
+.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94); opacity:0}100%{transform:scale(1); opacity:1}}
+
+.reveal{margin-top:26px; display:none; flex-direction:column; align-items:center; gap:8px}
+.reveal.show{display:flex; animation:pop .34s cubic-bezier(.2,.9,.3,1.4)}
+.reveal .rem{font-size:clamp(52px,10vw,84px); line-height:1}
+.reveal .rwho{font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); color:var(--gold); letter-spacing:-.5px}
+.reveal .rwhy{font-size:15px; color:var(--muted); max-width:520px; line-height:1.5}
+
+.actions{margin-top:28px; display:flex; justify-content:center; gap:12px}
+.hint{text-align:center; margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.hint kbd{border:1px solid var(--line); border-radius:6px; padding:2px 7px; color:var(--cream); font-family:var(--mono)}
+.bignum{font-family:var(--display); font-weight:800; font-size:clamp(46px,9vw,80px); line-height:1; color:var(--magenta); letter-spacing:-1.5px}
+</style>
+</head>
+<body>
+<div class="brand"><span class="emoji">🔥</span> Cancel or Comeback <a href="../">← All games</a></div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title">Cancel <span class="big">or</span> Comeback?</h1>
+    <p class="rule">Share your screen — read the (totally made-up) scandal aloud, the team shouts <b>CANCEL</b> or <b>COMEBACK</b>, then you hit Reveal for the "public verdict".</p>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>An absurd fictional scandal drops. The whole room votes out loud — is this cancellable, or a redemption arc waiting to happen? Hit Reveal to see a totally fake public verdict and a quip. There's no right answer. It's a chaos poll.</p>
+      <div class="ex"><b>"Influencer microwaves cereal for 9 minutes 'to let the flavors marry'."</b> → <b>73% CANCEL</b></div>
+      <div class="ex"><b>"Coworker replies-all 'thanks!' to a 400-person distro."</b> → <b>61% COMEBACK</b></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start <span class="emoji">▶</span></button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">Scandal <b>#<span id="lineNum">1</span></b></div>
+    <div class="card">
+      <div class="quote" id="quote"><span class="qm">“</span><span id="quoteText"></span><span class="qm">”</span></div>
+      <div class="reveal" id="reveal">
+        <div class="bignum" id="revVerdict"></div>
+        <div class="rwhy" id="revQuip"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="revealBtn">Reveal <span class="emoji">🎯</span></button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> to reveal, then advance</div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+var CAST = [
+  {emoji:"🍽️", label:"Food crimes"},
+  {emoji:"💬", label:"Group-chat etiquette"},
+  {emoji:"🧊", label:"Office fridge theft"},
+  {emoji:"📧", label:"Reply-all disasters"},
+  {emoji:"🍍", label:"Pineapple-pizza energy"},
+  {emoji:"📱", label:"Online chaos"}
+];
+
+var ITEMS = [
+  {scandal:"Influencer admits they microwave cereal for 9 minutes 'to let the flavors marry'.", verdict:"73% CANCEL", quip:"The milk did nothing to deserve this."},
+  {scandal:"Man revealed to butter his toast on BOTH sides 'for structural symmetry'.", verdict:"66% CANCEL", quip:"Engineers everywhere are furious and impressed."},
+  {scandal:"Local legend caught dipping fries in their milkshake — and the milkshake was hot.", verdict:"81% CANCEL", quip:"A warm crime of passion."},
+  {scandal:"Coworker microwaves fish in the shared kitchen at 8:59am sharp.", verdict:"94% CANCEL", quip:"The entire floor has questions and no oxygen."},
+  {scandal:"Person eats a KitKat by biting straight across all four bars at once.", verdict:"88% CANCEL", quip:"Somewhere, a chocolatier wept."},
+  {scandal:"Chef reveals they rinse their pasta in cold water AND add ketchup.", verdict:"90% CANCEL", quip:"An entire nation felt a chill and didn't know why."},
+  {scandal:"Roommate drinks orange juice directly from the carton, then refills it with water.", verdict:"85% CANCEL", quip:"The betrayal has a citrus aftertaste."},
+  {scandal:"Guy puts milk in the bowl BEFORE the cereal, every single time.", verdict:"64% CANCEL", quip:"Chaos gremlin behavior, honestly."},
+  {scandal:"Someone microwaves a whole banana 'because it's warmer that way'.", verdict:"77% CANCEL", quip:"The banana consented to none of this."},
+  {scandal:"Colleague brings a boiled egg to the standup meeting and peels it slowly.", verdict:"71% CANCEL", quip:"Each tiny crackle echoed through the call."},
+  {scandal:"Influencer eats pizza with a knife and fork — including the crust.", verdict:"58% COMEBACK", quip:"Refined menace, but a menace nonetheless."},
+  {scandal:"Person double-dips a chip, then double-dips it again for good measure.", verdict:"79% CANCEL", quip:"The salsa is now a crime scene."},
+  {scandal:"Baker admits they store bread in the freezer AND the fridge simultaneously.", verdict:"52% COMEBACK", quip:"Redemption arc pending toast quality."},
+  {scandal:"Man eats spaghetti with scissors, cutting each bite mid-air.", verdict:"83% CANCEL", quip:"Impressive coordination, catastrophic vibes."},
+  {scandal:"Someone puts pineapple on pizza. And also on lasagna. And in the soup.", verdict:"69% CANCEL", quip:"A one-fruit reign of terror."},
+  {scandal:"Coworker eats a Reese's cup by licking off all the chocolate first.", verdict:"74% CANCEL", quip:"We saw the wrapper. We know."},
+  {scandal:"Person orders a well-done steak and then asks for extra ketchup.", verdict:"67% CANCEL", quip:"A chef three towns over just flinched."},
+  {scandal:"Guy insists 'a hot dog is a sandwich' at a coworker's wedding toast.", verdict:"55% COMEBACK", quip:"Wrong venue, brave stance."},
+  {scandal:"Roommate leaves exactly one sip of juice in the carton and puts it back.", verdict:"87% CANCEL", quip:"That's not sharing, that's a taunt."},
+  {scandal:"Someone dunks an entire Oreo, drops it, and fishes it out with a fork.", verdict:"49% COMEBACK", quip:"We've all been there. We forgive."},
+
+  {scandal:"Person leaves the group chat on 'read' for 6 days, then replies 'lol yeah'.", verdict:"76% CANCEL", quip:"Six days for two words. Bold."},
+  {scandal:"Coworker sends 'we need to talk' at 11pm with zero follow-up.", verdict:"91% CANCEL", quip:"An entire team lost sleep over nothing."},
+  {scandal:"Someone reacts to a heartfelt paragraph with a single '👍' emoji.", verdict:"84% CANCEL", quip:"The thumbs-up of quiet devastation."},
+  {scandal:"Friend types '...' for four minutes and then just sends 'nvm'.", verdict:"80% CANCEL", quip:"The suspense was the crime."},
+  {scandal:"Person names the group chat something offensive, then leaves it named that for a year.", verdict:"63% CANCEL", quip:"'Lunch Plans 🎉' has never once discussed lunch."},
+  {scandal:"Someone sends 27 separate one-word messages instead of one sentence.", verdict:"70% CANCEL", quip:"Twenty-seven buzzes. During a meeting."},
+  {scandal:"Coworker screenshots the group chat and sends it back INTO the group chat.", verdict:"57% COMEBACK", quip:"Confusing, but weirdly no rules broken."},
+  {scandal:"Person leaves you on read but posts three stories in the same minute.", verdict:"86% CANCEL", quip:"The receipts are timestamped."},
+  {scandal:"Friend replies to a two-week-old message like the conversation never paused.", verdict:"48% COMEBACK", quip:"Chaotic, but honestly kind of iconic."},
+  {scandal:"Someone uses 'per my last message' in a friendly group chat about brunch.", verdict:"72% CANCEL", quip:"Brunch is supposed to be a safe space."},
+  {scandal:"Person voice-messages a 4-minute ramble instead of typing 'yes'.", verdict:"78% CANCEL", quip:"Nobody is listening to all of that."},
+  {scandal:"Coworker adds their boss to the chat where everyone's been venting about the boss.", verdict:"93% CANCEL", quip:"A scroll-up nobody survived."},
+  {scandal:"Someone reacts to their own message with a laughing emoji.", verdict:"61% CANCEL", quip:"Laughing at your own joke, digitally, forever."},
+  {scandal:"Friend says 'sending it now' and does not, in fact, send it now.", verdict:"68% CANCEL", quip:"Three days later: still not now."},
+
+  {scandal:"Coworker eats the clearly-labeled lunch that was NOT theirs.", verdict:"95% CANCEL", quip:"The sticky note said 'PLEASE DO NOT'. It was ignored."},
+  {scandal:"Someone drinks the last of the shared oat milk and rinses the empty carton back into the fridge.", verdict:"89% CANCEL", quip:"A ghost carton haunts the break room."},
+  {scandal:"Person's mystery Tupperware has been in the office fridge since a season that no longer exists.", verdict:"75% CANCEL", quip:"It has evolved. It has plans."},
+  {scandal:"Coworker takes 'a little bit' of everyone's leftovers 'so nothing goes to waste'.", verdict:"82% CANCEL", quip:"A vigilante, but for lunch."},
+  {scandal:"Someone puts their name on a communal cake with a sticky note.", verdict:"66% CANCEL", quip:"It was for the whole team, Kevin."},
+  {scandal:"Person keeps a personal cheese drawer and defends it aggressively.", verdict:"44% COMEBACK", quip:"Honestly? Respect the commitment."},
+  {scandal:"Coworker stores their gym shoes in the office freezer 'to keep them fresh'.", verdict:"88% CANCEL", quip:"The ice cream sandwiches have relocated."},
+  {scandal:"Someone eats yogurt with a plastic fork because all the spoons vanished. They took the spoons.", verdict:"71% CANCEL", quip:"The spoons were an inside job."},
+  {scandal:"Person labels their water bottle 'DO NOT DRINK' in the shared fridge. It's just water.", verdict:"53% COMEBACK", quip:"Dramatic, but technically their water."},
+  {scandal:"Coworker microwaves leftover garlic for 'ambiance' before a big video call.", verdict:"79% CANCEL", quip:"The ambiance was a war crime."},
+
+  {scandal:"Person replies-all 'thanks!' to a 400-person company email.", verdict:"61% COMEBACK", quip:"An honest mistake that emailed everyone twice."},
+  {scandal:"Someone replies-all 'please remove me from this list' to a list of 2,000 people.", verdict:"70% CANCEL", quip:"Adding to the exact problem, loudly."},
+  {scandal:"Coworker hits reply-all with 'lol did you see this' — and 'this' was the CEO.", verdict:"92% CANCEL", quip:"The 'lol' aged in dog years instantly."},
+  {scandal:"Person forwards a chain email to the entire department 'just in case it's real'.", verdict:"64% CANCEL", quip:"It was not, in fact, real."},
+  {scandal:"Someone CCs the whole team on a message clearly meant for one person's eyes only.", verdict:"77% CANCEL", quip:"Everybody read it. Everybody looked away."},
+  {scandal:"Coworker sets an out-of-office that just says 'gone. figure it out.'", verdict:"41% COMEBACK", quip:"A little unhinged, a little inspiring."},
+  {scandal:"Person replies-all to correct someone's typo in a 300-person thread.", verdict:"83% CANCEL", quip:"The typo was 'teh'. Everyone knew."},
+  {scandal:"Someone accidentally emails the meeting invite to 'All Staff — Global' for a two-person coffee chat.", verdict:"69% CANCEL", quip:"The whole company is now invited to coffee."},
+  {scandal:"Coworker replies 'per my calendar I'm unavailable' to a birthday party invite.", verdict:"74% CANCEL", quip:"Blocked out joy in fifteen-minute increments."},
+  {scandal:"Person sends a passive-aggressive email and CCs their own personal address for 'records'.", verdict:"66% CANCEL", quip:"Building a case nobody asked for."},
+
+  {scandal:"Influencer starts every video with a 90-second 'quick disclaimer'.", verdict:"72% CANCEL", quip:"Nothing about it was quick."},
+  {scandal:"Person claps back at a five-year-old comment nobody remembers.", verdict:"67% CANCEL", quip:"The comment had already moved on with its life."},
+  {scandal:"Someone livestreams themselves assembling flat-pack furniture 'for the vibes' and gives up at step 2.", verdict:"46% COMEBACK", quip:"Relatable defeat, genuinely wholesome."},
+  {scandal:"Creator posts a 'day in my life' that is 4 hours of them looking for their keys.", verdict:"54% COMEBACK", quip:"Finally, honest content."},
+  {scandal:"Person announces they're 'taking a break from the internet' in an 11-part thread.", verdict:"75% CANCEL", quip:"The break lasted eleven parts."},
+  {scandal:"Someone quote-tweets themselves to add 'and another thing'.", verdict:"63% CANCEL", quip:"The conversation was one person the whole time."},
+  {scandal:"Influencer reviews water and rates it 'a solid 6, kind of wet'.", verdict:"50% COMEBACK", quip:"Fearless, useless, and somehow correct."}
+];
+
+// ---------- legend ----------
+(function(){
+  var el = document.getElementById("legend");
+  var html = CAST.map(function(c){
+    return '<span class="lgi"><span class="emoji">'+c.emoji+'</span> '+escapeHtml(c.label)+'</span>';
+  }).join('<span class="lgi" style="color:var(--line)">·</span>');
+  el.innerHTML = html;
+})();
+
+// ---------- helpers ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shuffle(a){
+  var arr = a.slice();
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+// ---------- state ----------
+var order = shuffle(ITEMS);
+var idx = 0;
+var lineCount = 0;
+var revealed = false;
+
+var startScreen = document.getElementById("startScreen");
+var gameScreen  = document.getElementById("gameScreen");
+var quoteEl     = document.getElementById("quote");
+var quoteTextEl = document.getElementById("quoteText");
+var revealEl    = document.getElementById("reveal");
+var revVerdictEl= document.getElementById("revVerdict");
+var revQuipEl   = document.getElementById("revQuip");
+var revealBtn   = document.getElementById("revealBtn");
+var lineNumEl   = document.getElementById("lineNum");
+
+function showLine(){
+  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  var item = order[idx];
+  lineCount++;
+  lineNumEl.textContent = lineCount;
+  quoteTextEl.textContent = item.scandal;
+  revVerdictEl.textContent = item.verdict;
+  revQuipEl.textContent = item.quip;
+  revealEl.classList.remove("show");
+  quoteEl.classList.remove("pop");
+  void quoteEl.offsetWidth; // reflow to restart animation
+  quoteEl.classList.add("pop");
+  revealBtn.innerHTML = 'Reveal <span class="emoji">🎯</span>';
+  revealed = false;
+}
+
+function doReveal(){
+  revealEl.classList.add("show");
+  revealBtn.innerHTML = 'Next <span class="emoji">→</span>';
+  revealed = true;
+}
+
+function advance(){
+  idx++;
+  showLine();
+}
+
+function nextAction(){
+  if(!revealed){ doReveal(); }
+  else { advance(); }
+}
+
+document.getElementById("startBtn").addEventListener("click", function(){
+  startScreen.classList.remove("active");
+  gameScreen.classList.add("active");
+  lineCount = 0;
+  idx = 0;
+  order = shuffle(ITEMS);
+  showLine();
+});
+
+revealBtn.addEventListener("click", nextAction);
+
+document.addEventListener("keydown", function(e){
+  if(e.code === "Space" || e.key === " "){
+    if(gameScreen.classList.contains("active")){
+      e.preventDefault();
+      nextAction();
+    }
+  }
+});
+</script>
+</body>
+</html>
