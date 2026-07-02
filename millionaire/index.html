@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Who Wants to Be a Millionaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#0a1430; --studio:#08132e;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, rgba(70,214,224,.10), transparent 60%),
+    radial-gradient(900px 600px at 50% 120%, rgba(255,201,77,.08), transparent 60%),
+    var(--studio);
+  overflow-x:hidden;
+}
+a{color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 18px 64px}
+.brand{
+  display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:800;
+  font-size:19px;letter-spacing:.2px;margin-bottom:8px;flex-wrap:wrap;
+}
+.brand a{
+  font-family:var(--body);font-weight:600;font-size:12.5px;text-decoration:none;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;transition:.15s;
+}
+.brand a:hover{color:var(--cream);border-color:rgba(246,240,226,.35)}
+.label{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--muted)}
+.big{font-family:var(--display);font-weight:800;line-height:1.02}
+
+/* buttons */
+button{font-family:var(--display);font-weight:800;cursor:pointer;border:none}
+.btn{
+  border-radius:13px;padding:13px 22px;font-size:16px;transition:transform .1s, background .15s, border-color .15s;
+}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--gold);color:#0a1430;box-shadow:0 8px 26px rgba(255,201,77,.28)}
+.btn.primary:hover{background:#ffd570}
+.btn.ghost{background:transparent;color:var(--cream);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:rgba(246,240,226,.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.card{background:linear-gradient(180deg, rgba(10,20,48,.9), rgba(8,19,46,.9));border:1px solid var(--line);border-radius:20px}
+
+/* ===== START ===== */
+#start{max-width:720px;margin:6vh auto 0;text-align:center;padding:0 4px}
+#start .title{font-family:var(--display);font-weight:800;font-size:clamp(38px,8vw,74px);line-height:.98;letter-spacing:-.5px;
+  background:linear-gradient(180deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;margin:14px 0 6px}
+#start .sub{color:var(--muted);font-size:15px;margin-bottom:26px}
+.howto{border:1px solid var(--line);border-radius:18px;background:rgba(10,20,48,.6);padding:20px 22px;text-align:left;margin:0 auto 26px}
+.howto h3{margin:0 0 12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--gold);font-weight:700}
+.howto ol{margin:0;padding-left:20px;line-height:1.6;font-size:14.5px}
+.howto li{margin-bottom:6px}
+.start-actions{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.muteNote{font-size:12.5px;color:var(--muted)}
+
+/* ===== GAME LAYOUT ===== */
+#game{display:none}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.stat{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em}
+.stat b{font-family:var(--display);font-weight:800;font-size:22px;color:var(--gold);display:block;letter-spacing:0;text-transform:none;margin-top:2px}
+.iconbtn{background:transparent;border:1px solid var(--line);border-radius:10px;color:var(--cream);font-size:18px;width:42px;height:42px;line-height:1}
+.iconbtn:hover{border-color:rgba(246,240,226,.4)}
+
+.grid{display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+
+/* lifelines */
+.lifelines{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.lifeline{background:rgba(70,214,224,.08);border:1px solid rgba(70,214,224,.35);color:var(--cyan);border-radius:12px;padding:11px 15px;font-size:14px;display:flex;align-items:center;gap:7px}
+.lifeline:hover:not(:disabled){background:rgba(70,214,224,.16)}
+.lifeline.used{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.walk{background:rgba(255,77,125,.08);border:1px solid rgba(255,77,125,.4);color:var(--magenta)}
+.walk:hover:not(:disabled){background:rgba(255,77,125,.16)}
+
+/* question panel */
+.qpanel{padding:26px 26px 30px;position:relative;overflow:hidden}
+.qpanel::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 50% 0%, rgba(70,214,224,.10), transparent 70%);pointer-events:none}
+.qmeta{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;position:relative}
+.diffdots{display:flex;gap:4px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dot.on{background:var(--gold)}
+.qtext{font-family:var(--display);font-weight:800;font-size:clamp(20px,3.2vw,30px);line-height:1.15;min-height:1.2em;position:relative;margin-bottom:24px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative}
+@media(max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{
+  text-align:left;background:linear-gradient(180deg, rgba(20,34,70,.85), rgba(12,24,54,.85));
+  border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--cream);
+  font-family:var(--body);font-weight:500;font-size:15.5px;display:flex;gap:14px;align-items:center;transition:.15s;
+}
+.opt:hover:not(.disabled){border-color:var(--gold);transform:translateY(-1px)}
+.opt .letter{font-family:var(--display);font-weight:800;color:var(--gold);font-size:17px;flex:0 0 22px}
+.opt.locked{background:linear-gradient(180deg,#ffca4d,#f0ad2a);color:#0a1430;border-color:var(--gold);animation:pulse .8s ease-in-out infinite}
+.opt.locked .letter{color:#0a1430}
+.opt.correct{background:linear-gradient(180deg,#46e08a,#2fbf6f);color:#062615;border-color:var(--green)}
+.opt.correct .letter{color:#062615}
+.opt.wrong{background:linear-gradient(180deg,#ff4d7d,#e0355f);color:#2a0512;border-color:var(--magenta)}
+.opt.wrong .letter{color:#2a0512}
+.opt.dim{opacity:.28}
+.opt.disabled{cursor:default}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(255,201,77,.0)}50%{box-shadow:0 0 26px rgba(255,201,77,.55)}}
+
+.hostrow{display:flex;gap:12px;margin-top:22px;align-items:center;flex-wrap:wrap;position:relative}
+.hint{font-size:13px;color:var(--muted)}
+
+/* ladder */
+.ladder{padding:14px}
+.ladder h3{margin:2px 6px 12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--muted);font-weight:700}
+.rung{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-radius:9px;font-family:var(--display);font-weight:800;font-size:14px;color:var(--muted);margin-bottom:1px}
+.rung .n{font-family:var(--mono);font-weight:700;font-size:11px;opacity:.6}
+.rung.safe{color:var(--cyan)}
+.rung.won{color:var(--green)}
+.rung.cur{background:linear-gradient(90deg, rgba(255,201,77,.22), rgba(255,201,77,.05));color:var(--gold);box-shadow:inset 0 0 0 1px rgba(255,201,77,.4)}
+.laddertoggle{display:none}
+@media(max-width:860px){
+  .laddertoggle{display:inline-flex}
+  .ladderwrap{display:none}
+  .ladderwrap.open{display:block}
+}
+
+/* poll / phone popovers */
+.pop{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:rgba(8,19,46,.7);position:relative}
+.pop h4{margin:0 0 12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--cyan)}
+.polls{display:flex;gap:14px;align-items:flex-end;height:120px}
+.pollbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%}
+.pollbar .bar{width:100%;max-width:46px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,var(--cyan),#2a8f97);transition:height .7s cubic-bezier(.2,.7,.2,1);min-height:2px}
+.pollbar .pl{font-family:var(--display);font-weight:800;font-size:13px}
+.pollbar .pp{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.phone{font-size:15px;line-height:1.5}
+.phone b{color:var(--gold)}
+
+/* end screen */
+#end{display:none;text-align:center;max-width:640px;margin:8vh auto 0;padding:0 6px}
+#end .etitle{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,60px);line-height:1;margin:8px 0}
+#end .eamt{font-family:var(--display);font-weight:800;font-size:clamp(44px,11vw,96px);color:var(--gold);margin:6px 0 4px;letter-spacing:-1px}
+#end .emsg{color:var(--muted);font-size:16px;margin-bottom:26px}
+.win .etitle{background:linear-gradient(180deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;display:none}
+
+.footer{margin-top:34px;text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+  <div class="brand">🎩 Millionaire <a href="../">← All games</a></div>
+
+  <!-- ===== START SCREEN ===== -->
+  <section id="start">
+    <div class="label">Studio · Money Ladder Show</div>
+    <div class="title">Who Wants to Be a Millionaire</div>
+    <div class="sub">A remote-team quiz show. The team is the contestant — discuss, shout an answer, and the host locks it in.</div>
+
+    <div class="howto">
+      <h3>How to play</h3>
+      <ol>
+        <li>Climb the money ladder from $100 to $1,000,000.</li>
+        <li>The team picks A/B/C/D, you lock it in.</li>
+        <li>Get it right to climb; get it wrong and you drop to the last safe haven ($1,000 / $32,000).</li>
+        <li>Stuck? Use a lifeline: 50:50, Ask the Audience, or Phone a Friend.</li>
+        <li>You can Walk Away to keep your money.</li>
+      </ol>
+    </div>
+
+    <div class="start-actions">
+      <button class="btn primary" id="startBtn">Start the game ▶</button>
+      <button class="iconbtn" id="muteBtn0" title="Toggle sound">🔊</button>
+      <span class="muteNote">Sound on — tap 🔊 to mute. Audio starts after your first click.</span>
+    </div>
+  </section>
+
+  <!-- ===== GAME ===== -->
+  <section id="game">
+    <div class="topbar">
+      <div class="stat">Question <b id="qnum">1 / 15</b></div>
+      <div class="stat" style="text-align:center">Playing for <b id="playfor" style="color:var(--cyan)">$100</b></div>
+      <div class="stat" style="text-align:right">Guaranteed <b id="guar" style="color:var(--green)">$0</b></div>
+      <button class="iconbtn" id="muteBtn" title="Toggle sound">🔊</button>
+    </div>
+
+    <div class="lifelines">
+      <button class="lifeline" id="ll5050">✂️ 50:50</button>
+      <button class="lifeline" id="llaud">👥 Ask the Audience</button>
+      <button class="lifeline" id="llphone">📞 Phone a Friend</button>
+      <button class="lifeline walk" id="llwalk">🚪 Walk Away</button>
+      <button class="btn ghost laddertoggle" id="ladderToggle" style="padding:9px 14px;font-size:13px">💰 Ladder</button>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card qpanel">
+          <div class="qmeta">
+            <span class="label">Question worth <span id="qworth" style="color:var(--gold)">$100</span></span>
+            <span class="diffdots" id="diffdots"></span>
+          </div>
+          <div class="qtext" id="qtext">—</div>
+          <div class="opts" id="opts"></div>
+          <div class="hostrow" id="hostrow">
+            <button class="btn primary" id="lockBtn" disabled>Lock it in 🔒</button>
+            <span class="hint" id="hint">Host: tap the team's chosen answer.</span>
+          </div>
+          <div id="pophost"></div>
+        </div>
+      </div>
+
+      <div class="card ladder ladderwrap" id="ladderwrap">
+        <h3>Money Ladder</h3>
+        <div id="ladderList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== END SCREEN ===== -->
+  <section id="end">
+    <div class="label" id="etop">Game Over</div>
+    <div class="etitle" id="etitle">Thanks for playing</div>
+    <div class="eamt" id="eamt">$0</div>
+    <div class="emsg" id="emsg"></div>
+    <div class="start-actions">
+      <button class="btn primary" id="againBtn">Play again ▶</button>
+      <a class="btn ghost" href="../">← All games</a>
+    </div>
+  </section>
+
+  <div class="footer">Generated audio · No files, no network. Good luck, team.</div>
+</div>
+
+<script>
+"use strict";
+/* ============ DATA: question pool (60+) ============ */
+/* difficulty 1 easy -> 5 hard ; correct = index into options */
+const POOL = [
+  // ---- difficulty 1 ----
+  {q:"What color do you get by mixing blue and yellow?",options:["Green","Purple","Orange","Brown"],correct:0,difficulty:1},
+  {q:"How many legs does a spider have?",options:["6","8","10","12"],correct:1,difficulty:1},
+  {q:"What is the largest planet in our solar system?",options:["Earth","Saturn","Jupiter","Mars"],correct:2,difficulty:1},
+  {q:"Which animal is known as man's best friend?",options:["Cat","Dog","Horse","Rabbit"],correct:1,difficulty:1},
+  {q:"How many days are there in a week?",options:["5","6","7","8"],correct:2,difficulty:1},
+  {q:"What is frozen water called?",options:["Steam","Ice","Snowman","Cloud"],correct:1,difficulty:1},
+  {q:"Which of these is a fruit?",options:["Carrot","Potato","Apple","Onion"],correct:2,difficulty:1},
+  {q:"What sound does a cow make?",options:["Moo","Woof","Meow","Quack"],correct:0,difficulty:1},
+  {q:"How many sides does a triangle have?",options:["2","3","4","5"],correct:1,difficulty:1},
+  {q:"What do bees make?",options:["Milk","Honey","Silk","Bread"],correct:1,difficulty:1},
+  {q:"Which planet do we live on?",options:["Mars","Venus","Earth","Mercury"],correct:2,difficulty:1},
+  {q:"What is the opposite of hot?",options:["Warm","Cold","Wet","Fast"],correct:1,difficulty:1},
+
+  // ---- difficulty 2 ----
+  {q:"What is the capital of France?",options:["Madrid","Paris","Rome","Berlin"],correct:1,difficulty:2},
+  {q:"How many continents are there on Earth?",options:["5","6","7","8"],correct:2,difficulty:2},
+  {q:"Which ocean is the largest?",options:["Atlantic","Indian","Arctic","Pacific"],correct:3,difficulty:2},
+  {q:"What gas do plants absorb from the air?",options:["Oxygen","Carbon dioxide","Nitrogen","Helium"],correct:1,difficulty:2},
+  {q:"Who painted the Mona Lisa?",options:["Van Gogh","Picasso","Leonardo da Vinci","Michelangelo"],correct:2,difficulty:2},
+  {q:"What is the tallest land animal?",options:["Elephant","Giraffe","Horse","Camel"],correct:1,difficulty:2},
+  {q:"How many colors are in a rainbow?",options:["5","6","7","9"],correct:2,difficulty:2},
+  {q:"Which metal is liquid at room temperature?",options:["Iron","Mercury","Gold","Copper"],correct:1,difficulty:2},
+  {q:"What is the currency of Japan?",options:["Yuan","Won","Yen","Baht"],correct:2,difficulty:2},
+  {q:"What is the largest mammal in the world?",options:["Elephant","Blue whale","Giraffe","Hippo"],correct:1,difficulty:2},
+  {q:"Which country is home to the kangaroo?",options:["India","Brazil","Australia","Kenya"],correct:2,difficulty:2},
+  {q:"How many minutes are in an hour?",options:["30","45","60","90"],correct:2,difficulty:2},
+
+  // ---- difficulty 3 ----
+  {q:"What is the chemical symbol for gold?",options:["Go","Gd","Au","Ag"],correct:2,difficulty:3},
+  {q:"Which planet is known as the Red Planet?",options:["Venus","Mars","Jupiter","Mercury"],correct:1,difficulty:3},
+  {q:"In what year did World War II end?",options:["1943","1945","1948","1950"],correct:1,difficulty:3},
+  {q:"What is the hardest natural substance on Earth?",options:["Gold","Iron","Diamond","Quartz"],correct:2,difficulty:3},
+  {q:"Who wrote the play 'Romeo and Juliet'?",options:["Charles Dickens","William Shakespeare","Mark Twain","Jane Austen"],correct:1,difficulty:3},
+  {q:"What is the smallest prime number?",options:["0","1","2","3"],correct:2,difficulty:3},
+  {q:"Which organ pumps blood through the body?",options:["Liver","Lungs","Heart","Kidney"],correct:2,difficulty:3},
+  {q:"What is the capital of Canada?",options:["Toronto","Vancouver","Ottawa","Montreal"],correct:2,difficulty:3},
+  {q:"How many bones are in the adult human body?",options:["186","206","226","246"],correct:1,difficulty:3},
+  {q:"What is the largest desert in the world?",options:["Sahara","Gobi","Antarctic","Arabian"],correct:2,difficulty:3},
+  {q:"Which language has the most native speakers?",options:["English","Spanish","Mandarin Chinese","Hindi"],correct:2,difficulty:3},
+  {q:"What is the freezing point of water in Fahrenheit?",options:["0°F","32°F","64°F","100°F"],correct:1,difficulty:3},
+  {q:"Which planet is closest to the Sun?",options:["Venus","Mercury","Earth","Mars"],correct:1,difficulty:3},
+  {q:"What does 'HTTP' stand for the first two letters of?",options:["Hyper Text","High Transfer","Home Text","Host Type"],correct:0,difficulty:3},
+
+  // ---- difficulty 4 ----
+  {q:"What is the powerhouse of the cell?",options:["Nucleus","Ribosome","Mitochondria","Golgi body"],correct:2,difficulty:4},
+  {q:"In which year did the Berlin Wall fall?",options:["1987","1989","1991","1993"],correct:1,difficulty:4},
+  {q:"Who developed the theory of general relativity?",options:["Isaac Newton","Niels Bohr","Albert Einstein","Galileo"],correct:2,difficulty:4},
+  {q:"What is the longest river in the world?",options:["Amazon","Nile","Yangtze","Mississippi"],correct:1,difficulty:4},
+  {q:"Which element has the atomic number 1?",options:["Helium","Oxygen","Hydrogen","Carbon"],correct:2,difficulty:4},
+  {q:"What is the capital of Australia?",options:["Sydney","Melbourne","Canberra","Perth"],correct:2,difficulty:4},
+  {q:"Which artist cut off part of his own ear?",options:["Monet","Vincent van Gogh","Dalí","Rembrandt"],correct:1,difficulty:4},
+  {q:"What is the square root of 144?",options:["11","12","13","14"],correct:1,difficulty:4},
+  {q:"Which sea creature has three hearts?",options:["Shark","Octopus","Jellyfish","Dolphin"],correct:1,difficulty:4},
+  {q:"In Greek mythology, who is the king of the gods?",options:["Poseidon","Hades","Zeus","Apollo"],correct:2,difficulty:4},
+  {q:"What is the currency used in Switzerland?",options:["Euro","Swiss franc","Krona","Pound"],correct:1,difficulty:4},
+  {q:"Which country has the most time zones?",options:["Russia","United States","China","France"],correct:3,difficulty:4},
+  {q:"What is the study of fungi called?",options:["Botany","Mycology","Zoology","Ecology"],correct:1,difficulty:4},
+  {q:"Which composer wrote 'The Four Seasons'?",options:["Mozart","Beethoven","Vivaldi","Bach"],correct:2,difficulty:4},
+
+  // ---- difficulty 5 ----
+  {q:"What is the most abundant gas in Earth's atmosphere?",options:["Oxygen","Carbon dioxide","Nitrogen","Argon"],correct:2,difficulty:5},
+  {q:"Who was the first woman to win a Nobel Prize?",options:["Marie Curie","Rosalind Franklin","Ada Lovelace","Dorothy Hodgkin"],correct:0,difficulty:5},
+  {q:"What is the smallest bone in the human body?",options:["Stapes","Femur","Radius","Patella"],correct:0,difficulty:5},
+  {q:"In which year did the first human land on the Moon?",options:["1967","1969","1971","1973"],correct:1,difficulty:5},
+  {q:"What is the SI unit of electric current?",options:["Volt","Ohm","Ampere","Watt"],correct:2,difficulty:5},
+  {q:"Which ancient wonder still stands today?",options:["Hanging Gardens","Colossus of Rhodes","Great Pyramid of Giza","Lighthouse of Alexandria"],correct:2,difficulty:5},
+  {q:"What is the name of the galaxy nearest to the Milky Way?",options:["Triangulum","Andromeda","Whirlpool","Sombrero"],correct:1,difficulty:5},
+  {q:"Who wrote the novel 'One Hundred Years of Solitude'?",options:["Jorge Luis Borges","Gabriel García Márquez","Pablo Neruda","Isabel Allende"],correct:1,difficulty:5},
+  {q:"What is the hardest known chess endgame to be tablebase-solved a long time ago aside, which chess piece can only move diagonally?",options:["Knight","Rook","Bishop","Queen"],correct:2,difficulty:5},
+  {q:"What is the chemical formula for table salt?",options:["NaCl","KCl","H2O","CaCO3"],correct:0,difficulty:5},
+  {q:"Which planet has the most moons (as of recent counts)?",options:["Jupiter","Saturn","Uranus","Neptune"],correct:1,difficulty:5},
+  {q:"What is the term for a word that reads the same backward?",options:["Anagram","Palindrome","Homophone","Acronym"],correct:1,difficulty:5},
+  {q:"In economics, what does GDP stand for?",options:["Gross Domestic Product","General Debt Percentage","Global Demand Price","Gross Direct Payment"],correct:0,difficulty:5},
+  {q:"Which scientist proposed the three laws of motion?",options:["Einstein","Newton","Galileo","Kepler"],correct:1,difficulty:5}
+];
+
+/* one dodgy question phrasing above (chess) — replace to keep it clean */
+POOL.forEach(p=>{ if(p.q.startsWith("What is the hardest known chess")) { p.q="Which chess piece can only move diagonally?"; } });
+
+/* ============ money ladder ============ */
+const LADDER=[100,200,300,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,1000000];
+const SAFE=new Set([4,9]); // indices of safe havens (1000, 32000)
+const fmt=n=>"$"+n.toLocaleString("en-US");
+
+/* difficulty plan across 15 rungs (easy -> hard) */
+const DIFF_PLAN=[1,1,1,2,2,2,3,3,3,4,4,4,5,5,5];
+
+/* ============ state ============ */
+let game=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ============ audio ============ */
+let AC=null, muted=false;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(AC&&AC.state==="suspended")AC.resume(); return AC; }
+function tone(freq,start,dur,type="sine",gain=.18){
+  const a=ac(); if(!a||muted)return;
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,a.currentTime+start);
+  g.gain.setValueAtTime(0,a.currentTime+start);
+  g.gain.linearRampToValueAtTime(gain,a.currentTime+start+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+start+dur);
+  o.connect(g).connect(a.destination);
+  o.start(a.currentTime+start); o.stop(a.currentTime+start+dur+.02);
+}
+const S={
+  lock(){ tone(220,0,.14,"square",.12); tone(330,.06,.16,"triangle",.12); },
+  suspense(){ tone(140,0,.5,"sawtooth",.05); tone(146,.15,.5,"sawtooth",.05); tone(150,.3,.6,"sawtooth",.05); },
+  ding(){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.08,.5,"sine",.16)); },
+  buzz(){ tone(120,0,.45,"sawtooth",.16); tone(90,.05,.5,"square",.13); },
+  fanfare(){ const seq=[[523,0],[523,.14],[523,.28],[659,.42],[784,.62],[659,.82],[784,.96],[1047,1.15]]; seq.forEach(([f,t])=>tone(f,t,.35,"triangle",.16)); tone(1047,1.55,.9,"sine",.14); }
+};
+function setMute(m){ muted=m; document.querySelectorAll("#muteBtn,#muteBtn0").forEach(b=>b.textContent=m?"🔇":"🔊"); }
+
+/* ============ helpers ============ */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* build a 15-question ladder with increasing difficulty, no repeats */
+function buildRun(){
+  const byDiff={1:[],2:[],3:[],4:[],5:[]};
+  POOL.forEach((p,i)=>byDiff[p.difficulty].push(i));
+  Object.values(byDiff).forEach(shuffle);
+  const used=new Set(), run=[];
+  const order=[1,2,3,4,5]; // fallback search order
+  for(const want of DIFF_PLAN){
+    let pick=-1;
+    // try requested difficulty, then nearest available
+    const tryList=[want, want+1, want-1, want+2, want-2, ...order];
+    for(const d of tryList){
+      if(d<1||d>5)continue;
+      const bucket=byDiff[d];
+      if(!bucket)continue;
+      const idx=bucket.find(i=>!used.has(i));
+      if(idx!==undefined){ pick=idx; break; }
+    }
+    used.add(pick);
+    const src=POOL[pick];
+    // shuffle the options while tracking the correct answer
+    const opts=src.options.map((t,i)=>({t,ok:i===src.correct}));
+    shuffle(opts);
+    run.push({q:src.q, options:opts.map(o=>o.t), correct:opts.findIndex(o=>o.ok), difficulty:src.difficulty});
+  }
+  return run;
+}
+
+/* ============ render ============ */
+const LETTERS=["A","B","C","D"];
+function renderLadder(){
+  const el=$("ladderList"); el.innerHTML="";
+  for(let i=LADDER.length-1;i>=0;i--){
+    const won = i < game.level;
+    const cur = i === game.level;
+    const safe = SAFE.has(i);
+    const cls=["rung"]; if(cur)cls.push("cur"); else if(won)cls.push("won"); else if(safe)cls.push("safe");
+    const div=document.createElement("div");
+    div.className=cls.join(" ");
+    div.innerHTML=`<span class="n">${i+1}${safe?" ◆":""}</span><span>${fmt(LADDER[i])}</span>`;
+    el.appendChild(div);
+  }
+}
+function renderDiff(d){
+  const el=$("diffdots"); el.innerHTML="";
+  for(let i=0;i<5;i++){const s=document.createElement("span");s.className="dot"+(i<d?" on":"");el.appendChild(s);}
+}
+function renderQuestion(){
+  const q=game.run[game.level];
+  game.selected=null; game.answered=false; game.removed=new Set();
+  $("qnum").textContent=`${game.level+1} / 15`;
+  $("playfor").textContent=fmt(LADDER[game.level]);
+  $("qworth").textContent=fmt(LADDER[game.level]);
+  const guar = game.level===0 ? 0 : LADDER[[...SAFE].filter(s=>s<game.level).pop() ?? -1] || 0;
+  $("guar").textContent=fmt(guaranteedMoney());
+  renderDiff(q.difficulty);
+  renderLadder();
+  $("qtext").textContent=q.q;
+  const wrap=$("opts"); wrap.innerHTML="";
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.dataset.i=i;
+    b.innerHTML=`<span class="letter">${LETTERS[i]}</span><span>${esc(opt)}</span>`;
+    b.addEventListener("click",()=>selectOpt(i));
+    wrap.appendChild(b);
+  });
+  $("lockBtn").disabled=true;
+  $("hint").textContent="Host: tap the team's chosen answer.";
+  $("pophost").innerHTML="";
+  setLifelineButtons();
+}
+function guaranteedMoney(){
+  // highest safe haven strictly below current level that's been passed
+  let g=0;
+  for(const s of SAFE){ if(s < game.level) g=Math.max(g,LADDER[s]); }
+  return g;
+}
+
+/* ============ interaction ============ */
+function selectOpt(i){
+  if(game.answered) return;
+  if(game.removed.has(i)) return;
+  game.selected=i;
+  document.querySelectorAll(".opt").forEach(o=>{
+    o.classList.toggle("locked", false);
+  });
+  const chosen=document.querySelector(`.opt[data-i="${i}"]`);
+  document.querySelectorAll(".opt").forEach(o=>o.classList.remove("locked"));
+  chosen.classList.add("locked");
+  $("lockBtn").disabled=false;
+  $("hint").textContent=`Team picks ${LETTERS[i]}. Lock it in?`;
+}
+function lockIn(){
+  if(game.selected===null||game.answered)return;
+  game.answered=true;
+  S.lock();
+  $("lockBtn").disabled=true;
+  document.querySelectorAll(".opt").forEach(o=>o.classList.add("disabled"));
+  setLifelineButtons(true);
+  $("hint").textContent="Final answer… locking in.";
+  // suspense beat, longer on higher rungs
+  const beat = game.level>=5 ? 1500 : 850;
+  setTimeout(()=>S.suspense(), 120);
+  setTimeout(reveal, beat);
+}
+function reveal(){
+  const q=game.run[game.level];
+  const chosen=game.selected, correct=q.correct;
+  const optEls=document.querySelectorAll(".opt");
+  optEls.forEach(o=>o.classList.remove("locked"));
+  const correctEl=document.querySelector(`.opt[data-i="${correct}"]`);
+  correctEl.classList.add("correct");
+  if(chosen===correct){
+    S.ding();
+    $("hint").textContent="Correct! 🎉";
+    if(game.level===LADDER.length-1){
+      setTimeout(()=>endGame("win"),1100);
+    }else{
+      setTimeout(()=>{ game.level++; renderQuestion(); },1300);
+    }
+  }else{
+    document.querySelector(`.opt[data-i="${chosen}"]`).classList.add("wrong");
+    S.buzz();
+    $("hint").textContent="Wrong answer.";
+    setTimeout(()=>endGame("lose"),1500);
+  }
+}
+
+/* ============ lifelines ============ */
+function setLifelineButtons(lockAll){
+  $("ll5050").disabled = game.used.f5050 || lockAll || game.answered;
+  $("llaud").disabled  = game.used.aud   || lockAll || game.answered;
+  $("llphone").disabled= game.used.phone || lockAll || game.answered;
+  $("llwalk").disabled = lockAll || game.answered || game.level===0 && false; // walk allowed anytime pre-answer
+  $("ll5050").classList.toggle("used",game.used.f5050);
+  $("llaud").classList.toggle("used",game.used.aud);
+  $("llphone").classList.toggle("used",game.used.phone);
+}
+function use5050(){
+  if(game.used.f5050||game.answered)return;
+  game.used.f5050=true;
+  const q=game.run[game.level];
+  const wrong=[0,1,2,3].filter(i=>i!==q.correct);
+  shuffle(wrong);
+  game.removed.add(wrong[0]); game.removed.add(wrong[1]);
+  game.removed.forEach(i=>{
+    const el=document.querySelector(`.opt[data-i="${i}"]`);
+    el.classList.add("dim","disabled");
+    el.querySelector("span:last-child").textContent="";
+  });
+  if(game.selected!==null && game.removed.has(game.selected)){
+    game.selected=null; $("lockBtn").disabled=true;
+    document.querySelectorAll(".opt").forEach(o=>o.classList.remove("locked"));
+  }
+  S.lock();
+  setLifelineButtons();
+}
+function useAudience(){
+  if(game.used.aud||game.answered)return;
+  game.used.aud=true;
+  const q=game.run[game.level];
+  // weighted poll: correct usually leads, more so for easy questions
+  const avail=[0,1,2,3].filter(i=>!game.removed.has(i));
+  const weights={};
+  const lead = 0.72 - (q.difficulty-1)*0.09; // easy ~72% down to hard ~36% base for correct
+  let base=Math.max(0.30, lead);
+  // random chance correct does NOT lead (small)
+  const misfire = Math.random() < (0.10 + q.difficulty*0.03);
+  avail.forEach(i=>weights[i]=Math.random()*0.4+0.1);
+  weights[q.correct]= misfire ? (Math.random()*0.3+0.2) : (base+Math.random()*0.15);
+  // normalize to 100
+  const sum=avail.reduce((s,i)=>s+weights[i],0);
+  const pct={}; let acc=0;
+  avail.forEach((i,idx)=>{
+    if(idx===avail.length-1){pct[i]=100-acc;}
+    else{pct[i]=Math.round(weights[i]/sum*100);acc+=pct[i];}
+  });
+  const host=$("pophost");
+  host.innerHTML=`<div class="pop"><h4>👥 Ask the Audience</h4><div class="polls" id="polls"></div></div>`;
+  const pl=$("polls");
+  avail.forEach(i=>{
+    const col=document.createElement("div"); col.className="pollbar";
+    col.innerHTML=`<div class="pp">${pct[i]}%</div><div class="bar" style="height:0"></div><div class="pl">${LETTERS[i]}</div>`;
+    pl.appendChild(col);
+    requestAnimationFrame(()=>{ setTimeout(()=>{ col.querySelector(".bar").style.height=(pct[i])+"%"; },30); });
+  });
+  S.lock();
+  setLifelineButtons();
+}
+function usePhone(){
+  if(game.used.phone||game.answered)return;
+  game.used.phone=true;
+  const q=game.run[game.level];
+  const avail=[0,1,2,3].filter(i=>!game.removed.has(i));
+  // friend usually right, less sure on hard questions
+  const rightChance=0.85 - (q.difficulty-1)*0.10; // .85 -> .45
+  let guess = (Math.random()<rightChance) ? q.correct : avail[Math.floor(Math.random()*avail.length)];
+  if(game.removed.has(guess)) guess=q.correct;
+  const conf = q.difficulty<=2 ? "pretty sure" : q.difficulty<=3 ? "fairly confident" : "not 100% sure";
+  const names=["Alex","Sam","Jordan","Riley","Casey","Morgan","Taylor","Jamie"];
+  const nm=names[Math.floor(Math.random()*names.length)];
+  const host=$("pophost");
+  host.innerHTML=`<div class="pop"><h4>📞 Phone a Friend</h4><div class="phone">${esc(nm)} says: “I think it's <b>${LETTERS[guess]} — ${esc(q.options[guess])}</b>, but I'm ${conf}.”</div></div>`;
+  S.lock();
+  setLifelineButtons();
+}
+function walkAway(){
+  if(game.answered)return;
+  const won=game.level>0 ? LADDER[game.level-1] : 0;
+  endGame("walk", won);
+}
+
+/* ============ end ============ */
+function endGame(kind, walkAmount){
+  $("game").style.display="none";
+  const end=$("end"); end.style.display="block";
+  let title,amt,msg,top,winCls=false;
+  if(kind==="win"){
+    top="🏆 Champion"; title="MILLIONAIRE!"; amt=fmt(1000000);
+    msg="You conquered all 15 questions. Absolutely legendary, team!";
+    winCls=true;
+    S.fanfare(); confettiBurst();
+  }else if(kind==="walk"){
+    top="🚪 Walked Away"; title="Smart move!"; amt=fmt(walkAmount);
+    msg=`You walked away with ${fmt(walkAmount)}. A guaranteed win beats a risky guess.`;
+    S.ding();
+    if(walkAmount>=32000)confettiBurst();
+  }else{ // lose
+    const g=guaranteedMoney();
+    top="❌ Wrong Answer"; title="Game Over"; amt=fmt(g);
+    msg = g>0 ? `You dropped to your last safe haven and keep ${fmt(g)}.` : "No safe haven reached — but every champion starts somewhere.";
+    S.buzz();
+  }
+  $("etop").textContent=top;
+  $("etitle").textContent=title;
+  $("eamt").textContent=amt;
+  $("emsg").textContent=msg;
+  end.classList.toggle("win",winCls);
+}
+
+/* ============ confetti ============ */
+function confettiBurst(){
+  const cv=$("confetti"); cv.style.display="block";
+  const ctx=cv.getContext("2d");
+  cv.width=innerWidth; cv.height=innerHeight;
+  const cols=["#ffc94d","#46e08a","#ff4d7d","#46d6e0","#f6f0e2"];
+  const parts=[];
+  for(let i=0;i<180;i++){
+    parts.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,
+      vx:(Math.random()-.5)*3,vy:Math.random()*3+2,
+      s:Math.random()*7+4,c:cols[i%cols.length],r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3});
+  }
+  let t=0;
+  (function loop(){
+    t++;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.04; p.r+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6); ctx.restore();
+    });
+    if(t<260)requestAnimationFrame(loop);
+    else cv.style.display="none";
+  })();
+}
+
+/* ============ flow control ============ */
+function newGame(){
+  game={ run:buildRun(), level:0, selected:null, answered:false, removed:new Set(),
+    used:{f5050:false,aud:false,phone:false} };
+  $("start").style.display="none";
+  $("end").style.display="none";
+  $("game").style.display="block";
+  renderQuestion();
+}
+
+/* ============ wire up ============ */
+$("startBtn").addEventListener("click",()=>{ ac(); newGame(); });
+$("againBtn").addEventListener("click",()=>{ ac(); newGame(); });
+$("lockBtn").addEventListener("click",lockIn);
+$("ll5050").addEventListener("click",use5050);
+$("llaud").addEventListener("click",useAudience);
+$("llphone").addEventListener("click",usePhone);
+$("llwalk").addEventListener("click",walkAway);
+$("muteBtn").addEventListener("click",()=>{ ac(); setMute(!muted); });
+$("muteBtn0").addEventListener("click",()=>{ ac(); setMute(!muted); });
+$("ladderToggle").addEventListener("click",()=>$("ladderwrap").classList.toggle("open"));
+window.addEventListener("resize",()=>{ const cv=$("confetti"); if(cv.style.display==="block"){cv.width=innerWidth;cv.height=innerHeight;} });
+</script>
+</body>
+</html>

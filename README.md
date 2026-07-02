@@ -31,6 +31,10 @@ A browser game where a famous landmark slowly fades into view and you try to gue
 - **Bad Plot Summaries** → https://egertonk.github.io/fade-in/plots/
 - **Guess the Classic Car** → https://egertonk.github.io/fade-in/cars/
 - **Retro Tech** → https://egertonk.github.io/fade-in/retrotech/
+- **Who Wants to Be a Millionaire** → https://egertonk.github.io/fade-in/millionaire/
+- **Guess the Price** → https://egertonk.github.io/fade-in/price/
+- **Guess the Salary** → https://egertonk.github.io/fade-in/salary/
+- **Guess the Net Worth** → https://egertonk.github.io/fade-in/networth/
 
 > The Street View game uses the Google Maps JavaScript API. The key is stored as the
 > `GOOGLE_MAPS_API_KEY` GitHub Actions secret and injected at deploy time — it is **not**

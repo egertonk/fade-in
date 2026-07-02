@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guess the Net Worth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#ffc94d; --green:#46e08a; --magenta:#ff4d7d; --cyan:#46d6e0; --cream:#f6f0e2;
+  --muted:rgba(246,240,226,.6); --line:rgba(246,240,226,.13); --panel:#1c1708;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{
+  color:var(--cream); font-family:var(--body); margin:0; min-height:100vh; overflow:hidden;
+  background:radial-gradient(1200px 800px at 78% -8%,rgba(255,201,77,.12),transparent 60%),
+             radial-gradient(1000px 700px at 10% 108%,rgba(70,214,224,.08),transparent 60%),
+             #0e0b03;
+}
+.emoji{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+
+.brand{
+  position:fixed; top:18px; left:20px; z-index:20;
+  font-family:var(--display); font-weight:800; font-size:16px; letter-spacing:.2px;
+  display:flex; align-items:center; gap:12px;
+}
+.brand a{
+  font-family:var(--mono); font-weight:400; font-size:11px; text-transform:uppercase; letter-spacing:.7px;
+  color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+  transition:.18s;
+}
+.brand a:hover{color:var(--cream); border-color:rgba(246,240,226,.35);}
+
+.mute{
+  position:fixed; top:18px; right:20px; z-index:20;
+  width:42px; height:42px; border-radius:12px; border:1px solid var(--line);
+  background:rgba(246,240,226,.04); color:var(--cream); cursor:pointer; font-size:19px;
+  display:flex; align-items:center; justify-content:center; transition:.18s;
+}
+.mute:hover{border-color:rgba(246,240,226,.35);}
+
+.wrap{
+  position:relative; z-index:5; min-height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center; padding:80px 22px 40px;
+}
+.screen{display:none; width:100%; max-width:760px;}
+.screen.active{display:block;}
+
+h1.title{
+  font-family:var(--display); font-weight:800; line-height:.98; margin:0 0 14px;
+  font-size:clamp(46px,9vw,86px); letter-spacing:-1.5px;
+}
+h1.title .em{font-size:.82em;}
+.rule{font-size:clamp(15px,2.4vw,18px); color:var(--muted); margin:0 0 26px; max-width:560px; line-height:1.5;}
+
+.chips{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;}
+.chip{
+  font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.8px;
+  padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:transparent;
+  color:var(--muted); cursor:pointer; transition:.16s;
+}
+.chip:hover{color:var(--cream); border-color:rgba(246,240,226,.35);}
+.chip.on{background:var(--gold); color:#231a02; border-color:var(--gold); font-weight:700;}
+
+.howto{
+  border:1px solid var(--line); border-radius:18px; padding:20px 22px; background:rgba(246,240,226,.03);
+  margin-bottom:28px;
+}
+.howto .lbl{
+  font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--gold);
+  margin-bottom:10px;
+}
+.howto p{margin:0 0 14px; line-height:1.5; font-size:15px;}
+.ex{display:flex; flex-direction:column; gap:8px; margin-bottom:14px;}
+.ex .row{
+  font-family:var(--mono); font-size:13.5px; background:rgba(246,240,226,.04); border:1px solid var(--line);
+  border-radius:10px; padding:9px 13px;
+}
+.ex .row b{color:var(--gold);}
+.howto .note{font-size:12.5px; color:var(--muted); margin:0; line-height:1.5;}
+
+.btn{
+  font-family:var(--display); font-weight:800; font-size:19px; border-radius:13px; cursor:pointer;
+  padding:15px 30px; border:1px solid transparent; transition:.16s; letter-spacing:.2px;
+}
+.btn.primary{background:var(--gold); color:#231a02; border-color:var(--gold);}
+.btn.primary:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(255,201,77,.28);}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--line);}
+.btn.ghost:hover{border-color:rgba(246,240,226,.4);}
+
+/* GAME */
+.hud{
+  display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:8px;
+}
+.hud .cardno{font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--muted);}
+.kicker{
+  font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:1px;
+  padding:6px 13px; border-radius:999px; border:1px solid var(--line); color:var(--cyan);
+  display:inline-flex; align-items:center; gap:6px;
+}
+.card{
+  border:1px solid var(--line); border-radius:26px; background:var(--panel);
+  padding:46px 30px 40px; text-align:center; margin-top:14px;
+  box-shadow:0 30px 80px rgba(0,0,0,.4);
+}
+.card .bigemoji{font-size:clamp(78px,17vw,128px); line-height:1; display:block; margin-bottom:14px;}
+.card .name{
+  font-family:var(--display); font-weight:800; font-size:clamp(30px,6.5vw,54px); line-height:1.02;
+  letter-spacing:-1px; margin-bottom:6px;
+}
+.card .hinttext{
+  color:var(--muted); font-size:15px; min-height:20px; margin-top:10px; line-height:1.4;
+  transition:.2s; opacity:0;
+}
+.card .hinttext.show{opacity:1;}
+
+.worth{
+  font-family:var(--display); font-weight:800; color:var(--gold);
+  font-size:clamp(40px,10vw,80px); letter-spacing:-1.5px; line-height:1;
+  margin-top:22px; height:0; overflow:hidden; opacity:0; transform:scale(.7);
+  transition:opacity .28s, transform .28s;
+}
+.worth.show{height:auto; opacity:1; transform:scale(1); margin-top:24px;}
+.worth .sub{
+  display:block; font-family:var(--mono); font-weight:400; font-size:13px; letter-spacing:1px;
+  text-transform:uppercase; color:var(--muted); margin-top:12px;
+}
+
+.controls{display:flex; gap:12px; justify-content:center; margin-top:26px; flex-wrap:wrap;}
+
+.pop{animation:pop .34s cubic-bezier(.2,1.4,.5,1);}
+@keyframes pop{0%{transform:scale(.9); opacity:0;} 100%{transform:scale(1); opacity:1;}}
+
+.hintbtn{
+  font-family:var(--display); font-weight:800; font-size:14px; border-radius:11px; cursor:pointer;
+  padding:9px 18px; border:1px solid var(--line); background:transparent; color:var(--cream); transition:.16s;
+}
+.hintbtn:hover{border-color:rgba(246,240,226,.4);}
+.hintbtn:disabled{opacity:.4; cursor:default;}
+
+.footnote{text-align:center; color:var(--muted); font-size:11.5px; margin-top:20px; font-family:var(--mono); letter-spacing:.5px;}
+</style>
+</head>
+<body>
+
+<div class="brand"><span class="emoji">🤑</span> Guess the Net Worth <a href="../">← All games</a></div>
+<button class="mute" id="muteBtn" title="Mute / unmute">🔊</button>
+
+<div class="wrap">
+
+  <!-- START -->
+  <section class="screen active" id="startScreen">
+    <h1 class="title"><span class="em emoji">🤑</span> Guess the<br>Net Worth</h1>
+    <p class="rule">Share your screen — a person or company appears, the team guesses the net worth, you hit Reveal. Closest guess wins the round.</p>
+
+    <div class="chips" id="filterChips">
+      <button class="chip on" data-filter="all">All</button>
+      <button class="chip" data-filter="Person">People</button>
+      <button class="chip" data-filter="Company">Companies</button>
+    </div>
+
+    <div class="howto">
+      <div class="lbl">How to play</div>
+      <p>A famous person or company pops up — everyone shouts out their best guess for the net worth (or market cap), then the host hits Reveal and the closest guess takes the round.</p>
+      <div class="ex">
+        <div class="row"><span class="emoji">🎤</span> Taylor Swift → <b>~$1.6 billion</b></div>
+        <div class="row"><span class="emoji">🍔</span> McDonald's (market cap) → <b>~$200 billion</b></div>
+      </div>
+      <p class="note">Figures are rough public estimates (~2024–25) — just for fun, and they change over time.</p>
+    </div>
+
+    <button class="btn primary" id="startBtn">Start ▶</button>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="gameScreen">
+    <div class="hud">
+      <div class="cardno" id="cardNo">Card #1</div>
+      <div class="kicker" id="kicker"><span class="emoji">👤</span> Person</div>
+    </div>
+
+    <div class="card" id="card">
+      <span class="bigemoji emoji" id="cardEmoji">💰</span>
+      <div class="name" id="cardName">—</div>
+      <div class="hinttext" id="hintText"></div>
+      <div class="worth" id="worth"></div>
+    </div>
+
+    <div class="controls">
+      <button class="hintbtn" id="hintBtn">Hint 💡</button>
+      <button class="btn primary" id="revealBtn">Reveal 🎯</button>
+    </div>
+
+    <div class="footnote">Rough public estimates (~2024–25) · Space = reveal / next</div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DATA = [
+    // People
+    {emoji:"🚀", name:"Elon Musk", worth:220000, type:"Person", hint:"Tesla, SpaceX and X."},
+    {emoji:"📦", name:"Jeff Bezos", worth:200000, type:"Person", hint:"Founder of Amazon."},
+    {emoji:"💻", name:"Bill Gates", worth:130000, type:"Person", hint:"Co-founded Microsoft."},
+    {emoji:"👓", name:"Mark Zuckerberg", worth:180000, type:"Person", hint:"Runs Meta / Facebook."},
+    {emoji:"💾", name:"Larry Ellison", worth:150000, type:"Person", hint:"Oracle co-founder."},
+    {emoji:"🥤", name:"Warren Buffett", worth:135000, type:"Person", hint:"The Oracle of Omaha."},
+    {emoji:"👑", name:"Bernard Arnault", worth:190000, type:"Person", hint:"Luxury goods empire (LVMH)."},
+    {emoji:"🔍", name:"Larry Page", worth:120000, type:"Person", hint:"Co-founded Google."},
+    {emoji:"🖥️", name:"Steve Ballmer", worth:120000, type:"Person", hint:"Ex-Microsoft CEO, owns the Clippers."},
+    {emoji:"🎮", name:"Jensen Huang", worth:100000, type:"Person", hint:"CEO of NVIDIA."},
+    {emoji:"🎤", name:"Taylor Swift", worth:1600, type:"Person", hint:"Eras Tour billionaire."},
+    {emoji:"🎶", name:"Rihanna", worth:1400, type:"Person", hint:"Music star and Fenty founder."},
+    {emoji:"🏀", name:"Michael Jordan", worth:3200, type:"Person", hint:"NBA legend and brand."},
+    {emoji:"👗", name:"Kim Kardashian", worth:1700, type:"Person", hint:"Reality star, SKIMS founder."},
+    {emoji:"💋", name:"Kylie Jenner", worth:700, type:"Person", hint:"Cosmetics mogul."},
+    {emoji:"🎬", name:"Oprah Winfrey", worth:3000, type:"Person", hint:"Talk-show and media icon."},
+    {emoji:"🎥", name:"Steven Spielberg", worth:5000, type:"Person", hint:"Legendary film director."},
+    {emoji:"🎧", name:"Jay-Z", worth:2500, type:"Person", hint:"Rapper turned mogul."},
+    {emoji:"🌟", name:"Beyoncé", worth:800, type:"Person", hint:"Global music superstar."},
+    {emoji:"⚽", name:"Cristiano Ronaldo", worth:800, type:"Person", hint:"Football icon, huge endorsements."},
+    {emoji:"🐐", name:"Lionel Messi", worth:650, type:"Person", hint:"Argentine football legend."},
+    {emoji:"🏌️", name:"Tiger Woods", worth:1300, type:"Person", hint:"Golf superstar."},
+    {emoji:"🥊", name:"Floyd Mayweather", worth:400, type:"Person", hint:"Undefeated boxer."},
+    {emoji:"🎾", name:"Serena Williams", worth:300, type:"Person", hint:"Tennis great and investor."},
+    {emoji:"🏈", name:"LeBron James", worth:1200, type:"Person", hint:"NBA superstar and businessman."},
+    {emoji:"🎸", name:"Paul McCartney", worth:1200, type:"Person", hint:"Beatles legend."},
+    {emoji:"🎩", name:"Kanye West", worth:400, type:"Person", hint:"Rapper and Yeezy designer."},
+    {emoji:"🍿", name:"Dwayne Johnson", worth:800, type:"Person", hint:"'The Rock', top-paid actor."},
+    {emoji:"🎭", name:"Tom Cruise", worth:600, type:"Person", hint:"Mission: Impossible star."},
+    {emoji:"🕺", name:"Drake", worth:250, type:"Person", hint:"Chart-topping rapper."},
+    {emoji:"🎹", name:"Taylor Momsen", worth:5, type:"Person", hint:"Actress and rock singer."},
+    {emoji:"🧑‍💼", name:"Michael Bloomberg", worth:105000, type:"Person", hint:"Media data and ex-NYC mayor."},
+    {emoji:"📱", name:"Ma Huateng (Pony Ma)", worth:45000, type:"Person", hint:"Tencent founder."},
+    {emoji:"🛍️", name:"Amancio Ortega", worth:105000, type:"Person", hint:"Zara / Inditex founder."},
+    {emoji:"💃", name:"Madonna", worth:850, type:"Person", hint:"Queen of Pop."},
+
+    // Companies
+    {emoji:"🍎", name:"Apple", worth:3400000, type:"Company", hint:"iPhone maker."},
+    {emoji:"🪟", name:"Microsoft", worth:3100000, type:"Company", hint:"Windows, Office, Azure."},
+    {emoji:"🎮", name:"NVIDIA", worth:3000000, type:"Company", hint:"AI chip giant."},
+    {emoji:"🛒", name:"Amazon", worth:2000000, type:"Company", hint:"Online everything store."},
+    {emoji:"🔎", name:"Alphabet (Google)", worth:2100000, type:"Company", hint:"Search and Android."},
+    {emoji:"📘", name:"Meta", worth:1300000, type:"Company", hint:"Facebook, Instagram, WhatsApp."},
+    {emoji:"🚗", name:"Tesla", worth:800000, type:"Company", hint:"Electric cars."},
+    {emoji:"💊", name:"Eli Lilly", worth:750000, type:"Company", hint:"Pharma, weight-loss drugs."},
+    {emoji:"🏦", name:"JPMorgan Chase", worth:600000, type:"Company", hint:"Biggest US bank."},
+    {emoji:"💳", name:"Visa", worth:550000, type:"Company", hint:"Payments network."},
+    {emoji:"🥤", name:"Coca-Cola", worth:270000, type:"Company", hint:"World's famous soft drink."},
+    {emoji:"🍔", name:"McDonald's", worth:200000, type:"Company", hint:"Golden arches, fast food."},
+    {emoji:"🎬", name:"Netflix", worth:300000, type:"Company", hint:"Streaming giant."},
+    {emoji:"🏰", name:"Disney", worth:180000, type:"Company", hint:"Movies, parks, Marvel."},
+    {emoji:"👟", name:"Nike", worth:110000, type:"Company", hint:"Just do it."},
+    {emoji:"☕", name:"Starbucks", worth:100000, type:"Company", hint:"Coffeehouse chain."},
+    {emoji:"🎮", name:"Nintendo", worth:70000, type:"Company", hint:"Mario and Switch."},
+    {emoji:"🏎️", name:"Ferrari", worth:80000, type:"Company", hint:"Italian supercars."},
+    {emoji:"👜", name:"LVMH", worth:350000, type:"Company", hint:"Louis Vuitton luxury group."},
+    {emoji:"🍫", name:"Nestlé", worth:250000, type:"Company", hint:"World's biggest food company."},
+    {emoji:"🎧", name:"Spotify", worth:90000, type:"Company", hint:"Music streaming."},
+    {emoji:"🚕", name:"Uber", worth:150000, type:"Company", hint:"Ride-hailing app."},
+    {emoji:"🏠", name:"Airbnb", worth:85000, type:"Company", hint:"Home-sharing platform."},
+    {emoji:"📸", name:"Adobe", worth:220000, type:"Company", hint:"Photoshop and PDFs."},
+    {emoji:"🍟", name:"PepsiCo", worth:230000, type:"Company", hint:"Pepsi, Doritos, Gatorade."},
+    {emoji:"🛢️", name:"Saudi Aramco", worth:1800000, type:"Company", hint:"Oil giant."},
+    {emoji:"🛍️", name:"Walmart", worth:600000, type:"Company", hint:"World's largest retailer."},
+    {emoji:"🖥️", name:"Samsung Electronics", worth:350000, type:"Company", hint:"Phones, chips, TVs."}
+  ];
+
+  // ---------- helpers ----------
+  function esc(s){
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  // worth stored in millions of USD
+  function formatWorth(m){
+    if(m >= 1000000){
+      var t = m/1000000;
+      return "$" + trim(t) + " trillion";
+    }
+    if(m >= 1000){
+      var b = m/1000;
+      return "$" + trim(b) + " billion";
+    }
+    return "$" + trim(m) + " million";
+  }
+  function trim(n){
+    // up to 1 decimal, drop trailing .0
+    var r = Math.round(n*10)/10;
+    return (r % 1 === 0) ? String(r) : r.toFixed(1);
+  }
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+    }
+    return a;
+  }
+
+  // ---------- sound ----------
+  var muted = false, actx = null;
+  function ding(){
+    if(muted) return;
+    try{
+      if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state === "suspended") actx.resume();
+      var now = actx.currentTime;
+      [880, 1320].forEach(function(f,i){
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.type="sine"; o.frequency.value=f;
+        var t = now + i*0.09;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.22, t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0008, t+0.42);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t); o.stop(t+0.45);
+      });
+    }catch(e){}
+  }
+
+  // ---------- state ----------
+  var filter = "all";
+  var deck = [], idx = 0, count = 0, revealed = false;
+
+  // ---------- elements ----------
+  var startScreen = document.getElementById("startScreen");
+  var gameScreen  = document.getElementById("gameScreen");
+  var cardNo = document.getElementById("cardNo");
+  var kicker = document.getElementById("kicker");
+  var card = document.getElementById("card");
+  var cardEmoji = document.getElementById("cardEmoji");
+  var cardName = document.getElementById("cardName");
+  var hintText = document.getElementById("hintText");
+  var worthEl = document.getElementById("worth");
+  var hintBtn = document.getElementById("hintBtn");
+  var revealBtn = document.getElementById("revealBtn");
+  var muteBtn = document.getElementById("muteBtn");
+
+  function buildDeck(){
+    var pool = DATA.filter(function(d){ return filter==="all" || d.type===filter; });
+    deck = shuffle(pool);
+    idx = 0;
+  }
+
+  function current(){ return deck[idx]; }
+
+  function showCard(){
+    var it = current();
+    revealed = false;
+    count++;
+    cardNo.textContent = "Card #" + count;
+    if(it.type === "Person"){
+      kicker.innerHTML = '<span class="emoji">👤</span> Person';
+    }else{
+      kicker.innerHTML = '<span class="emoji">🏢</span> Company';
+    }
+    cardEmoji.textContent = it.emoji;
+    cardName.textContent = it.name;
+    hintText.textContent = it.hint;
+    hintText.classList.remove("show");
+    worthEl.className = "worth";
+    worthEl.innerHTML = "";
+    hintBtn.disabled = false;
+    revealBtn.textContent = "Reveal 🎯";
+
+    card.classList.remove("pop");
+    void card.offsetWidth; // reflow
+    card.classList.add("pop");
+  }
+
+  function reveal(){
+    if(revealed) return;
+    var it = current();
+    var sub = (it.type === "Company") ? "Market cap" : "Net worth";
+    worthEl.innerHTML = esc(formatWorth(it.worth)) + '<span class="sub">' + sub + '</span>';
+    worthEl.classList.add("show");
+    revealBtn.textContent = "Next →";
+    hintText.classList.add("show");
+    hintBtn.disabled = true;
+    revealed = true;
+    ding();
+  }
+
+  function next(){
+    idx++;
+    if(idx >= deck.length){ buildDeck(); }
+    showCard();
+  }
+
+  function onPrimary(){
+    if(revealed){ next(); } else { reveal(); }
+  }
+
+  // ---------- events ----------
+  document.querySelectorAll("#filterChips .chip").forEach(function(ch){
+    ch.addEventListener("click", function(){
+      document.querySelectorAll("#filterChips .chip").forEach(function(c){ c.classList.remove("on"); });
+      ch.classList.add("on");
+      filter = ch.getAttribute("data-filter");
+    });
+  });
+
+  document.getElementById("startBtn").addEventListener("click", function(){
+    buildDeck();
+    count = 0;
+    startScreen.classList.remove("active");
+    gameScreen.classList.add("active");
+    showCard();
+    // warm up audio on the user gesture
+    try{ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  });
+
+  revealBtn.addEventListener("click", onPrimary);
+
+  hintBtn.addEventListener("click", function(){
+    hintText.classList.add("show");
+    hintBtn.disabled = true;
+  });
+
+  muteBtn.addEventListener("click", function(){
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.code === "Space" && gameScreen.classList.contains("active")){
+      e.preventDefault();
+      onPrimary();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
