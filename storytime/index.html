@@ -220,7 +220,43 @@ var ITEMS = [
   {story:"Chameleons change color mainly to match their surroundings for camouflage.", real:false, truth:"They mostly change color to regulate temperature and signal mood, not primarily to blend in — that's a common myth."},
   {story:"There's a fungus that can turn ants into 'zombies' and steer where they walk.", real:true, truth:"Ophiocordyceps fungi hijack ants, compel them to climb, then sprout from their bodies."},
   {story:"A teaspoon of neutron star material would weigh about a billion tonnes.", real:true, truth:"Neutron stars are so dense that a sugar-cube-sized scoop would weigh on the order of a billion tonnes."},
-  {story:"Elephants are one of the few animals that can't jump.", real:true, truth:"Their weight and leg structure mean elephants never leave the ground with all four feet at once."}
+  {story:"Elephants are one of the few animals that can't jump.", real:true, truth:"Their weight and leg structure mean elephants never leave the ground with all four feet at once."},
+
+  {story:"A group of owls is called a parliament.", real:true, truth:"'Parliament' is the accepted collective noun for owls, popularized by C.S. Lewis."},
+  {story:"Cats purr at the exact frequency needed to unlock most household door sensors.", real:false, truth:"Made up — purring falls around 25 to 150 Hz and has nothing to do with door hardware."},
+  {story:"The Eiffel Tower was only ever meant to be a temporary structure.", real:true, truth:"It was built for the 1889 World's Fair with a 20-year permit and was nearly torn down."},
+  {story:"Giraffes only sleep standing up and physically cannot lie down.", real:false, truth:"Giraffes do lie down to rest, sometimes curling their necks back — the claim is a myth."},
+  {story:"Humans share roughly 60% of their DNA with a banana.", real:true, truth:"We share a large chunk of basic genetic machinery with bananas, around 60%."},
+  {story:"You only use about 10% of your brain at any given time.", real:false, truth:"A classic myth — brain scans show virtually all of it is active across a day."},
+  {story:"Octopuses have blue blood.", real:true, truth:"They use copper-based hemocyanin instead of iron-based hemoglobin, tinting their blood blue."},
+  {story:"Bulls charge at matadors because the color red enrages them.", real:false, truth:"Bulls are effectively colorblind to red — it's the cape's motion that provokes them."},
+  {story:"Antarctica is technically the largest desert on Earth.", real:true, truth:"A desert is defined by low precipitation, and Antarctica is the driest, largest one."},
+  {story:"Lightning never strikes the same place twice.", real:false, truth:"It absolutely does — tall structures like the Empire State Building are hit many times a year."},
+  {story:"There are more trees on Earth than stars in the Milky Way.", real:true, truth:"Earth has roughly 3 trillion trees; the Milky Way holds a few hundred billion stars."},
+  {story:"The tongue has separate zones that each detect one specific taste.", real:false, truth:"The 'tongue map' is debunked — taste receptors for all flavors are spread across the tongue."},
+  {story:"Bananas are berries, but strawberries technically are not.", real:true, truth:"Botanically a banana qualifies as a berry, while a strawberry does not."},
+  {story:"Ostriches bury their heads in the sand when they get scared.", real:false, truth:"They don't — they lower their heads to the ground to tend nests or eat, never to hide."},
+  {story:"The plastic or metal tips on the ends of shoelaces have a name: aglets.", real:true, truth:"Those little tips are genuinely called aglets."},
+  {story:"Camels store water in their humps for long desert journeys.", real:false, truth:"Humps store fat, not water — the fat provides energy and can be metabolized for moisture."},
+  {story:"A cockroach can survive for weeks without its head.", real:true, truth:"They breathe through body segments and only die from being unable to drink water."},
+  {story:"Swallowed chewing gum stays in your stomach for seven years.", real:false, truth:"Gum passes through the digestive system in a few days like other indigestible matter."},
+  {story:"Flamingos are actually born grey, not pink.", real:true, truth:"Their pink color comes later from pigments in the shrimp and algae they eat."},
+  {story:"Dogs can only see the world in black and white.", real:false, truth:"Dogs see color, just a limited range centered on blues and yellows."},
+  {story:"Hummingbirds are the only birds that can fly backwards.", real:true, truth:"Their unique wing rotation lets them hover and fly in reverse."},
+  {story:"You lose most of your body heat through the top of your head.", real:false, truth:"Heat escapes in proportion to exposed skin — the head is not a special radiator."},
+  {story:"The world's largest living structure is the Great Barrier Reef.", real:true, truth:"Made of billions of tiny coral polyps, it stretches over 2,300 kilometers."},
+  {story:"Fingernails and hair keep growing for several days after a person dies.", real:false, truth:"They don't grow — the skin dehydrates and retracts, only making them look longer."},
+  {story:"The blob of toothpaste you squeeze onto a brush has a name: a nurdle.", real:true, truth:"That little wave-shaped dollop is genuinely called a nurdle."},
+  {story:"A penny dropped from a skyscraper could kill a pedestrian below.", real:false, truth:"A penny's terminal velocity is too low and it tumbles — it would sting at most."},
+  {story:"Some bees get so drunk on fermented nectar that guards block them from the hive.", real:true, truth:"Tipsy foragers really can be turned away by guard bees at the entrance."},
+  {story:"Bats are completely blind and rely only on echolocation to get around.", real:false, truth:"'Blind as a bat' is false — bats can see, and many rely heavily on eyesight."},
+  {story:"A group of jellyfish is called a smack.", real:true, truth:"'Smack' is one of the recognized collective nouns for jellyfish."},
+  {story:"Touching a baby bird makes its mother reject it because of your scent.", real:false, truth:"Most birds have a weak sense of smell and won't abandon a chick you've touched."},
+  {story:"Male penguins often present a pebble to a female as a courtship gift.", real:true, truth:"Gentoo penguins famously offer smooth pebbles to attract and bond with a mate."},
+  {story:"Mount Everest shrinks about a foot every year because climbers wear it down.", real:false, truth:"Everest is actually rising slightly as tectonic plates push it up — foot traffic doesn't erode it."},
+  {story:"Your stomach grows a new lining every few days so it doesn't digest itself.", real:true, truth:"The stomach replaces its protective mucus lining every three to four days."},
+  {story:"Swallowing a watermelon seed will make a plant sprout inside your stomach.", real:false, truth:"Stomach acid and darkness make that impossible — the seed simply passes through."},
+  {story:"A 'jiffy' is a real, defined unit of time.", real:true, truth:"In physics a jiffy has precise definitions, such as the time light takes to travel one centimeter."}
 ];
 
 // ---------- legend ----------
@@ -264,7 +300,7 @@ var revealBtn   = document.getElementById("revealBtn");
 var lineNumEl   = document.getElementById("lineNum");
 
 function showLine(){
-  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  if(idx >= order.length){ var _lastItem = order[order.length-1]; do { order = shuffle(ITEMS); } while(ITEMS.length > 1 && order[0] === _lastItem); idx = 0; }
   var item = order[idx];
   lineCount++;
   lineNumEl.textContent = lineCount;

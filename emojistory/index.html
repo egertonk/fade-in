@@ -228,7 +228,53 @@ var ITEMS = [
   {emojis:"🍫🎫🏭👦🎩🐿️", answer:"Charlie and the Chocolate Factory", category:"Book"},
   {emojis:"🌳🍎🪵👦❤️🪑", answer:"The Giving Tree", category:"Book"},
   {emojis:"👧🌪️🐒🦁🤖🐕", answer:"The Wonderful Wizard of Oz", category:"Book"},
-  {emojis:"🐺🐷🐷🐷🏠💨", answer:"The Three Little Pigs", category:"Book"}
+  {emojis:"🐺🐷🐷🐷🏠💨", answer:"The Three Little Pigs", category:"Book"},
+
+  // ---------- MOVIES (added) ----------
+  {emojis:"🧅👹🐴🏰👸💚", answer:"Shrek", category:"Movie"},
+  {emojis:"🧞🪔🐒🏰✨🐫", answer:"Aladdin", category:"Movie"},
+  {emojis:"🌹👹📚👰🕯️💃", answer:"Beauty and the Beast", category:"Movie"},
+  {emojis:"🧜‍♀️🌊🐚👑🦀💋", answer:"The Little Mermaid", category:"Movie"},
+  {emojis:"🏠👦😱🦹🎄🔔", answer:"Home Alone", category:"Movie"},
+  {emojis:"👻🔫🚗🏙️🟢💚", answer:"Ghostbusters", category:"Movie"},
+  {emojis:"🚗⚡🕰️🎸👦🔥", answer:"Back to the Future", category:"Movie"},
+  {emojis:"🏴‍☠️⚓💀🧭🗡️🦜", answer:"Pirates of the Caribbean", category:"Movie"},
+  {emojis:"🦸🛡️🔨🕷️💚🌎", answer:"The Avengers", category:"Movie"},
+  {emojis:"🌊🚣‍♀️🐔🌺🐷🏝️", answer:"Moana", category:"Movie"},
+  {emojis:"💀🎸🌼🇲🇽🕯️👦", answer:"Coco", category:"Movie"},
+  {emojis:"🐼🥋🐉🍜🏯👊", answer:"Kung Fu Panda", category:"Movie"},
+  {emojis:"🤖🌎🗑️🚀🌱💕", answer:"WALL-E", category:"Movie"},
+  {emojis:"⚔️🐉👧🇨🇳🏹🌸", answer:"Mulan", category:"Movie"},
+
+  // ---------- SONGS (added) ----------
+  {emojis:"🌍☮️✌️🎹🕊️", answer:"Imagine", category:"Song"},
+  {emojis:"📆😢💔🎸🎶", answer:"Yesterday", category:"Song"},
+  {emojis:"💛🚤🌊🎶🎺", answer:"Yellow Submarine", category:"Song"},
+  {emojis:"🍬🎶👏😊🎺", answer:"Sweet Caroline", category:"Song"},
+  {emojis:"👑💃🕺🎶✨", answer:"Dancing Queen", category:"Song"},
+  {emojis:"🕺🎺💃🔥🎶", answer:"Uptown Funk", category:"Song"},
+  {emojis:"🪜☁️😇🎸🎶", answer:"Stairway to Heaven", category:"Song"},
+  {emojis:"🏨🌴🍷🎸🎶", answer:"Hotel California", category:"Song"},
+  {emojis:"🏃✏️📖🎶💙", answer:"Take On Me", category:"Song"},
+  {emojis:"🎹🙏💫🎶😌", answer:"Let It Be", category:"Song"},
+
+  // ---------- SHOWS (added) ----------
+  {emojis:"👨‍🚀🪖👶🌌🔫🛸", answer:"The Mandalorian", category:"Show"},
+  {emojis:"🕵️🔍🎩💊🇬🇧🧠", answer:"Sherlock", category:"Show"},
+  {emojis:"🎭💰🏦🔴🇪🇸🔫", answer:"Money Heist", category:"Show"},
+  {emojis:"🖤💃🕷️🏫🌧️🎻", answer:"Wednesday", category:"Show"},
+  {emojis:"🐺⚔️🧙‍♂️🩸🐴🔥", answer:"The Witcher", category:"Show"},
+  {emojis:"⚽🇺🇸😄🇬🇧🥧🍀", answer:"Ted Lasso", category:"Show"},
+  {emojis:"🧽🍔🌊🐌⭐🩳", answer:"SpongeBob SquarePants", category:"Show"},
+  {emojis:"⚡🐭🔴⚪🎒🏆", answer:"Pokemon", category:"Show"},
+
+  // ---------- BOOKS (added) ----------
+  {emojis:"💑⚔️🌹☠️🏰💔", answer:"Romeo and Juliet", category:"Book"},
+  {emojis:"🧛🦇🏰🩸🌙⚰️", answer:"Dracula", category:"Book"},
+  {emojis:"🥂🎉💚🏛️💔🚗", answer:"The Great Gatsby", category:"Book"},
+  {emojis:"🐻🍯🐷🐴🎈🌳", answer:"Winnie the Pooh", category:"Book"},
+  {emojis:"🧚🏴‍☠️🐊⏰🌟👦", answer:"Peter Pan", category:"Book"},
+  {emojis:"🌙🐰🛏️🌟🐄😴", answer:"Goodnight Moon", category:"Book"}
 ];
 
 // ---------- legend ----------
@@ -272,7 +318,7 @@ var revealBtn   = document.getElementById("revealBtn");
 var lineNumEl   = document.getElementById("lineNum");
 
 function showLine(){
-  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  if(idx >= order.length){ var _lastItem = order[order.length-1]; do { order = shuffle(ITEMS); } while(ITEMS.length > 1 && order[0] === _lastItem); idx = 0; }
   var item = order[idx];
   lineCount++;
   lineNumEl.textContent = lineCount;

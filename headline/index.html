@@ -213,7 +213,51 @@ var ITEMS = [
   {headline:"National park adds a drive-thru window for feeding the bears safely", real:false, truth:"Invented — feeding wild bears is banned, not a drive-thru feature."},
   {headline:"School replaces homework with mandatory afternoon kite-flying", real:false, truth:"Made up — no school has swapped homework for kite quotas."},
   {headline:"Man crochets a sweater large enough to fit an entire double-decker bus", real:false, truth:"Fiction — no record exists for a bus-sized crocheted sweater."},
-  {headline:"Town installs traffic lights specifically for wandering ducks", real:false, truth:"Invented — duck crossings exist, but not duck traffic lights."}
+  {headline:"Town installs traffic lights specifically for wandering ducks", real:false, truth:"Invented — duck crossings exist, but not duck traffic lights."},
+
+  // ---------- REAL (added) ----------
+  {headline:"Nintendo was founded more than a century before it made video games", real:true, truth:"Nintendo started in 1889 in Kyoto making handmade playing cards."},
+  {headline:"The Netherlands closed several prisons because it ran out of criminals", real:true, truth:"Falling crime left cells empty; the Dutch even rented space to other countries."},
+  {headline:"A penguin at a Scottish zoo holds the rank of knight in Norway's army", real:true, truth:"Sir Nils Olav, a king penguin at Edinburgh Zoo, was knighted by Norway's King's Guard."},
+  {headline:"One man visited every country on Earth without ever boarding a plane", real:true, truth:"Graham Hughes reached all 193 UN nations by land and sea over about four years."},
+  {headline:"The inventor of the Pringles can was buried inside one", real:true, truth:"Fredric Baur's family placed some of his ashes in a Pringles tube, as he wished."},
+  {headline:"Finland hosts an annual world championship for carrying your wife", real:true, truth:"The wife-carrying championship in Sonkajarvi awards the winner the wife's weight in beer."},
+  {headline:"A hotel made entirely of ice is rebuilt from scratch every winter", real:true, truth:"Sweden's Icehotel melts each spring and is carved anew from river ice each year."},
+  {headline:"Bubble wrap was originally invented to be sold as wallpaper", real:true, truth:"Its inventors first pitched it as textured wallpaper before it became packaging."},
+  {headline:"Some turtles can breathe through their rear ends", real:true, truth:"Certain turtles absorb oxygen through their cloaca to survive long stretches underwater."},
+  {headline:"A Norwegian town uses giant mirrors to beam sunlight into its square", real:true, truth:"Rjukan sits in shadow all winter, so mountain mirrors reflect sun down to the plaza."},
+  {headline:"Tug of war used to be an official Olympic event", real:true, truth:"It featured in the Summer Games from 1900 to 1920."},
+  {headline:"Ketchup was once sold in the 1830s as medicine", real:true, truth:"It was marketed as a cure-all in pill form for ailments like indigestion."},
+  {headline:"A tiny Wyoming town once had an official population of exactly one", real:true, truth:"Buford, Wyoming had a single resident before it was sold at auction in 2012."},
+  {headline:"The longest place name in the world has 85 letters", real:true, truth:"A hill in New Zealand, Taumatawhakatangihanga...tanatahu, holds the record."},
+  {headline:"Oxford University is older than the Aztec Empire", real:true, truth:"Teaching began at Oxford around 1096; the Aztec capital was founded in 1325."},
+  {headline:"A woodpecker's tongue wraps all the way around its skull", real:true, truth:"The long tongue coils behind the skull and helps cushion the brain from impacts."},
+  {headline:"Cows have best friends and get stressed when separated from them", real:true, truth:"Research shows cows form close bonds and their heart rate rises when kept apart."},
+  {headline:"There is a spider that survives mostly on a vegetarian diet", real:true, truth:"Bagheera kiplingi mainly eats specialized plant tips rather than hunting prey."},
+  {headline:"A man held his breath underwater for over 24 minutes", real:true, truth:"Budimir Sobat set a record above 24 minutes after breathing pure oxygen first."},
+  {headline:"Astronauts grow about two inches taller while in space", real:true, truth:"Without gravity compressing them, astronauts' spines lengthen temporarily in orbit."},
+
+  // ---------- FAKE (added) ----------
+  {headline:"Germany introduces a national holiday for finally clearing your email inbox", real:false, truth:"Invented — no country grants a day off for reaching inbox zero."},
+  {headline:"A small town elects a golden retriever as its official librarian", real:false, truth:"Made up — dogs visit libraries, but none run the checkout desk."},
+  {headline:"Scientists find that penguins strongly prefer jazz over classical music", real:false, truth:"Fiction — no study has crowned a penguin genre preference."},
+  {headline:"New app lets you text your houseplants daily reminders to grow", real:false, truth:"Invented — plants can't read your motivational messages."},
+  {headline:"City requires every cyclist to ring a bell and say good morning", real:false, truth:"Made up — politeness is encouraged, never mandated by law."},
+  {headline:"Restaurant charges customers based on how loudly they laugh", real:false, truth:"Fiction — no eatery meters your giggles for the bill."},
+  {headline:"A country replaces its entire army with a full-time marching band", real:false, truth:"Invented — no nation has swapped soldiers for a brass section."},
+  {headline:"Village bans alarm clocks and hires roosters as official wake-up staff", real:false, truth:"Made up — roosters crow freely, but not on a town payroll."},
+  {headline:"Company gives employees a paid day off every time it rains", real:false, truth:"Fiction — no firm ties vacation days to the weather forecast."},
+  {headline:"New law requires all umbrellas to be closed and saluted on sunny days", real:false, truth:"Invented — umbrella etiquette is not written into any law."},
+  {headline:"Cafe only accepts payment in dad jokes every Friday", real:false, truth:"Made up — puns are free, but they won't settle your tab."},
+  {headline:"Airline lets passengers vote on the pilot's in-flight music playlist", real:false, truth:"Fiction — cockpit playlists are not put to a cabin vote."},
+  {headline:"School replaces its bell with a live brass quartet between classes", real:false, truth:"Invented — no school fields a roaming quartet as its bell."},
+  {headline:"A new smartwatch buzzes every time someone thinks about you", real:false, truth:"Made up — no device can detect other people's thoughts."},
+  {headline:"Town paints its sheep in bright rainbow colors to prevent traffic jams", real:false, truth:"Fiction — colorful sheep are not a real traffic solution."},
+  {headline:"Restaurant hires a professional to blow on your soup until it cools", real:false, truth:"Invented — you're still on your own to cool your soup."},
+  {headline:"A country declares the color beige illegal in all new buildings", real:false, truth:"Made up — no government has outlawed a single paint color."},
+  {headline:"Library adds extra homework as a fine for dog-earing the pages", real:false, truth:"Fiction — libraries frown on bent pages but don't assign homework."},
+  {headline:"Airport swaps its baggage carousels for tiny robot-driven trains", real:false, truth:"Invented — luggage still rides the familiar carousel."},
+  {headline:"New tax break rewards anyone who gives their car a proper name", real:false, truth:"Made up — naming your car earns affection, not a deduction."}
 ];
 
 // ---------- helpers ----------
@@ -248,7 +292,7 @@ var revealBtn   = document.getElementById("revealBtn");
 var lineNumEl   = document.getElementById("lineNum");
 
 function showLine(){
-  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  if(idx >= order.length){ var _lastItem = order[order.length-1]; do { order = shuffle(ITEMS); } while(ITEMS.length > 1 && order[0] === _lastItem); idx = 0; }
   var item = order[idx];
   lineCount++;
   lineNumEl.textContent = lineCount;

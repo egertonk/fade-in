@@ -210,7 +210,49 @@ var ITEMS = [
   {topic:"Getting hyped for a snack you'll eat in one bite", samples:["#SnackAnticipation","#OneBiteWonder","#WorthTheHype"]},
   {topic:"Sending \"can we hop on a quick call?\" out of nowhere", samples:["#HopOnACall","#TextWouldveWorked","#SuddenPanic"]},
   {topic:"Following back only to check the story, then unfollowing", samples:["#StoryStalkerMove","#FollowForContent","#SneakyUnfollow"]},
-  {topic:"The team lunch where nobody can pick a restaurant", samples:["#IDontMindWhatever","#RestaurantStalemate","#YouChoose"]}
+  {topic:"The team lunch where nobody can pick a restaurant", samples:["#IDontMindWhatever","#RestaurantStalemate","#YouChoose"]},
+  {topic:"Seeing the \"...\" typing bubble stop and never come back", samples:["#TypingThenNothing","#TheDotsBetrayedMe","#SayItAlready"]},
+  {topic:"Opening the fridge for the fifth time hoping new food appeared", samples:["#FridgeRoulette","#NothingNewInThere","#SnackMirage"]},
+  {topic:"When \"I'll start Monday\" has been every Monday this year", samples:["#StartingMonday","#NewWeekWhoDis","#EternalMonday"]},
+  {topic:"Muting a call to yell one sentence, then unmuting like nothing happened", samples:["#MuteAndScream","#SecretlyFeral","#BackToProfessional"]},
+  {topic:"Saying \"let me check my calendar\" when you already know you're free", samples:["#CalendarTheatre","#DefinitelyFree","#FakeBusyEnergy"]},
+  {topic:"The group photo is perfect but you look terrible in it", samples:["#DeleteItPlease","#OnePersonVeto","#RetakeThatOne"]},
+  {topic:"Rehearsing your coffee order in your head before you reach the counter", samples:["#OrderRehearsal","#DontMessItUp","#CaffeineStageFright"]},
+  {topic:"Replying to an email at 11pm just to seem dedicated", samples:["#FakeDedication","#NightShiftFlex","#GoToSleep"]},
+  {topic:"Waving back at someone who was waving at the person behind you", samples:["#WaveMisfire","#TheGroundOpened","#SoAwkward"]},
+  {topic:"The coworker who narrates every single thing they are doing", samples:["#LiveCommentary","#NarratorNobodyAsked","#ThinkingOutLoud"]},
+  {topic:"Buying a fresh planner to get organised, then never opening it", samples:["#PlannerGraveyard","#OrganisedInTheory","#BlankPagesForever"]},
+  {topic:"When someone says \"we need to talk\" and your soul leaves your body", samples:["#WeNeedToTalk","#SoulHasLeft","#BracingForImpact"]},
+  {topic:"Standing up confidently, then instantly forgetting why you stood up", samples:["#WhyDidIStand","#MemoryGone","#RoomOfForgetting"]},
+  {topic:"The Sunday-night dread creeping in before the work week", samples:["#SundayScaries","#MondayLoading","#WeekendWasTooShort"]},
+  {topic:"Texting \"haha\" while completely stone-faced", samples:["#StoneFaceHaha","#NotEvenSmiling","#PolitenessLies"]},
+  {topic:"When autocomplete finishes your search before you can", samples:["#SearchEngineKnows","#TooPredictable","#GetOutOfMyHead"]},
+  {topic:"Frantically looking busy the second the boss walks past", samples:["#LookBusyMode","#FranticTyping","#NothingActuallyHappening"]},
+  {topic:"Finally finding a parking spot, but it's a tiny compact one", samples:["#ParkingHeartbreak","#SoCloseYetSoFar","#WontFitEver"]},
+  {topic:"Saving an article to \"read later\" and never returning to it", samples:["#ReadItLater","#TabsForever","#NeverGonnaHappen"]},
+  {topic:"The waiter asks how everything is right as you take a huge bite", samples:["#MouthFullThumbsUp","#GreatTimingSir","#ChewFaster"]},
+  {topic:"The mild panic when a phone call comes in instead of a text", samples:["#WhyAreYouCalling","#TextMeInstead","#PhoneRingFear"]},
+  {topic:"Announcing \"I'm going to bed\" then scrolling for two more hours", samples:["#GoingToBedLie","#TwoMoreHours","#ScrollTrap"]},
+  {topic:"Laughing out loud at a meme in a completely silent room", samples:["#SoloLaughAttack","#ExplainYourself","#MemeCaughtMe"]},
+  {topic:"The colleague who forwards you emails you were already CC'd on", samples:["#ForwardForNoReason","#IWasAlreadyOnThat","#InboxClutter"]},
+  {topic:"Rehearsing an argument in the shower you will never actually have", samples:["#ShowerDebate","#WonInMyHead","#NeverActuallySaid"]},
+  {topic:"When a \"quick errand\" somehow turns into a three-hour ordeal", samples:["#QuickErrandMyth","#ThreeHoursLater","#HowDidThisHappen"]},
+  {topic:"Nodding along to tech jargon you do not understand at all", samples:["#NoddingBlankly","#WhatDoesThatMean","#FakeItTillTheEnd"]},
+  {topic:"Your stomach growling loudly during the silent part of a meeting", samples:["#StomachSpeaks","#BetrayedByHunger","#EveryoneHeardThat"]},
+  {topic:"The endless \"you first\" \"no you first\" dance at a doorway", samples:["#DoorwayStandoff","#AfterYouNoAfterYou","#PoliteGridlock"]},
+  {topic:"Buying gym clothes as a substitute for actually going to the gym", samples:["#ActiveWearNotActive","#LooksSporty","#ZeroWorkouts"]},
+  {topic:"Saying \"bye\" to someone then walking in the exact same direction", samples:["#AwkwardParallelWalk","#ThoughtWeSaidBye","#SameWayHuh"]},
+  {topic:"The dramatic sigh right before you open the work laptop", samples:["#LaptopSigh","#HereWeGoAgain","#DeepBreathIn"]},
+  {topic:"Forgetting a coworker's name two seconds after they said it", samples:["#NameGoneInstantly","#NiceToMeetYouBlank","#WhoWasThat"]},
+  {topic:"When the printer asks you to add paper and you simply walk away", samples:["#NotMyProblemNow","#WalkAwayCalmly","#SomeoneElsesTurn"]},
+  {topic:"Ordering the exact same thing every time and calling it loyalty", samples:["#SameOrderAlways","#CreatureOfHabit","#WhyRiskIt"]},
+  {topic:"The quiet dread of a \"per my previous message\" reply landing", samples:["#PerMyPreviousMessage","#PassiveAggressiveWin","#ReadTheThread"]},
+  {topic:"When your headphone cord snags violently on a doorhandle", samples:["#YankedBackViolently","#DoorknobRevenge","#NeckAlmostGone"]},
+  {topic:"Hiding from the door for a delivery you personally ordered", samples:["#HideFromDelivery","#JustLeaveItThere","#SocialBatteryDead"]},
+  {topic:"Overpacking for a two-day trip like it's a month-long expedition", samples:["#JustInCasePacking","#WholeClosetPacked","#NeverWoreHalfOfIt"]},
+  {topic:"Double-texting and immediately regretting the second one", samples:["#DoubleTextRegret","#ShouldveWaited","#DeleteDeleteDelete"]},
+  {topic:"The specific rage of a slow walker in a narrow hallway", samples:["#SlowWalkerAhead","#LetMePass","#HallwayHostage"]},
+  {topic:"Clapping for a presentation you completely tuned out of", samples:["#ClapAndPray","#GreatPointsProbably","#WasntListening"]}
 ];
 
 // ---------- legend ----------
@@ -253,7 +295,7 @@ var revealBtn   = document.getElementById("revealBtn");
 var lineNumEl   = document.getElementById("lineNum");
 
 function showLine(){
-  if(idx >= order.length){ order = shuffle(ITEMS); idx = 0; }
+  if(idx >= order.length){ var _lastItem = order[order.length-1]; do { order = shuffle(ITEMS); } while(ITEMS.length > 1 && order[0] === _lastItem); idx = 0; }
   var item = order[idx];
   lineCount++;
   lineNumEl.textContent = lineCount;
